@@ -9,6 +9,12 @@
 > wandern nach Abschluss **unverändert** in `docs/archive/PROGRESS_ARCHIVE.md`.
 
 ## Laufende Phasen
+### Phase 6
+
+**Umfang (Steps):**
+
+- **6.1 Mutation-Regressionstests (R5)**
+
 
 ---
 
@@ -34,3 +40,13 @@
 | 4.1 | Locale-Profile (lesen) | ✅ |
 | 4.2 | Locale-Profile (schreiben + Schnittstellen) | ✅ |
 | 5.1 | MCP-Server-Name stepwell + Prozess-Verankerung | ✅ |
+| 6.1 | Mutation-Regressionstests (R5) | 🔄 |
+| 6.2 | Stale-Span-Fix planProgressUpdate (R1) | ⬜ |
+| 6.3 | Locale-Synonyme zentralisieren (R2) | ⬜ |
+| 6.4 | CRLF-Roundtrip Archiv-Anhang (R3) | ⬜ |
+| 6.5 | Stale-Check beim Apply (R4) | ⬜ |
+| 6.6 | STEP_DUPLICATE-Validate (R6) | ⬜ |
+| 6.7 | CLI-ASCII-Aliase für Prio/Status (T3) | ⬜ |
+| 6.8 | Titel-/Scope-Edits als Tool (T2) | ⬜ |
+| 6.9 | Backlog-CRUD-Tools (T1) | ⬜ |
+| 6.10 | Phasen-Planung als Tool (T4) | ⬜ |
