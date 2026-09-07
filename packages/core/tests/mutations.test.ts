@@ -11,11 +11,13 @@ import {
   applyBacklogAddPlan,
   applyBacklogRemovePlan,
   applyBacklogUpdatePlan,
+  applyPhasePlan,
   applyProgressPlan,
   planArchiveItem,
   planBacklogAdd,
   planBacklogRemove,
   planBacklogUpdate,
+  planPhase,
   planProgressUpdate,
 } from "../src/mutations.ts";
 import { canonical } from "../src/profile.ts";
@@ -632,6 +634,69 @@ describe("backlog CRUD (T1, 6.9)", () => {
     const dir = tempCopy("project-a");
     expect(() => planBacklogRemove(dir, "NOPE")).toThrow(/NOPE/);
     expect(() => planBacklogRemove(dir, "S1")).toThrow(/already archived/);
+  });
+});
+
+describe("phase planning (T4, 6.10)", () => {
+  const steps = [
+    { step: "7.1", name: "Erster Step" },
+    { step: "7.2", name: "Zweiter Step" },
+    { step: "7.3", name: "Dritter Step" },
+  ];
+
+  it("plans table rows and a full scope skeleton for a new phase", () => {
+    const dir = tempCopy("project-a");
+    const progressPath = join(dir, "PROGRESS.md");
+
+    const plan = planPhase(dir, "Phase 7 — Rundung", steps, { dryRun: false });
+    expect(plan.dryRun).toBe(false);
+    const change = plan.changes[0]!;
+    expect(change.after).toContain("| 7.1 | Erster Step | ⬜ |");
+    expect(change.after).toContain("| 7.3 | Dritter Step | ⬜ |");
+    expect(change.after).toContain("### Phase 7 — Rundung");
+    expect(change.after).toContain("- **7.2 Zweiter Step**");
+
+    const result = applyPhasePlan(plan);
+    expect(result.verification.ok).toBe(true);
+
+    const progress = readFileSync(progressPath, "utf8");
+    expect(progress).toContain("| 7.1 | Erster Step | ⬜ |");
+    const parsed = parseProgress(progress).value;
+    const block = parsed.phases.find((p) => p.name === "Phase 7");
+    expect(block?.title).toBe("Rundung");
+    expect(block?.scope).toHaveLength(3);
+
+    // PLAN_WITHOUT_WIP ist bis zum ersten 🔄 erwartbar:
+    const validation = docsValidate(dir);
+    expect(validation.findings.some((f) => f.code === "PLAN_WITHOUT_WIP" && f.message.includes("Phase 7"))).toBe(true);
+
+    // Integration: erster 🔄-Step übernimmt den bestehenden Scope ohne Workaround
+    const start = planProgressUpdate(dir, "Phase 7", "7.1", "🔄", { dryRun: false });
+    expect(start.changes).toHaveLength(1);
+    const startResult = applyProgressPlan(start);
+    expect(startResult.verification.ok).toBe(true);
+    const after = docsValidate(dir);
+    expect(after.findings.some((f) => f.code === "PLAN_WITHOUT_WIP")).toBe(false);
+    expect(after.ok).toBe(true);
+    expect(readFileSync(progressPath, "utf8")).not.toMatch(/### Phase 7 — Rundung[\s\S]*### Phase 7 — Rundung/u);
+  });
+
+  it("rejects step numbers outside the phase, duplicates and existing phases", () => {
+    const dir = tempCopy("project-a");
+    expect(() =>
+      planPhase(dir, "Phase 7", [{ step: "8.1", name: "Fremd" }]),
+    ).toThrow(/8\.1/);
+    expect(() =>
+      planPhase(dir, "Phase 7", [
+        { step: "7.1", name: "A" },
+        { step: "7.1", name: "B" },
+      ]),
+    ).toThrow(/7\.1/);
+    expect(() => planPhase(dir, "Phase 2", [{ step: "2.9", name: "X" }])).toThrow(/Phase 2/);
+    expect(() => planPhase(dir, "Siebte Phase", steps)).toThrow(/Phase/);
+    expect(() =>
+      planPhase(dir, "Phase 7 — Rundung", [{ step: "7.1", name: "A" }, ...steps]),
+    ).toThrow(/7\.1/);
   });
 });
 

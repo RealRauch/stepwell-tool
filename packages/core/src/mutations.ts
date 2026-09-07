@@ -12,6 +12,7 @@ import type {
   BacklogRemovePlan,
   BacklogUpdatePlan,
   PhaseBlock,
+  PhasePlan,
   PlanChange,
   Priority,
   ProgressUpdatePlan,
@@ -245,6 +246,39 @@ function removeSpan(lines: string[], start: number, end: number): void {
   }
 }
 
+function insertRunningPhaseSkeleton(
+  lines: string[],
+  heading: string,
+  scopeHeading: string,
+  bullets: string[],
+): void {
+  const headingPattern = synonymPattern("runningPhasesHeading");
+  const sectionStart = lines.findIndex((l) => /^##\s+/u.test(l) && headingPattern.test(l));
+  if (sectionStart === -1) {
+    throw new Error(
+      `missing running-phases section (${allSynonyms("runningPhasesHeading").join(" | ")}) in PROGRESS.md`,
+    );
+  }
+  let end = sectionStart + 1;
+  while (end < lines.length && !/^##\s/u.test(lines[end]!) && !SECTION_RULE.test(lines[end]!)) {
+    end += 1;
+  }
+  let insertAt = end;
+  while (insertAt > sectionStart + 1 && (lines[insertAt - 1]?.trim() ?? "") === "") {
+    insertAt -= 1;
+  }
+  lines.splice(insertAt, 0, heading, "", `**${scopeHeading}**`, "", ...bullets, "");
+}
+
+function appendTableRows(lines: string[], rows: string[]): void {
+  let lastRow = -1;
+  lines.forEach((l, i) => {
+    if (tableLineHasStep(l)) lastRow = i;
+  });
+  if (lastRow === -1) throw new Error("no progress table found in PROGRESS.md");
+  lines.splice(lastRow + 1, 0, ...rows);
+}
+
 export function planProgressUpdate(
   root: string,
   phase: string,
@@ -322,40 +356,15 @@ export function planProgressUpdate(
       cells[3] = ` ${status} `;
       lines[idx] = cells.join("|");
     } else {
-      let lastRow = -1;
-      lines.forEach((l, i) => {
-        if (tableLineHasStep(l)) lastRow = i;
-      });
-      if (lastRow === -1) throw new Error("no progress table found in PROGRESS.md");
-      lines.splice(lastRow + 1, 0, `| ${step} | ${rowName} | ${status} |`);
+      appendTableRows(lines, [`| ${step} | ${rowName} | ${status} |`]);
     }
 
     if (block === undefined) {
-      const headingPattern = synonymPattern("runningPhasesHeading");
-      const sectionStart = lines.findIndex((l) => /^##\s+/u.test(l) && headingPattern.test(l));
-      if (sectionStart === -1) {
-        throw new Error(
-          `missing running-phases section (${allSynonyms("runningPhasesHeading").join(" | ")}) in PROGRESS.md`,
-        );
-      }
-      let end = sectionStart + 1;
-      while (end < lines.length && !/^##\s/u.test(lines[end]!) && !SECTION_RULE.test(lines[end]!)) {
-        end += 1;
-      }
-      let insertAt = end;
-      while (insertAt > sectionStart + 1 && (lines[insertAt - 1]?.trim() ?? "") === "") {
-        insertAt -= 1;
-      }
-      lines.splice(
-        insertAt,
-        0,
-        `### ${newTitle !== undefined ? `${phase} — ${newTitle}` : phase}`,
-        "",
-        `**${scopeHeading}**`,
-        "",
+      const skeletonHeading =
+        newTitle !== undefined ? `### ${phase} — ${newTitle}` : `### ${phase}`;
+      insertRunningPhaseSkeleton(lines, skeletonHeading, scopeHeading, [
         `- **${step} ${rowName}**`,
-        "",
-      );
+      ]);
     } else if (!completedPhase && scopeEntry === undefined) {
       lines.splice(block.span.end, 0, `- **${step} ${rowName}**`);
     }
@@ -436,6 +445,130 @@ export function applyProgressPlan(plan: ProgressUpdatePlan): ApplyResult {
   else for (const f of findings) messages.push(`${f.code}: ${f.message}`);
 
   const ok = statusOk && archiveOk && findings.length === 0;
+  return { written, verification: { ok, messages } };
+}
+
+// ---------------------------------------------------------------------------
+// Phasen-Planung (T4): neue Phase vorausplanen (Tabellen-Zeilen + Skeleton).
+// ---------------------------------------------------------------------------
+
+export interface PhaseStep {
+  step: string;
+  name: string;
+}
+
+export interface PhaseOptions {
+  dryRun?: boolean;
+}
+
+export function planPhase(
+  root: string,
+  phase: string,
+  steps: PhaseStep[],
+  options: PhaseOptions = {},
+): PhasePlan {
+  const dryRun = options.dryRun ?? true;
+  const docs = loadProject(root);
+  const progress = docs.progress().value;
+
+  const prefixMatch = /^Phase\s+(\d+)(\s+—\s+(.+))?$/u.exec(phase.trim());
+  if (prefixMatch === null) {
+    throw new Error(`phase "${phase}" entspricht nicht dem Muster "Phase <Nr>[ — Titel]"`);
+  }
+  const phaseNumber = prefixMatch[1]!;
+  const phaseHeading = `### ${phase.trim()}`;
+
+  if (steps.length === 0) {
+    throw new Error("missing steps: eine Phase braucht mindestens einen Step");
+  }
+  const seen = new Set<string>();
+  for (const entry of steps) {
+    const step = entry.step.trim();
+    if (!/^\d+(?:\.\d+)?$/u.test(step) || !step.startsWith(`${phaseNumber}.`)) {
+      throw new Error(
+        `step "${entry.step}" gehört nicht zur Phase ${phaseNumber} (Muster: ${phaseNumber}.<Nr>)`,
+      );
+    }
+    if (seen.has(step)) {
+      throw new Error(`duplicate step: "${step}" ist mehrfach in der Steps-Liste`);
+    }
+    seen.add(step);
+    if (entry.name.trim() === "") {
+      throw new Error(`missing name for step ${step}`);
+    }
+    if (progress.rows.some((r) => r.step === step)) {
+      throw new Error(`step "${step}" existiert bereits in der Fortschrittstabelle`);
+    }
+  }
+  const running = progress.phases.find((p) => phaseMatches(p, phase.trim()));
+  if (running !== undefined) {
+    throw new Error(`phase "${phase}" existiert bereits unter den laufenden Phasen`);
+  }
+  const archived = docs.progressArchive().value.find((p) => phaseMatches(p, phase.trim()));
+  if (archived !== undefined) {
+    throw new Error(`phase "${phase}" liegt bereits im PROGRESS_ARCHIVE (Step-Nummern nie wiederverwenden)`);
+  }
+
+  const locale = detectLocale(
+    readText(join(root, "PROGRESS.md")).content,
+    readText(join(root, "docs", "archive", "PROGRESS_ARCHIVE.md")).content,
+  );
+  const scopeHeading = `${canonical("scopeLabel", locale)} (Steps):`;
+
+  const edit = (content: string, eol: string): string => {
+    const lines = content.split(eol);
+    appendTableRows(lines, steps.map((s) => `| ${s.step.trim()} | ${s.name.trim()} | ⬜ |`));
+    insertRunningPhaseSkeleton(
+      lines,
+      phaseHeading,
+      scopeHeading,
+      steps.map((s) => `- **${s.step.trim()} ${s.name.trim()}**`),
+    );
+    return lines.join(eol);
+  };
+
+  const changes = buildChanges(root, [
+    {
+      relPath: "PROGRESS.md",
+      description: `Phase "${phase.trim()}" mit ${steps.length} Steps vorausplanen (Tabellen-Zeilen ⬜ + Detail-Block-Skelett)`,
+      transform: edit,
+    },
+  ]);
+  return { root, phase: phase.trim(), dryRun, changes };
+}
+
+export function applyPhasePlan(plan: PhasePlan): ApplyResult {
+  if (plan.dryRun) {
+    throw new Error("refusing to apply a dry-run plan — create the plan with dryRun: false to apply");
+  }
+  assertFreshChanges(plan.changes);
+  const written: string[] = [];
+  for (const change of plan.changes) {
+    writeFileSync(change.file, change.after, "utf8");
+    written.push(change.file);
+  }
+
+  const messages: string[] = [];
+  const fresh = loadProject(plan.root);
+  const block = fresh.progress().value.phases.find((p) => phaseMatches(p, plan.phase));
+  const blockOk = block !== undefined;
+  messages.push(
+    blockOk
+      ? `phase "${plan.phase}" is planned under the running phases`
+      : `phase "${plan.phase}" MISSING from the running phases`,
+  );
+  // PLAN_WITHOUT_WIP ist bis zum ersten 🔄 der definierte Zustand einer
+  // vorausgeplanten Phase — kein Apply-Fehler.
+  const findings = docsValidate(plan.root)
+    .findings
+    .filter((f) => f.message.includes(`"${plan.phase}"`) && f.code !== "PLAN_WITHOUT_WIP");
+  if (blockOk) {
+    messages.push("phase is planned but not started yet (PLAN_WITHOUT_WIP resolves with the first 🔄)");
+  }
+  if (findings.length === 0) messages.push("docs_validate reports no other findings for this phase");
+  else for (const f of findings) messages.push(`${f.code}: ${f.message}`);
+
+  const ok = blockOk && findings.length === 0;
   return { written, verification: { ok, messages } };
 }
 

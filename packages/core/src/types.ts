@@ -144,6 +144,13 @@ export interface BacklogRemovePlan {
   changes: PlanChange[];
 }
 
+export interface PhasePlan {
+  root: string;
+  phase: string;
+  dryRun: boolean;
+  changes: PlanChange[];
+}
+
 export interface ApplyResult {
   written: string[];
   verification: { ok: boolean; messages: string[] };
