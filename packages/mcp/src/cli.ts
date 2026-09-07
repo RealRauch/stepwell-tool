@@ -1,5 +1,16 @@
 #!/usr/bin/env node
-import { docsStatus, docsValidate, readBacklog, readProgress, type DocsStatus } from "@method-docs/core";
+import {
+  applyArchivePlan,
+  docsStatus,
+  docsValidate,
+  planArchiveItem,
+  readBacklog,
+  readProgress,
+  type ArchiveItemPlan,
+  type ApplyResult,
+  type DocsStatus,
+  type PlanChange,
+} from "@method-docs/core";
 
 export interface CliIo {
   stdout: NodeJS.WritableStream;
@@ -13,15 +24,19 @@ interface CliOptions {
   open: boolean | undefined;
   section: string | undefined;
   status: string | undefined;
+  id: string | undefined;
+  note: string | undefined;
+  apply: boolean;
 }
 
 const USAGE = `usage: method-docs <command> [options]
 
 commands:
-  status    Aggregat des Projekts (offene Items, laufende Phasen, ✅-Quote)
-  backlog   Items der BACKLOG.md listen
-  progress  Fortschrittstabelle listen
-  validate  Konsistenz prüfen (Exit 1 bei Funden)
+  status           Aggregat des Projekts (offene Items, laufende Phasen, ✅-Quote)
+  backlog          Items der BACKLOG.md listen
+  progress         Fortschrittstabelle listen
+  validate         Konsistenz prüfen (Exit 1 bei Funden)
+  archive          Erledigtes Item ins Archiv verschieben (Dry-run; --apply zum Schreiben)
 
 options:
   --root <dir>       Projekt-Root (Pflicht)
@@ -29,6 +44,9 @@ options:
   --open <bool>      Checkbox-Filter (true/false, nur backlog)
   --section <title>  Exakter Sektions-Titel (nur backlog)
   --status <icon>    Status-Filter (nur progress): ⬜,🔄,✅,⛔,unknown
+  --id <id>          Item-ID (nur archive)
+  --note <text>      Erledigt-Notiz, z. B. Commit-Hash (nur archive)
+  --apply            Änderungen schreiben (nur archive; Default: Dry-run-Vorschau)
   --json             Roh-Payloads statt Lesbarkeit
 `;
 
@@ -40,6 +58,9 @@ function parseArgs(argv: string[]): { command: string | undefined; options: CliO
     open: undefined,
     section: undefined,
     status: undefined,
+    id: undefined,
+    note: undefined,
+    apply: false,
   };
   let command: string | undefined;
   for (let i = 0; i < argv.length; i++) {
@@ -66,6 +87,15 @@ function parseArgs(argv: string[]): { command: string | undefined; options: CliO
         break;
       case "--status":
         options.status = next();
+        break;
+      case "--id":
+        options.id = next();
+        break;
+      case "--note":
+        options.note = next();
+        break;
+      case "--apply":
+        options.apply = true;
         break;
       default:
         if (command === undefined && !arg.startsWith("-")) {
@@ -135,6 +165,28 @@ function validateText(result: { findings: Array<{ code: string; file: string; li
   return lines.join("\n");
 }
 
+function planText(plan: ArchiveItemPlan): string {
+  const lines: string[] = [
+    plan.dryRun ? "Dry-run — es wurde nichts geschrieben (--apply zum Anwenden)." : "Apply — Änderungen geschrieben:",
+    "",
+  ];
+  for (const change of plan.changes as PlanChange[]) {
+    lines.push(`## ${basename(change.file)} — ${change.description}`);
+    lines.push(change.diff);
+    lines.push("");
+  }
+  return lines.join("\n");
+}
+
+function applyResultText(result: ApplyResult): string {
+  const lines = [
+    result.verification.ok ? "OK — Archivierung verifiziert." : "FEHLER — Verifikation fehlgeschlagen:",
+    ...result.verification.messages.map((m) => `  ${m}`),
+    "",
+  ];
+  return lines.join("\n");
+}
+
 export async function runCli(argv: string[], io: CliIo): Promise<number> {
   let command: string | undefined;
   let options: CliOptions;
@@ -150,7 +202,7 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
     throw err;
   }
 
-  if (command === undefined || !["status", "backlog", "progress", "validate"].includes(command)) {
+  if (command === undefined || !["status", "backlog", "progress", "validate", "archive"].includes(command)) {
     io.stderr.write(USAGE);
     return 2;
   }
@@ -198,11 +250,36 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
         io.stdout.write(options.json ? `${JSON.stringify(result, null, 2)}\n` : validateText(result));
         return result.ok ? 0 : 1;
       }
+      case "archive": {
+        const root = requireRoot(options);
+        if (options.id === undefined || options.id === "") {
+          throw new UsageError("missing required option: --id <itemId>");
+        }
+        const plan = planArchiveItem(root, options.id, {
+          dryRun: !options.apply,
+          ...(options.note !== undefined ? { note: options.note } : {}),
+        });
+        if (plan.dryRun) {
+          io.stdout.write(options.json ? `${JSON.stringify(plan, null, 2)}\n` : planText(plan));
+          return 0;
+        }
+        const result = applyArchivePlan(plan);
+        if (options.json) {
+          io.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+        } else {
+          io.stdout.write(applyResultText(result));
+        }
+        return result.verification.ok ? 0 : 1;
+      }
       default:
         io.stderr.write(USAGE);
         return 2;
     }
   } catch (err) {
+    if (err instanceof UsageError) {
+      io.stderr.write(`${err.message}\n\n${USAGE}`);
+      return 2;
+    }
     const message = err instanceof Error ? err.message : String(err);
     io.stderr.write(`error: ${message}\n`);
     return 1;

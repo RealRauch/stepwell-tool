@@ -1,7 +1,9 @@
+import { readFileSync } from "node:fs";
 import { Writable } from "node:stream";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { runCli } from "../src/cli.ts";
+import { tempProject } from "./helper.ts";
 
 const fixtures = join(import.meta.dirname, "..", "..", "core", "tests", "fixtures");
 const projectA = join(fixtures, "project-a");
@@ -118,6 +120,39 @@ describe("runCli — validate", () => {
   });
 });
 
+describe("runCli — archive (3.2)", () => {
+  it("previews the plan without writing by default", async () => {
+    const io = makeIo();
+    const code = await runCli(["archive", "--root", projectA, "--id", "H1"], io.io);
+    expect(code).toBe(0);
+    expect(io.stdout).toContain("Dry-run");
+    expect(io.stdout).toContain("-### [ ] H1");
+    expect(io.stdout).toContain("+### [x] H1");
+    expect(readFileSync(join(projectA, "BACKLOG.md"), "utf8")).toContain("### [ ] H1");
+  });
+
+  it("writes with --apply and prints the verification", async () => {
+    const dir = tempProject("project-a");
+    const io = makeIo();
+    const code = await runCli(
+      ["archive", "--root", dir, "--id", "L3", "--note", "Commit `c0ffee0`", "--apply"],
+      io.io,
+    );
+    expect(code).toBe(0);
+    expect(io.stdout).toContain("OK");
+    const backlog = readFileSync(join(dir, "BACKLOG.md"), "utf8");
+    expect(backlog).not.toContain("### [ ] L3");
+    expect(backlog).toContain("- L3 — Docs-Build-Warnungen aufräumen — erledigt (Commit `c0ffee0`)");
+  });
+
+  it("fails with exit 1 for unknown ids", async () => {
+    const io = makeIo();
+    const code = await runCli(["archive", "--root", projectA, "--id", "NOPE", "--apply"], io.io);
+    expect(code).toBe(1);
+    expect(io.stderr).toContain("NOPE");
+  });
+});
+
 describe("runCli — usage and errors", () => {
   it("prints usage and exits 2 without a command", async () => {
     const io = makeIo();
@@ -132,10 +167,10 @@ describe("runCli — usage and errors", () => {
     expect(code).toBe(2);
   });
 
-  it("fails with a clear error when --root is missing", async () => {
+  it("fails with usage exit 2 when --root is missing", async () => {
     const io = makeIo();
     const code = await runCli(["status"], io.io);
-    expect(code).toBe(1);
+    expect(code).toBe(2);
     expect(io.stderr).toContain("--root");
   });
 

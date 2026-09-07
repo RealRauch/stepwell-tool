@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { lineDiff } from "../src/diff.ts";
-import { planArchiveItem } from "../src/mutations.ts";
+import { applyArchivePlan, planArchiveItem } from "../src/mutations.ts";
 
 const fixtures = join(import.meta.dirname, "fixtures");
 const tempDirs: string[] = [];
@@ -116,5 +116,46 @@ describe("planArchiveItem — dry-run planning (3.1)", () => {
     const backlogChange = plan.changes.find((c) => c.file.endsWith("BACKLOG.md"))!;
     expect(backlogChange.after).not.toContain("### [x] H9");
     expect(backlogChange.after).toContain("- H9 — Abgehakt, aber noch nicht archiviert (Validate-Fall) — erledigt");
+  });
+});
+
+describe("applyArchivePlan — apply + verification (3.2)", () => {
+  it("refuses to apply a dry-run plan", () => {
+    const dir = tempCopy("project-a");
+    const plan = planArchiveItem(dir, "H1");
+    expect(plan.dryRun).toBe(true);
+    expect(() => applyArchivePlan(plan)).toThrow(/dryRun/);
+  });
+
+  it("writes both files, verifies fresh state and reports success", () => {
+    const dir = tempCopy("project-a");
+    const plan = planArchiveItem(dir, "H1", { dryRun: false, note: "Commit `deadbee`" });
+
+    const result = applyArchivePlan(plan);
+
+    expect(result.written).toHaveLength(2);
+    expect(result.written[0]?.endsWith("BACKLOG.md")).toBe(true);
+    expect(result.verification.ok).toBe(true);
+    expect(result.verification.messages.join("\n")).toContain("removed from open BACKLOG");
+
+    const backlog = readFileSync(join(dir, "BACKLOG.md"), "utf8");
+    expect(backlog).not.toContain("### [ ] H1");
+    expect(backlog).toContain("- H1 — Upload-Endpunkt ohne Größenlimit — erledigt (Commit `deadbee`)");
+
+    const archive = readFileSync(join(dir, "docs", "archive", "BACKLOG_ARCHIVE.md"), "utf8");
+    expect(archive).toContain("### [x] H1");
+    expect(archive).toContain("- **Erledigt:** Commit `deadbee`");
+  });
+
+  it("clears the D2 finding for a checked-off item after apply", () => {
+    const dir = tempCopy("project-b-drift");
+    const plan = planArchiveItem(dir, "H9", { dryRun: false });
+
+    const result = applyArchivePlan(plan);
+
+    expect(result.verification.ok).toBe(true);
+    expect(
+      result.verification.messages.join("\n"),
+    ).not.toMatch(/NOT_ARCHIVED/);
   });
 });

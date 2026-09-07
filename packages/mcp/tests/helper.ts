@@ -1,11 +1,30 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
+import { cpSync, mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { afterEach } from "vitest";
 import { createDocsServer } from "../src/server.ts";
 
 export const fixtures = join(import.meta.dirname, "..", "..", "core", "tests", "fixtures");
 export const projectA = join(fixtures, "project-a");
 export const projectDrift = join(fixtures, "project-b-drift");
+
+const tempDirs: string[] = [];
+
+/** Copy of a fixture project in the OS temp dir — mutations only ever run here. */
+export function tempProject(project: string): string {
+  const dir = mkdtempSync(join(tmpdir(), "method-docs-mcp-"));
+  tempDirs.push(dir);
+  cpSync(join(fixtures, project), dir, { recursive: true });
+  return dir;
+}
+
+afterEach(() => {
+  for (const dir of tempDirs.splice(0)) {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
 
 export interface TestClient {
   client: Client;

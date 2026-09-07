@@ -17,7 +17,7 @@ const TITLE_SUFFIX = /^(.*\S)\s+—\s+(\S+)$/u;
 const OPTIONAL_SUFFIX = /\s*\*\([^()]*\)\*$/u;
 const BULLET = /^-\s+\*\*.+?:\*\*/u;
 const LOCATION_BULLET = /^-\s+\*\*Ort:\*\*\s+(.+?)\s*$/u;
-const DONE_LINE = /^-\s+(.+?)\s+—\s+(.+?)\s+—\s+erledigt in\s+`([^`]+)`/u;
+const DONE_LINE = /^-\s+(.+?)\s+—\s+(.+?)\s+—\s+erledigt(?:\s+in\s+`([^`]+)`)?/u;
 const SEPARATOR_RULE = /^-{3,}\s*$/u;
 
 const isKnownPriority = (token: string): token is Exclude<Priority, "unknown"> =>
@@ -257,7 +257,11 @@ export function parseBacklog(content: string, file = "BACKLOG.md"): ParseResult<
     if (inDoneIndex) {
       const done = DONE_LINE.exec(line);
       if (done) {
-        doneIndex.push({ id: done[1]!.trim(), summary: done[2]!.trim(), sha: done[3]! });
+        const entry: DoneEntry = { id: done[1]!.trim(), summary: done[2]!.trim() };
+        if (done[3] !== undefined) {
+          entry.sha = done[3]!;
+        }
+        doneIndex.push(entry);
       }
       continue;
     }

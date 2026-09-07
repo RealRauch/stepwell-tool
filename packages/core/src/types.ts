@@ -102,6 +102,7 @@ export interface PlanChange {
 }
 
 export interface ArchiveItemPlan {
+  root: string;
   id: string;
   dryRun: boolean;
   note: string | undefined;
