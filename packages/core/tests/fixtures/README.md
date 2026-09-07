@@ -15,14 +15,20 @@ fixtures/
 │   └── docs/archive/
 │       ├── BACKLOG_ARCHIVE.md
 │       └── PROGRESS_ARCHIVE.md
-└── project-b-drift/      # absichtliche Drift-/Edge-Cases (Parser-Toleranz + Validate-Funde)
-    ├── BACKLOG.md
-    ├── PROGRESS.md
-    └── docs/archive/
-        ├── BACKLOG_ARCHIVE.md
-        └── PROGRESS_ARCHIVE.md
-└── project-c-en/         # englisches Format (Locale-Profile, Phase 4 — Parser-Positivpfad)
-    ├── BACKLOG.md
+├── project-b-drift/      # absichtliche Drift-/Edge-Cases (Parser-Toleranz + Validate-Funde)
+│   ├── BACKLOG.md
+│   ├── PROGRESS.md
+│   └── docs/archive/
+│       ├── BACKLOG_ARCHIVE.md
+│       └── PROGRESS_ARCHIVE.md
+├── project-c-en/         # englisches Format (Locale-Profile, Phase 4 — Parser-Positivpfad)
+│   ├── BACKLOG.md
+│   ├── PROGRESS.md
+│   └── docs/archive/
+│       ├── BACKLOG_ARCHIVE.md
+│       └── PROGRESS_ARCHIVE.md
+└── project-d-tablefirst/ # wie project-a, aber PROGRESS.md mit Tabelle VOR den Detail-Blöcken
+    ├── BACKLOG.md        #   (Mutation-Regressionen R1: Row-Ergänzung + Phasen-Abschluss)
     ├── PROGRESS.md
     └── docs/archive/
         ├── BACKLOG_ARCHIVE.md
@@ -147,10 +153,11 @@ Sektions-Emoji als Fallback (+ Warnung `PRIO_MISSING`) → nur wenn beides fehlt
 | `BLOCK_UNSTRUCTURED` | Parse | D4 · `TITLE_EMPTY` D7 |
 | `STATUS_UNKNOWN` | Parse | D9 · `ROW_INCOMPLETE` D10 |
 | `NOT_ARCHIVED` | Validate | D2 · `ID_DUPLICATE` D5 |
-| `INDEX_WITHOUT_ARCHIVE` | Validate | D8 · `ARCHIVE_WITHOUT_INDEX` D13 |
+| `INDEX_WITHOUT_ARCHIVE` | Validate | D8 · `ARCHIVE_WITHOUT_INDEX` D13 (nur `[x]`-Blöcke; entfernte Blöcke mit Checkbox `[ ]` sind bewusst indexlos) |
 | `ID_CONVENTION` | Validate | D14 |
 | `DATE_LEGACY` | Validate | D15 |
 | `WIP_WITHOUT_PLAN` | Validate | D11 · `PLAN_WITHOUT_WIP` D12 |
+| `STEP_DUPLICATE` | Validate | doppelte Step-Nummer in der Fortschrittstabelle (R6, ab 6.6; Test per Temp-Kopie) |
 
 ### Tool-Parameter (MCP / CLI-Flags `--root`, `--priority`, `--status`, `--json`)
 
@@ -163,7 +170,11 @@ Sektions-Emoji als Fallback (+ Warnung `PRIO_MISSING`) → nur wenn beides fehlt
 | `progress_show` | `root`, `phase` | — | Detail-Block inkl. `raw` |
 | `docs_validate` | `root` | — | Validate-Funde + eingesammelte Parse-Warnungen |
 | `archive_item` (3.x) | `root`, `id` | `dryRun` (**Default `true`**), `note?`, `locale?` *(Erweiterungen 09/2026, Phase 3/4: Erledigt-Zeile am Archiv-Block + Index-Tail; Sprache generierter Texte, Default Auto-Erkennung de/en)* | Diff-Vorschau vor Apply |
-| `progress_update` (3.3) | `root`, `phase`, `step`, `status` | `dryRun` (**Default `true`**), `note?`, `locale?` *(Phase 4)* | Tabelle + Detail-Block |
+| `progress_update` (3.3) | `root`, `phase`, `step`, `status` | `title?` *(6.8: Phasen-Titel umbenennen, Block-Heading konsistent)*, `note?`, `locale?`, `dryRun` (**Default `true`**) | Tabelle + Detail-Block |
+| `backlog_add` (6.9) | `root`, `section`, `title`, `priority` | `id?` *(Auto-Vergabe K/H/M/L je Prio; Konventionsprüfung)*, `text?`, `dryRun` | Item am Ende der Sektion, `Stand:`-Refresh |
+| `backlog_update` (6.9) | `root`, `id` | `title?`, `priority?`, `section?`, `text?`, `dryRun` | Prio-Wechsel verschiebt in die passende Sektion |
+| `backlog_remove` (6.9) | `root`, `id` | `note?`, `locale?`, `dryRun` | verbatim ins Archiv, Checkbox bleibt `[ ]`, Index-Tail mit `entfernt|removed` statt `erledigt|done` |
+| `progress_plan_phase` (6.10) | `root`, `phase`, `steps: [{step, name}]` | `dryRun` | Zeilen `⬜` + Skeleton mit vollem Scope; Step-Präfix wird validiert |
 
 ### Datei-Pflicht (Beschluss 09/2026: strikt)
 
