@@ -38,6 +38,25 @@ describe("tool archive_item — dry-run only (3.1)", () => {
     }
   });
 
+  it("generates English markers with the locale parameter (4.2)", async () => {
+    const dir = tempProject("project-a");
+    const c = await connect();
+    try {
+      const result = await callTool(c, "archive_item", {
+        root: dir,
+        id: "H2",
+        note: "Commit `9f8e7d6`",
+        locale: "en",
+      });
+      expect(result.isError).toBeFalsy();
+      const data = payload(result);
+      const backlogChange = data.changes.find((ch: { file: string }) => ch.file.endsWith("BACKLOG.md"));
+      expect(backlogChange.after).toContain("- H2 — Session-Cookie ohne SameSite — done (Commit `9f8e7d6`)");
+    } finally {
+      await c.close();
+    }
+  });
+
   it("applies with dryRun:false on a temp copy and returns verification (3.2)", async () => {
     const dir = tempProject("project-a");
     const c = await connect();

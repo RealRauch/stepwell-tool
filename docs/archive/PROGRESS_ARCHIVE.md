@@ -156,3 +156,28 @@ Nutzer-Freigabe „Phase 3 komplett implementieren" aufgehoben):**
 - **Testdaten-Muster:** Player für Mutationen sind ausschließlich Temp-Kopien;
   `project-a`/`project-b-drift` bleiben forever read-only.
 **Verifikation:** Phase 3 verifiziert: Dry-run + Apply + Frisch-Verifikation, Suite gruen
+
+---
+
+### Phase 4 — Mehrsprachigkeit (Locale-Profile)
+
+**Ziel:** Die Doku-Dateien bleiben deutsch (dieses Repo), müssen aber auch in
+anderen Sprachen — vor allem Englisch — parse- und schreibbar sein.
+
+**Abnahme:** Parser/Validator lesen de- UND en-Formatiere ohne Konfiguration
+(Fixture `project-c-en`, Funde-frei); die schreibenden Tools erzeugen Index-Zeilen,
+Erledigt-/Verifikations-Marker und Skeletons in der Ziel-Sprache (`locale`-Option,
+Auto-Erkennung, Default `de`); Suite + Typecheck grün.
+
+**Umfang (Steps):**
+
+- **4.1 Locale-Profile (lesen):** zentrale `src/profile.ts` mit Rollen-Synonymen
+  (de/en) — Union-Matching im Parser (`Erledigt-Index|Done Index`, `Ort|Location`,
+  `erledigt|done`, `Ziel|Goal`, `Abnahme|Acceptance`, `Verifikation|Verification`,
+  `Umfang|Scope`, `Fortschritt|Progress`, `Laufende Phasen|Active Phases`,
+  `abgeschlossen|completed`, `Stand:|As of:`); Validator (`DATE_LEGACY`) bilingual;
+  neues Fixture `project-c-en` als Spezifikation, test-first.
+- **4.2 Locale-Profile (schreiben + Schnittstellen):** `locale`-Option auf
+  `archive_item`/`progress_update` (Default `de`, `en`, Auto-Erkennung aus dem
+  Datei-Kontext); MCP-Param + CLI `--locale`; README + Interface-Tafel gepflegt.
+**Verifikation:** Parser/Validator bilingual (project-c-en fund-frei), locale-Option auf archive_item/progress_update mit Auto-Erkennung, CLI --locale; Suite 146/146 gruen

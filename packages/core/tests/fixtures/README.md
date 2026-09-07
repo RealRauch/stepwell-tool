@@ -21,6 +21,12 @@ fixtures/
     └── docs/archive/
         ├── BACKLOG_ARCHIVE.md
         └── PROGRESS_ARCHIVE.md
+└── project-c-en/         # englisches Format (Locale-Profile, Phase 4 — Parser-Positivpfad)
+    ├── BACKLOG.md
+    ├── PROGRESS.md
+    └── docs/archive/
+        ├── BACKLOG_ARCHIVE.md
+        └── PROGRESS_ARCHIVE.md
 ```
 
 Projekt-Root ist jeweils der Ordner mit `BACKLOG.md`/`PROGRESS.md` — genau wie in Realprojekten.
@@ -156,8 +162,8 @@ Sektions-Emoji als Fallback (+ Warnung `PRIO_MISSING`) → nur wenn beides fehlt
 | `progress_list` | `root` | `status` | Tabellenzeilen |
 | `progress_show` | `root`, `phase` | — | Detail-Block inkl. `raw` |
 | `docs_validate` | `root` | — | Validate-Funde + eingesammelte Parse-Warnungen |
-| `archive_item` (3.x) | `root`, `id` | `dryRun` (**Default `true`**), `note?` *(Erweiterung 09/2026, Phase 3: Erledigt-Zeile am Archiv-Block + Index-Tail)* | Diff-Vorschau vor Apply |
-| `progress_update` (3.3) | `root`, `phase`, `step`, `status` | `dryRun` (**Default `true`**), `note?` | Tabelle + Detail-Block |
+| `archive_item` (3.x) | `root`, `id` | `dryRun` (**Default `true`**), `note?`, `locale?` *(Erweiterungen 09/2026, Phase 3/4: Erledigt-Zeile am Archiv-Block + Index-Tail; Sprache generierter Texte, Default Auto-Erkennung de/en)* | Diff-Vorschau vor Apply |
+| `progress_update` (3.3) | `root`, `phase`, `step`, `status` | `dryRun` (**Default `true`**), `note?`, `locale?` *(Phase 4)* | Tabelle + Detail-Block |
 
 ### Datei-Pflicht (Beschluss 09/2026: strikt)
 

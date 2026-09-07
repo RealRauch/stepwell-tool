@@ -100,11 +100,28 @@ mit klarer Meldung — der Server stürzt nicht ab.
 
 | Tool | Parameter | Verhalten |
 |------|-----------|-----------|
-| `archive_item` | `root`, `id`, optional `note`, `dryRun` (**Default `true`**) | Plant die **verbatim-Verschiebung** eines Items: Block (span-basiert) aus BACKLOG.md entfernen, im Archiv-Exemplar Checkbox → `[x]`, optionaler `note` wird `- **Erledigt:** …`-Zeile; dazu Einzeiler `- <ID> — <Titel> — erledigt (note?)` am Ende des Erledigt-Index. Apply verifiziert frisch: ID weg aus offen, im Archiv + Index, keine Funde mehr. Das ist das Gegenmittel zum Validate-Fund `NOT_ARCHIVED` (D2). |
-| `progress_update` | `root`, `phase`, `step`, `status` (`⬜🔄✅⛔`), optional `note`, `dryRun` (**Default `true`**) | Setzt die Statuszelle des Steps (fehlende Zeile wird ergänzt, Name aus dem Scope-Bullet abgeleitet); legt bei 🔄 ein Detail-Block-Skelett unter „Laufende Phasen" an (`### Phase …` + `**Umfang (Steps):**` + Step-Bullet — **keine** erfundenen Ziel-/Abnahme-Texte); ist danach kein Step der Phase mehr 🔄/⬜, wandert der Block **verbatim** ins PROGRESS_ARCHIVE (`note` → `**Verifikation:**`-Zeile). Apply verifiziert Zeile, Block-Wanderung und `docs_validate`. |
+| `archive_item` | `root`, `id`, optional `note`, `locale`, `dryRun` (**Default `true`**) | Plant die **verbatim-Verschiebung** eines Items: Block (span-basiert) aus BACKLOG.md entfernen, im Archiv-Exemplar Checkbox → `[x]`, optionaler `note` wird Erledigt-Zeile; dazu Einzeiler `- <ID> — <Titel> — erledigt (note?)` am Ende des Erledigt-Index. Apply verifiziert frisch: ID weg aus offen, im Archiv + Index, keine Funde mehr. Das ist das Gegenmittel zum Validate-Fund `NOT_ARCHIVED` (D2). |
+| `progress_update` | `root`, `phase`, `step`, `status` (`⬜🔄✅⛔`), optional `note`, `locale`, `dryRun` (**Default `true`**) | Setzt die Statuszelle des Steps (fehlende Zeile wird ergänzt, Name aus dem Scope-Bullet abgeleitet); legt bei 🔄 ein Detail-Block-Skelett unter „Laufende Phasen" an (`### Phase …` + `**Umfang (Steps):**` + Step-Bullet — **keine** erfundenen Ziel-/Abnahme-Texte); ist danach kein Step der Phase mehr 🔄/⬜, wandert der Block **verbatim** ins PROGRESS_ARCHIVE (`note` → Verifikations-Zeile). Apply verifiziert Zeile, Block-Wanderung und `docs_validate`. |
 
 **Antwortformate:** Dry-run liefert den Plan `{dryRun, changes:[{file, description,
 before, after, diff}]}`; Apply liefert `{written, verification:{ok, messages}}`.
+
+### Mehrsprachigkeit (Locale-Profile)
+
+Die Doku-Dateien können **deutsch oder englisch** formatiert sein — gemischt im
+gleichen Repo ist verboten, pro Projekt gilt eine Sprache. Das Tool trennt dabei:
+
+- **Lesen: immer sprachtolerant (zero-config).** Parser und Validator erkennen die
+  Rollen-Marker beider Sprachen per Union-Matching — `Erledigt-Index|Done Index`,
+  `Ort|Location`, `erledigt|done`, `Ziel|Goal`, `Abnahme|Acceptance`,
+  `Verifikation|Verification`, `Umfang|Scope`, `Fortschritt|Progress`,
+  `Laufende Phasen|Active Phases`, `abgeschlossen|completed`, `Stand:|As of:`.
+- **Schreiben: `locale`-Option** auf `archive_item` und `progress_update`
+  (`"de" | "en"`; Default = **Auto-Erkennung** aus dem Datei-Kontext, Gleichstand
+  → `de`). Generierte Texte (Index-Zeile, Erledigt-/Verifikations-Marker,
+  Skeletons) folgen der Ziel-Sprache; CLI-Äquivalent: `--locale de|en`.
+- **Weitere Sprachen:** `packages/core/src/profile.ts` hält die Rollen-Synonyme —
+  eine neue Sprache ist ein neuer Schlüssel je Rolle, kein Parser-Umbau.
 
 ### Resources (Resource-Templates)
 
@@ -141,10 +158,10 @@ node packages/mcp/src/cli.ts progress --root <projekt> [--status 🔄] [--json]
 node packages/mcp/src/cli.ts validate --root <projekt> [--json]
 
 # Erledigtes Item archivieren (Dry-run-Vorschau, dann --apply)
-node packages/mcp/src/cli.ts archive --root <projekt> --id H1 [--note "Commit abc1234"] [--apply]
+node packages/mcp/src/cli.ts archive --root <projekt> --id H1 [--note "Commit abc1234"] [--locale en] [--apply]
 
 # Step-Status pflegen (Dry-run-Vorschau, dann --apply)
-node packages/mcp/src/cli.ts progress-update --root <projekt> --phase "Phase 2" --step 2.2 --status 🔄 [--note "…"] [--apply]
+node packages/mcp/src/cli.ts progress-update --root <projekt> --phase "Phase 2" --step 2.2 --status 🔄 [--note "…"] [--locale en] [--apply]
 ```
 
 **Exit-Codes:** `0` Erfolg (bzw. keine Validate-Funde) · `1` Fehler bzw.
@@ -210,6 +227,7 @@ packages/
 │   ├── src/validate.ts   docsValidate (Konsistenzregeln + Parse-Warnungen)
 │   ├── src/mutations.ts  plan/apply für archive_item + progress_update
 │   ├── src/diff.ts       zeilenbasierter Mini-Diff für die Plan-Vorschau
+│   ├── src/profile.ts    Locale-Profile: Rollen-Synonyme de/en (Lesen union, Schreiben kanonisch)
 │   └── tests/fixtures/   project-a (sauber) + project-b-drift (Fälle D1–D15),
 │                         README.md dort = arbeitende Spezifikation
 └── mcp/                  @method-docs/mcp — dünne Transport-Schicht über core

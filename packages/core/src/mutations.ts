@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { lineDiff } from "./diff.ts";
+import { allSynonyms, canonical, detectLocale, synonymPattern, type Locale } from "./profile.ts";
 import { docsValidate } from "./validate.ts";
 import { loadProject } from "./project.ts";
 import type {
@@ -15,11 +16,13 @@ import type {
 export interface ArchiveItemOptions {
   dryRun?: boolean;
   note?: string;
+  locale?: Locale;
 }
 
 export interface ProgressUpdateOptions {
   dryRun?: boolean;
   note?: string;
+  locale?: Locale;
 }
 
 interface FileEdit {
@@ -78,6 +81,11 @@ export function planArchiveItem(
 
   const backlogRel = "BACKLOG.md";
   const archiveRel = join("docs", "archive", "BACKLOG_ARCHIVE.md");
+  const backlogText = readText(join(root, backlogRel)).content;
+  const archiveText = readText(join(root, archiveRel)).content;
+  const locale = options.locale ?? detectLocale(backlogText, archiveText);
+  const doneWord = canonical("doneWord", locale);
+  const doneLabel = canonical("doneLabel", locale);
 
   const removeBlock = (content: string, eol: string): string => {
     const lines = content.split(eol);
@@ -114,7 +122,7 @@ export function planArchiveItem(
     while (insertAt > sectionStart + 1 && (lines[insertAt - 1]?.trim() ?? "") === "") {
       insertAt -= 1;
     }
-    const entryLine = `- ${item.id} — ${item.title} — erledigt${note !== undefined ? ` (${note})` : ""}`;
+    const entryLine = `- ${item.id} — ${item.title} — ${doneWord}${note !== undefined ? ` (${note})` : ""}`;
     lines.splice(insertAt, 0, entryLine);
     return lines.join(eol);
   };
@@ -124,7 +132,7 @@ export function planArchiveItem(
     const heading = blockLines[0] ?? `### [ ] ${item.id}`;
     blockLines[0] = heading.replace(/^###\s+\[ \]/u, "### [x]");
     if (note !== undefined) {
-      blockLines.push(`- **Erledigt:** ${note}`);
+      blockLines.push(`- **${doneLabel}:** ${note}`);
     }
     const blockText = blockLines.join(eol);
     const trimmed = content.replace(/\s+$/u, "");
@@ -227,6 +235,11 @@ export function planProgressUpdate(
   const note = normalizeNote(options.note);
   const docs = loadProject(root);
   const progress = docs.progress().value;
+  const progressText = readText(join(root, "PROGRESS.md")).content;
+  const progressArchiveText = readText(join(root, "docs", "archive", "PROGRESS_ARCHIVE.md")).content;
+  const locale = options.locale ?? detectLocale(progressText, progressArchiveText);
+  const scopeHeading = `${canonical("scopeLabel", locale)} (Steps):`;
+  const verificationLabel = canonical("verificationLabel", locale);
 
   const block = progress.phases.find((p) => phaseMatches(p, phase)) ?? undefined;
   const row = progress.rows.find((r) => r.step === step);
@@ -282,8 +295,13 @@ export function planProgressUpdate(
     }
 
     if (block === undefined) {
-      const sectionStart = lines.findIndex((l) => /^##\s+.*Laufende Phasen/u.test(l));
-      if (sectionStart === -1) throw new Error("missing 'Laufende Phasen' section in PROGRESS.md");
+      const headingPattern = synonymPattern("runningPhasesHeading");
+      const sectionStart = lines.findIndex((l) => /^##\s+/u.test(l) && headingPattern.test(l));
+      if (sectionStart === -1) {
+        throw new Error(
+          `missing running-phases section (${allSynonyms("runningPhasesHeading").join(" | ")}) in PROGRESS.md`,
+        );
+      }
       let end = sectionStart + 1;
       while (end < lines.length && !/^##\s/u.test(lines[end]!) && !SECTION_RULE.test(lines[end]!)) {
         end += 1;
@@ -297,7 +315,7 @@ export function planProgressUpdate(
         0,
         `### ${phase}`,
         "",
-        "**Umfang (Steps):**",
+        `**${scopeHeading}**`,
         "",
         `- **${step} ${rowName}**`,
         "",
@@ -328,7 +346,7 @@ export function planProgressUpdate(
       transform: (content, eol) => {
         const blockLines = block.raw.split(eol);
         if (note !== undefined) {
-          blockLines.push(`**Verifikation:** ${note}`);
+          blockLines.push(`**${verificationLabel}:** ${note}`);
         }
         const trimmed = content.replace(/\s+$/u, "");
         return `${trimmed}${eol}${eol}---${eol}${eol}${blockLines.join(eol)}${eol}`;

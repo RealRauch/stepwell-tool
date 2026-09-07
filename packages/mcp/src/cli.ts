@@ -31,6 +31,7 @@ interface CliOptions {
   note: string | undefined;
   phase: string | undefined;
   step: string | undefined;
+  locale: string | undefined;
   apply: boolean;
 }
 
@@ -52,6 +53,7 @@ options:
   --status <icon>    Status-Filter (progress) bzw. neues Icon (progress-update): ⬜,🔄,✅,⛔
   --id <id>          Item-ID (nur archive)
   --note <text>      Erledigt-/Verifikations-Notiz (archive, progress-update)
+  --locale <de|en>   Sprache generierter Texte (archive, progress-update; Default: Auto-Erkennung)
   --apply            Änderungen schreiben (archive, progress-update; Default: Dry-run-Vorschau)
   --json             Roh-Payloads statt Lesbarkeit
 `;
@@ -68,6 +70,7 @@ function parseArgs(argv: string[]): { command: string | undefined; options: CliO
     note: undefined,
     phase: undefined,
     step: undefined,
+    locale: undefined,
     apply: false,
   };
   let command: string | undefined;
@@ -111,6 +114,9 @@ function parseArgs(argv: string[]): { command: string | undefined; options: CliO
       case "--step":
         options.step = next();
         break;
+      case "--locale":
+        options.locale = next();
+        break;
       default:
         if (command === undefined && !arg.startsWith("-")) {
           command = arg;
@@ -133,6 +139,14 @@ function requireRoot(options: CliOptions): string {
 
 function basename(path: string): string {
   return path.split(/[\\/]/u).pop() ?? path;
+}
+
+function requireLocale(options: CliOptions): "de" | "en" | undefined {
+  if (options.locale === undefined || options.locale === "") return undefined;
+  if (options.locale !== "de" && options.locale !== "en") {
+    throw new UsageError("invalid --locale: erlaubt sind de und en");
+  }
+  return options.locale;
 }
 
 function statusText(s: DocsStatus): string {
@@ -269,9 +283,11 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
         if (options.id === undefined || options.id === "") {
           throw new UsageError("missing required option: --id <itemId>");
         }
+        const locale = requireLocale(options);
         const plan = planArchiveItem(root, options.id, {
           dryRun: !options.apply,
           ...(options.note !== undefined ? { note: options.note } : {}),
+          ...(locale !== undefined ? { locale } : {}),
         });
         if (plan.dryRun) {
           io.stdout.write(options.json ? `${JSON.stringify(plan, null, 2)}\n` : planText(plan));
@@ -299,6 +315,7 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
         const plan = planProgressUpdate(root, options.phase, options.step, options.status as "⬜" | "🔄" | "✅" | "⛔", {
           dryRun: !options.apply,
           ...(options.note !== undefined ? { note: options.note } : {}),
+          ...(requireLocale(options) !== undefined ? { locale: requireLocale(options)! } : {}),
         });
         if (plan.dryRun) {
           io.stdout.write(options.json ? `${JSON.stringify(plan, null, 2)}\n` : planText(plan));

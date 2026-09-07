@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { parseProgress, readProgress } from "../src/progress.ts";
+import { parseProgress, readProgress, scopeSteps } from "../src/progress.ts";
 import type { ParseResult, Progress } from "../src/types.ts";
 
 const fixtures = join(import.meta.dirname, "fixtures");
@@ -111,5 +111,71 @@ describe("readProgress — file loading", () => {
 
   it("hard-fails when PROGRESS.md is missing", () => {
     expect(() => readProgress(join(fixtures, "does-not-exist"))).toThrow(/PROGRESS\.md/);
+  });
+});
+
+describe("locale + tolerance details (4.x)", () => {
+  it("keeps the scope list open across indented continuation lines", () => {
+    const content = [
+      "# Projekt-Tracking",
+      "",
+      "## Laufende Phasen",
+      "",
+      "### Phase 5 — Wrap",
+      "",
+      "**Umfang (Steps):**",
+      "",
+      "- **5.1 Erster Step** — mit langer",
+      "  umgebrochener Beschreibung",
+      "- **5.2 Zweiter Step**",
+      "",
+      "---",
+      "",
+      "## Fortschritt",
+      "",
+      "| # | Step | Status |",
+      "|---|------|--------|",
+      "| 5.1 | Erster | 🔄 |",
+      "| 5.2 | Zweiter | ⬜ |",
+    ].join("\n");
+    const r = parseProgress(content);
+    const block = r.value.phases[0]!;
+    expect(block.scope).toEqual([
+      "**5.1 Erster Step** — mit langer",
+      "**5.2 Zweiter Step**",
+    ]);
+    expect(scopeSteps(block)).toEqual(["5.1", "5.2"]);
+  });
+
+  it("parses English phase labels (Goal, Acceptance, Scope)", () => {
+    const content = [
+      "# Project Tracking",
+      "",
+      "## Active Phases",
+      "",
+      "### Phase 3 — Widgets",
+      "",
+      "**Goal:** Ship widgets.",
+      "",
+      "**Acceptance:** CI green.",
+      "",
+      "**Scope (Steps):**",
+      "",
+      "- **3.1 Widget core**",
+      "",
+      "---",
+      "",
+      "## Progress",
+      "",
+      "| # | Step | Status |",
+      "|---|------|--------|",
+      "| 3.1 | Widget core | 🔄 |",
+    ].join("\n");
+    const r = parseProgress(content);
+    expect(r.value.rows).toEqual([{ step: "3.1", name: "Widget core", status: "🔄" }]);
+    const block = r.value.phases[0]!;
+    expect(block.goal).toBe("Ship widgets.");
+    expect(block.acceptance).toBe("CI green.");
+    expect(block.scope).toEqual(["**3.1 Widget core**"]);
   });
 });

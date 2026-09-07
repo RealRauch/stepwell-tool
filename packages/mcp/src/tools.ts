@@ -13,12 +13,11 @@ import {
   readBacklog,
   readProgress,
   type BacklogItem,
+  type Locale,
   type PhaseBlock,
   type Priority,
   type Status,
-} from "@method-docs/core";
-
-type ToolResult = CallToolResult;
+} from "@method-docs/core";type ToolResult = CallToolResult;
 
 function textResult(value: unknown): ToolResult {
   return { content: [{ type: "text", text: JSON.stringify(value, null, 2) }] };
@@ -40,6 +39,9 @@ async function asResult(fn: () => unknown): Promise<ToolResult> {
 const PRIORITY_VALUES = ["🔴", "🟠", "🟡", "🟢", "🔵", "unknown"] as const;
 
 const ROOT_FIELD = z.string().describe("Absoluter Pfad zum Projekt-Root (mit BACKLOG.md/PROGRESS.md).");
+const LOCALE_FIELD = z.enum(["de", "en"]).optional()
+  .describe("Sprache für generierte Texte (Index-Zeile, Erledigt-/Verifikations-Marker). " +
+    "Default: Auto-Erkennung aus dem Datei-Kontext.");
 
 function withoutRaw(item: BacklogItem): Omit<BacklogItem, "raw"> {
   const { raw: _raw, ...rest } = item;
@@ -195,15 +197,17 @@ export function registerDocsTools(server: McpServer): void {
         id: z.string().describe("Item-ID des offenen Backlog-Items, exakt (z. B. \"H1\")."),
         note: z.string().optional()
           .describe("Optionale Erledigt-Notiz (z. B. Commit-Hash) — landet im Archiv-Block und Index-Tail."),
+        locale: LOCALE_FIELD,
         dryRun: z.boolean().default(true)
           .describe("true (Default): nur Plan/Diff-Vorschau; false: Änderungen schreiben."),
       },
     },
-    ({ root, id, note, dryRun }) =>
+    ({ root, id, note, locale, dryRun }) =>
       asResult(() => {
         const plan = planArchiveItem(root, id, {
           dryRun,
           ...(note !== undefined ? { note } : {}),
+          ...(locale !== undefined ? { locale: locale as Locale } : {}),
         });
         return plan.dryRun ? plan : applyArchivePlan(plan);
       }),
@@ -225,15 +229,17 @@ export function registerDocsTools(server: McpServer): void {
         status: z.enum(["⬜", "🔄", "✅", "⛔"]).describe("Neues Status-Icon."),
         note: z.string().optional()
           .describe("Optionale Notiz — bei Phasen-Abschluss als **Verifikation:**-Zeile am Archiv-Block."),
+        locale: LOCALE_FIELD,
         dryRun: z.boolean().default(true)
           .describe("true (Default): nur Plan/Diff-Vorschau; false: Änderungen schreiben."),
       },
     },
-    ({ root, phase, step, status, note, dryRun }) =>
+    ({ root, phase, step, status, note, locale, dryRun }) =>
       asResult(() => {
         const plan = planProgressUpdate(root, phase, step, status as Status, {
           dryRun,
           ...(note !== undefined ? { note } : {}),
+          ...(locale !== undefined ? { locale: locale as Locale } : {}),
         });
         return plan.dryRun ? plan : applyProgressPlan(plan);
       }),

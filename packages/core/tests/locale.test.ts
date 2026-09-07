@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { canonical, detectLocale } from "../src/profile.ts";
+import { allSynonyms, canonical, detectLocale, synonymPattern } from "../src/profile.ts";
 import { docsStatus, docsValidate, parseBacklog, parseBacklogArchive, parseProgress, parseProgressArchive } from "../src/index.ts";
 
 const fixtures = join(import.meta.dirname, "fixtures");
@@ -86,7 +86,10 @@ describe("locale profiles — synonyms and detection (4.1)", () => {
   });
 
   it("builds union patterns across all locales", () => {
-    const pattern = /\((?:Erledigt-Index|Done Index)\)/iu.source.length > 0;
-    expect(pattern).toBe(true);
+    const pattern = synonymPattern("doneIndexHeading");
+    expect(pattern.test("Erledigt-Index")).toBe(true);
+    expect(pattern.test("done index")).toBe(true);
+    expect(pattern.test("Fortschritt")).toBe(false);
+    expect(allSynonyms("locationLabel")).toEqual(["Ort", "Location"]);
   });
 });
