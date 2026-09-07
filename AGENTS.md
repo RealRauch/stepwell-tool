@@ -11,8 +11,9 @@ Tool + MCP-Server zum **Lesen, Prüfen und Verwalten** der Methoden-Doku (`BACKL
 in Projekten, die der PLAYBOOK-Methode folgen.
 
 **Grundsatz: Markdown bleibt Source of Truth.** Das Tool verliert die Doku = Datenverlust
-unmöglich; es liest, validiert und assistiert. Schreibzugriffe nur Phase 3
-(`archive_item`, `progress_update`) — alles andere editiert der Agent direkt in den Dateien.
+unmöglich; es liest, validiert und assistiert. Schreibzugriffe nur über die Struktur-Tools
+(`archive_item`, `progress_update`, `backlog_add/update/remove`, `progress_plan_phase`) —
+alles andere (Prosa) editiert der Agent direkt in den Dateien.
 
 ## Stack
 
@@ -43,7 +44,8 @@ unmöglich; es liest, validiert und assistiert. Schreibzugriffe nur Phase 3
 
 1. `docs/PLAYBOOK.md` (Methode) + `docs/LESSONS.md` (Checkliste) lesen — beide bindend.
 2. `PROGRESS.md` → „Laufende Phasen": nächster offener Step in definierter Reihenfolge
-   (aktuell: Phase 6 „Review-Fixes & Tool-CRUD", nächster Step 6.1 Mutation-Regressionstests;
+   (Phase 6 „Review-Fixes & Tool-CRUD" ist abgeschlossen — R1–R6/T1–T4 archiviert;
+   nächste Paketierung über `progress_plan_phase` nach neuer Planung;
    Freigabe-Gate gem. Decision 13 beachten — Code-Steps erst nach expliziter menschlicher Freigabe).
 3. **Testdaten:** `packages/core/tests/fixtures/` — die `README.md` dort ist die arbeitende
    Spezifikation für 1.2–1.6 (erwartete Parser-Ergebnisse + Validate-Funde D1–D15).
