@@ -11,7 +11,8 @@ Tool + MCP-Server zum **Lesen, Prüfen und Verwalten** der Methoden-Doku (`BACKL
 in Projekten, die der PLAYBOOK-Methode folgen.
 
 **Grundsatz: Markdown bleibt Source of Truth.** Das Tool verliert die Doku = Datenverlust
-unmöglich; es liest, validiert und assistiert. Schreibzugriffe nur Phase 3 (`archive_item`).
+unmöglich; es liest, validiert und assistiert. Schreibzugriffe nur Phase 3
+(`archive_item`, `progress_update`) — alles andere editiert der Agent direkt in den Dateien.
 
 ## Stack
 
@@ -56,3 +57,7 @@ unmöglich; es liest, validiert und assistiert. Schreibzugriffe nur Phase 3 (`ar
 3. **Archiv-Muster respektieren:** Archive sind append-only; `archive_item` (Phase 3) verschiebt verbatim + Einzeiler im Erledigt-Index, Dry-run zuerst.
 4. **Fixtures:** Parser-Häppchen testen gegen realistische, anonymisierte Fixtures (abgeleitet aus stadtpfad-pwa; Sektionen mit Kopfregeln, R-/U-Serien, Erledigt-Index, Emoji-Prios).
 5. **Nomenklatur:** Item-IDs sind projekt-spezifisch (L12, T7, R5, U23 …) — Parser macht keine Annahmen über das Format außer `[ ]`/`[x]` + `—`-Struktur.
+6. **Datenmodell (ab 1.2 bindend):** `ParseResult<T> = { value, warnings[] }` mit einheitlichem `Warning = { code, datei, zeile?, meldung }` — Parse-Warnungen (einzelne Datei) vs. Validate-Funde (Querkonsistenz) getrennt; `docs_validate` aggregiert. Item-Blöcke tragen `span` (Zeilenbereich) + `roh` (verbatim-Block) als Basis für die verbatim-Verschiebung in Phase 3 (Lesson L16).
+7. **Multi-Projekt:** Der Projekt-Root wird je Tool-Call übergeben — eine MCP-Instanz bedient beliebig viele PLAYBOOK-Projekte; Resources als Templates mit Root im URI.
+8. **Stack final (TS/Node):** Bewusst gegen Python/Rust entschieden — MCP-SDK ist in TS First-Class, `npx` verteilt das Tool mühelos in Zielprojekte (Node dort omnipräsent), und die Workload (wenige Markdown-Dateien) ist perf-irrelevant, sodass kein Stack-Vorteil den Neuanfang rechtfertigt. „Schlank" wird erreicht durch: Zero-Dependencies-Kern (zeilenbasiertes Parsen, kein markdown-AST-Framework), faules Parsen (nur die Dateien, die ein Tool-Call braucht), stdio-Server ohne Daemon/Caches.
+9. **Dokument-Zuordnung:** Die committete Phasenfolge steht in `PROGRESS.md` „Laufende Phasen" — auch grob paketiert (Fein-Paketierung bei Phasenstart). Alles Offene **außerhalb** dieser Folge (Ideen, Feature-Requests, Risiken, Funde) gehört ins `BACKLOG.md` mit Fundstelle + Abnahmekriterium. Entscheidungshilfe: „Gehört das zur festgelegten Phasenfolge?" → PROGRESS; sonst → BACKLOG. BACKLOG ist prioritäts-sortiert (🔴→🔵), nicht reihenfolge-sortiert — Sequenz-Information lebt nur in PROGRESS.
