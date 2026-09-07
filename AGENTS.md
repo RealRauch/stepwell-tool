@@ -42,7 +42,9 @@ unmöglich; es liest, validiert und assistiert. Schreibzugriffe nur Phase 3
 ## Kickoff für neue Sessions (in dieser Reihenfolge)
 
 1. `docs/PLAYBOOK.md` (Methode) + `docs/LESSONS.md` (Checkliste) lesen — beide bindend.
-2. `PROGRESS.md` → „Laufende Phasen": nächster offener Step in definierter Reihenfolge (aktuell: 1.2 BACKLOG-Parser).
+2. `PROGRESS.md` → „Laufende Phasen": nächster offener Step in definierter Reihenfolge
+   (aktuell: Phase 6 „Review-Fixes & Tool-CRUD", nächster Step 6.1 Mutation-Regressionstests;
+   Freigabe-Gate gem. Decision 13 beachten — Code-Steps erst nach expliziter menschlicher Freigabe).
 3. **Testdaten:** `packages/core/tests/fixtures/` — die `README.md` dort ist die arbeitende
    Spezifikation für 1.2–1.6 (erwartete Parser-Ergebnisse + Validate-Funde D1–D15).
    `project-a` = sauberes Musterprojekt (Parser-Positivpfad) · `project-b-drift` = absichtliche Drift-Fälle (Toleranz + Validate).
