@@ -6,7 +6,7 @@ import type { Warning } from "./types.ts";
 
 const ID_CONVENTION = /^[A-Z][0-9]+$/;
 const LEGACY_DATE =
-  /(?:\(erledigt\s+|\(abgeschlossen\s+|Stand:\s*)(?<!\d)(\d{2}\/\d{4})(?!\d)/gu;
+  /(?:\((?:erledigt|done|abgeschlossen|completed)\s+|\bStand:\s*|\bAs of:\s*)(?<!\d)(\d{2}\/\d{4})(?!\d)/gu;
 
 function scanLegacyDates(filePath: string, file: string, findings: Warning[]): void {
   let content: string;

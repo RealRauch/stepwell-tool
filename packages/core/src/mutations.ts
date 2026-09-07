@@ -56,7 +56,7 @@ function buildChanges(root: string, edits: FileEdit[]): PlanChange[] {
 const ITEM_HEADING = /^###\s+\[(.)\]\s*(.*)$/u;
 const SECTION_HEADING = /^##\s+/;
 const RULE_LINE = /^-{3,}\s*$/;
-const INDEX_HEADING = /Erledigt-Index/u;
+const INDEX_HEADING = /(?:Erledigt-Index|Done Index)/iu;
 
 export function planArchiveItem(
   root: string,

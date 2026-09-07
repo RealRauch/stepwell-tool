@@ -2,7 +2,7 @@ import { parseBacklog } from "./backlog.ts";
 import { parseProgress } from "./progress.ts";
 import type { ArchiveItem, ParseResult, PhaseBlock } from "./types.ts";
 
-const ERLEDIGT_LINE = /^-\s+\*\*Erledigt:\*\*\s*(.+?)\s*$/u;
+const ERLEDIGT_LINE = /^-\s+\*\*(?:Erledigt|Done):\*\*\s*(.+?)\s*$/u;
 
 export function parseBacklogArchive(
   content: string,
