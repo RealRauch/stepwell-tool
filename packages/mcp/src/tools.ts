@@ -3,11 +3,13 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import {
   applyArchivePlan,
+  applyProgressPlan,
   backlogShow,
   docsStatus,
   docsValidate,
   loadProject,
   planArchiveItem,
+  planProgressUpdate,
   readBacklog,
   readProgress,
   type BacklogItem,
@@ -204,6 +206,36 @@ export function registerDocsTools(server: McpServer): void {
           ...(note !== undefined ? { note } : {}),
         });
         return plan.dryRun ? plan : applyArchivePlan(plan);
+      }),
+  );
+
+  server.registerTool(
+    "progress_update",
+    {
+      title: "Step-Status pflegen (Dry-run)",
+      description:
+        "Setzt den Status eines Steps in der Fortschrittstabelle (fehlende Zeilen werden ergänzt), " +
+        "legt bei 🔄 ein Detail-Block-Skelett unter 'Laufende Phasen' an und verschiebt vollständige " +
+        "Phasen verbatim ins PROGRESS_ARCHIVE (note → **Verifikation:**-Zeile). Liefert den Plan " +
+        "mit Diff-Vorschau; geschrieben wird nur mit dryRun: false.",
+      inputSchema: {
+        root: ROOT_FIELD,
+        phase: z.string().describe("Phasen-Name, -Titel oder beides (z. B. \"Phase 2\" / \"Phase 2 — UI-Polish\")."),
+        step: z.string().describe("Step-Nummer laut Tabelle/Scope (z. B. \"2.2\")."),
+        status: z.enum(["⬜", "🔄", "✅", "⛔"]).describe("Neues Status-Icon."),
+        note: z.string().optional()
+          .describe("Optionale Notiz — bei Phasen-Abschluss als **Verifikation:**-Zeile am Archiv-Block."),
+        dryRun: z.boolean().default(true)
+          .describe("true (Default): nur Plan/Diff-Vorschau; false: Änderungen schreiben."),
+      },
+    },
+    ({ root, phase, step, status, note, dryRun }) =>
+      asResult(() => {
+        const plan = planProgressUpdate(root, phase, step, status as Status, {
+          dryRun,
+          ...(note !== undefined ? { note } : {}),
+        });
+        return plan.dryRun ? plan : applyProgressPlan(plan);
       }),
   );
 }

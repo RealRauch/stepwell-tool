@@ -60,3 +60,64 @@ describe("tool archive_item — dry-run only (3.1)", () => {
     expect(backlog).toContain("- L3 — Docs-Build-Warnungen aufräumen — erledigt (Commit `c0ffee0`)");
   });
 });
+
+describe("tool progress_update (3.3)", () => {
+  const progressPath = join(projectA, "PROGRESS.md");
+
+  it("returns the plan by default and leaves files untouched", async () => {
+    const before = readFileSync(progressPath, "utf8");
+    const c = await connect();
+    try {
+      const result = await callTool(c, "progress_update", {
+        root: projectA,
+        phase: "Phase 2",
+        step: "2.2",
+        status: "🔄",
+      });
+      expect(result.isError).toBeFalsy();
+      const data = payload(result);
+      expect(data.dryRun).toBe(true);
+      expect(data.completedPhase).toBe(false);
+      expect(data.changes).toHaveLength(1);
+    } finally {
+      await c.close();
+    }
+    expect(readFileSync(progressPath, "utf8")).toBe(before);
+  });
+
+  it("applies on a temp copy and verifies (dryRun:false)", async () => {
+    const dir = tempProject("project-a");
+    const c = await connect();
+    try {
+      const result = await callTool(c, "progress_update", {
+        root: dir,
+        phase: "Phase 2",
+        step: "2.2",
+        status: "🔄",
+        dryRun: false,
+      });
+      expect(result.isError).toBeFalsy();
+      const data = payload(result);
+      expect(data.verification.ok).toBe(true);
+    } finally {
+      await c.close();
+    }
+    expect(readFileSync(join(dir, "PROGRESS.md"), "utf8")).toContain("| 2.2 | U21 Fehlertexte | 🔄 |");
+  });
+
+  it("reports unknown phases as tool errors", async () => {
+    const c = await connect();
+    try {
+      const result = await callTool(c, "progress_update", {
+        root: projectA,
+        phase: "Phase 42",
+        step: "2.1",
+        status: "✅",
+      });
+      expect(result.isError).toBe(true);
+      expect(result.content[0]?.text).toContain("Phase 42");
+    } finally {
+      await c.close();
+    }
+  });
+});

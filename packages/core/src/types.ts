@@ -110,6 +110,7 @@ export interface ArchiveItemPlan {
 }
 
 export interface ProgressUpdatePlan {
+  root: string;
   phase: string;
   step: string;
   status: Status;
