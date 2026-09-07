@@ -12,7 +12,7 @@
 
 ## Fortschritt
 
-| # | Häppchen | Status |
+| # | Step | Status |
 |---|----------|--------|
 | 1.1 | Setup | ✅ |
 | 1.2 | Unbekanntes Icon | ❓ |

@@ -1,7 +1,7 @@
 # AGENTS.md — method-docs
 
 > Arbeitsanweisungen für AI-Agenten & Mitentwickler.
-> **Bindende Methode:** `docs/PLAYBOOK.md` · **Review-Checkliste:** `docs/LESSONS.md`
+> **Bindende Methode (STEPWELL):** `docs/PLAYBOOK.md` · **Review-Checkliste:** `docs/LESSONS.md`
 > Beide sind verbatim-Kopien der projektunabhängigen Methode — hier nicht projektspezifisch anpassen.
 
 ## Überblick
@@ -36,15 +36,15 @@ unmöglich; es liest, validiert und assistiert. Schreibzugriffe nur Phase 3
 | `packages/*/tests` | Tests je Paket — **werden typegeprüft** (Lesson L12) |
 | `docs/PLAYBOOK.md` | Methode (verbatim) |
 | `docs/LESSONS.md` | Checkliste (verbatim) |
-| `PROGRESS.md` | Häppchen-Paketierung + Fortschritt |
+| `PROGRESS.md` | Step-Paketierung + Fortschritt |
 | `BACKLOG.md` | Offene Punkte |
 
 ## Kickoff für neue Sessions (in dieser Reihenfolge)
 
 1. `docs/PLAYBOOK.md` (Methode) + `docs/LESSONS.md` (Checkliste) lesen — beide bindend.
-2. `PROGRESS.md` → „Laufende Phasen": nächstes offenes Häppchen in definierter Reihenfolge (aktuell: 1.2 BACKLOG-Parser).
+2. `PROGRESS.md` → „Laufende Phasen": nächster offener Step in definierter Reihenfolge (aktuell: 1.2 BACKLOG-Parser).
 3. **Testdaten:** `packages/core/tests/fixtures/` — die `README.md` dort ist die arbeitende
-   Spezifikation für 1.2–1.6 (erwartete Parser-Ergebnisse + Validate-Funde D1–D12).
+   Spezifikation für 1.2–1.6 (erwartete Parser-Ergebnisse + Validate-Funde D1–D15).
    `project-a` = sauberes Musterprojekt (Parser-Positivpfad) · `project-b-drift` = absichtliche Drift-Fälle (Toleranz + Validate).
 4. **Realformat-Referenz (nur lesen, nicht verändern):** Geschwister-Repo `../stadtpfad-pwa`
    (`BACKLOG.md`, `PROGRESS.md`, `docs/archive/*`) — Original der Struktur.
@@ -53,11 +53,14 @@ unmöglich; es liest, validiert und assistiert. Schreibzugriffe nur Phase 3
 ## Architektur-Entscheidungen
 
 1. **Zwei Schichten:** core ist bibliotheks-fähig (CLI/CI später fast gratis); MCP ist nur Transport.
-2. **Fehlertoleranter Parser:** Projekte folgen der Methode, nicht byte-genau. Parser-Drift → Validierungs-Warnung (`docs_validate`), kein Crash.
+2. **Fehlertoleranter Parser:** Projekte folgen der Methode, nicht byte-genau. Parser-Drift → strukturierte Warnung im `ParseResult` (Decision 6), kein Crash; `docs_validate` sammelt sie ein.
 3. **Archiv-Muster respektieren:** Archive sind append-only; `archive_item` (Phase 3) verschiebt verbatim + Einzeiler im Erledigt-Index, Dry-run zuerst.
-4. **Fixtures:** Parser-Häppchen testen gegen realistische, anonymisierte Fixtures (abgeleitet aus stadtpfad-pwa; Sektionen mit Kopfregeln, R-/U-Serien, Erledigt-Index, Emoji-Prios).
-5. **Nomenklatur:** Item-IDs sind projekt-spezifisch (L12, T7, R5, U23 …) — Parser macht keine Annahmen über das Format außer `[ ]`/`[x]` + `—`-Struktur.
-6. **Datenmodell (ab 1.2 bindend):** `ParseResult<T> = { value, warnings[] }` mit einheitlichem `Warning = { code, datei, zeile?, meldung }` — Parse-Warnungen (einzelne Datei) vs. Validate-Funde (Querkonsistenz) getrennt; `docs_validate` aggregiert. Item-Blöcke tragen `span` (Zeilenbereich) + `roh` (verbatim-Block) als Basis für die verbatim-Verschiebung in Phase 3 (Lesson L16).
+4. **Fixtures:** Parser-Steps testen gegen realistische, anonymisierte Fixtures (abgeleitet aus stadtpfad-pwa; Sektionen mit Kopfregeln, R-/U-Serien, Erledigt-Index, Emoji-Prios).
+5. **Nomenklatur:** Der **Parser** macht keine Format-Annahmen an Item-IDs (`id` = Token zwischen Checkbox und erstem ` — `; Gleichheit exakt nach Trim, case-sensitiv). Die **Konvention** (PLAYBOOK §3) ist `<Serienbuchstabe><Nummer>` (`^[A-Z][0-9]+$`): `K`/`H`/`M`/`L` = Prioritäts-Serien, sonst thematische Serien; Nummern fortlaufend, nie wiederverwendet. `docs_validate` warnt (`ID_CONVENTION`), wenn ein Item die Konvention verletzt — Warnung, nie Abbruch.
+6. **Datenmodell (ab 1.2 bindend):** `ParseResult<T> = { value, warnings[] }` mit einheitlichem `Warning = { code, file, line?, message }` — Parse-Warnungen (einzelne Datei) vs. Validate-Funde (Querkonsistenz) getrennt; `docs_validate` aggregiert. Item-Blöcke tragen `span` (Zeilenbereich) + `raw` (verbatim-Block) als Basis für die verbatim-Verschiebung in Phase 3 (Lesson L16).
 7. **Multi-Projekt:** Der Projekt-Root wird je Tool-Call übergeben — eine MCP-Instanz bedient beliebig viele PLAYBOOK-Projekte; Resources als Templates mit Root im URI.
 8. **Stack final (TS/Node):** Bewusst gegen Python/Rust entschieden — MCP-SDK ist in TS First-Class, `npx` verteilt das Tool mühelos in Zielprojekte (Node dort omnipräsent), und die Workload (wenige Markdown-Dateien) ist perf-irrelevant, sodass kein Stack-Vorteil den Neuanfang rechtfertigt. „Schlank" wird erreicht durch: Zero-Dependencies-Kern (zeilenbasiertes Parsen, kein markdown-AST-Framework), faules Parsen (nur die Dateien, die ein Tool-Call braucht), stdio-Server ohne Daemon/Caches.
-9. **Dokument-Zuordnung:** Die committete Phasenfolge steht in `PROGRESS.md` „Laufende Phasen" — auch grob paketiert (Fein-Paketierung bei Phasenstart). Alles Offene **außerhalb** dieser Folge (Ideen, Feature-Requests, Risiken, Funde) gehört ins `BACKLOG.md` mit Fundstelle + Abnahmekriterium. Entscheidungshilfe: „Gehört das zur festgelegten Phasenfolge?" → PROGRESS; sonst → BACKLOG. BACKLOG ist prioritäts-sortiert (🔴→🔵), nicht reihenfolge-sortiert — Sequenz-Information lebt nur in PROGRESS.
+9. **Dokument-Zuordnung:** Regel lebt bindend in PLAYBOOK §2 (committete Phasenfolge → `PROGRESS.md`, alles andere Offene → `BACKLOG.md` mit Fundstelle + Abnahmekriterium). Projektspezifische Konsequenz hier: BACKLOG ist prioritäts-sortiert (🔴→🔵), nicht reihenfolge-sortiert — Sequenz-Information lebt ausschließlich in PROGRESS.
+10. **Terminologie (bindend):** Sämtliche Code- und Tool-Begriffe sind **englisch** — Typen (`BacklogItem`, `ProgressRow`), Feldnamen (`title`, `priority`, `open`, `location`, `raw`, `span`, `step`, …), Tool-Namen (`docs_status`, …), Parameter (`root`, `dryRun`, `step`, `note`), Warn-Codes (`PRIO_MISSING`, …); dieselben englischen Begriffe (z. B. „Step") werden auch in der Prosa verwendet, sodass Prosa und API deckungsgleich sind. Verbleende deutsche Begriffe (Erledigt-Index, Fundstelle …) leben nur in Prosa/Doku — nie in der API. Ausnahme: `message`-Inhalte von Warnungen sind menschenlesbar und dürfen deutsch sein.
+11. **Zeitstempel + Migration (bindend):** Datums-/Zeit-Einträge in den vier Doku-Dateien immer als `JJMMDD/HHMM` (z. B. `260907/1523`) — nie nur `MM/JJJJ` (zu ungenau). Der `MM/JJJJ`-Bestand wird toleriert; `docs_validate` warnt (`DATE_LEGACY`) — wie `ID_CONVENTION` — **nur in offenen Dateien**, nie im append-only-Archiv. Migration Bestandsprojekte: offene Dateien beim nächsten natürlichen Edit umstellen, Archive nie anfassen, neue Projekte starten mit allen vier Dateien (PLAYBOOK §3).
+12. **Methoden-Name „STEPWELL":** Die Arbeitsweise trägt einen eigenen Namen (Untertitel in PLAYBOOK/README). Kollisions-Check 09/2026: „STEP"/„STEPcode" ist belegt (ISO 10303; NIST-Fork stepcode), „STAIRS" durch eine formale Methode — STEPWELL ist im Tech-Kontext frei und hält die Step-Metapher: viele kleine, jede tragende Steps.

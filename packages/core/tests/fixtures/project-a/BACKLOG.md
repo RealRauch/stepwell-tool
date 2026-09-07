@@ -1,4 +1,4 @@
-# BACKLOG.md — Offene Punkte (Stand: 09/2026)
+# BACKLOG.md — Offene Punkte (Stand: 260907/1200)
 
 > **Diese Datei enthält nur OFFENE Items.** Erledigte Items werden nach dem Abschluss
 > **unverändert** in `docs/archive/BACKLOG_ARCHIVE.md` verschoben; hier bleibt je Item nur ein Einzeiler
@@ -59,12 +59,12 @@
 
 > Betriebs- und Produkt-Punkte nach Abschluss der Review-Fixes.
 > Jedes Item ist so beschrieben, dass es später als eigene Phase in `PROGRESS.md`
-> paketiert werden kann (Umfang in Häppchen + Abnahmekriterium). Priorisierung wie oben.
+> paketiert werden kann (Umfang in Step + Abnahmekriterium). Priorisierung wie oben.
 
 ### [ ] R4 — Feldtest auf Zielgeräten — 🟠 *(vor Pilotbetrieb zwingend)*
 - **Warum:** Mechanik ist getestet, Geräte-Realität nicht.
 - **Ort:** kein Code-Ort — Testprotokoll.
-- **Umfang (Häppchen):** (1) Checkliste erarbeiten; (2) auf 2 Geräten durchspielen; (3) Befunde als Items eintragen.
+- **Umfang (Steps):** (1) Checkliste erarbeiten; (2) auf 2 Geräten durchspielen; (3) Befunde als Items eintragen.
 - **Abnahme:** Checkliste abgehakt; Befunde dokumentiert.
 
 ---

@@ -11,7 +11,7 @@
 
 **Abnahme:** CI grün; README erklärt Setup.
 
-**Umfang (Häppchen):**
+**Umfang (Steps):**
 
 - **0.1 Projekt einrichten** — git, npm, Editorconfig
 - **0.2 Env & Struktur** — config.ts mit harter Validierung
@@ -26,7 +26,7 @@
 
 **Abnahme:** typecheck + Suite grün; API-Kontrakt-Tests vorhanden.
 
-**Umfang (Häppchen):**
+**Umfang (Steps):**
 
 - **1.1 Migrations-Skript** — versionierte Migrationen, Re-Run-sicher
 - **1.2 Seed-Skript** — reproduzierbare Demo-Daten

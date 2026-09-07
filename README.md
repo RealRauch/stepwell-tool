@@ -2,7 +2,7 @@
 
 CLI + MCP-Server zum Lesen, Prüfen und Verwalten der Projekt-Doku
 (`BACKLOG.md`, `PROGRESS.md`, Archive) in Repos, die der
-[PLAYBOOK-Methode](docs/PLAYBOOK.md) folgen (Häppchen, Archiv-Muster, Test-First).
+[STEPWELL-Methode](docs/PLAYBOOK.md) folgen (Steps, Archiv-Muster, Test-First).
 
 **Status:** früher Aufbau — Phase 1 (Core-Library, read-only). Siehe `PROGRESS.md`.
 
