@@ -1,8 +1,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { parseBacklog } from "./backlog.js";
-import { parseBacklogArchive, parseProgressArchive } from "./archive.js";
-import { parseProgress } from "./progress.js";
+import { parseBacklog } from "./backlog.ts";
+import { parseBacklogArchive, parseProgressArchive } from "./archive.ts";
+import { parseProgress } from "./progress.ts";
 import type {
   ArchiveItem,
   Backlog,
@@ -10,7 +10,7 @@ import type {
   PhaseBlock,
   Progress,
   ParseResult,
-} from "./types.js";
+} from "./types.ts";
 
 const BACKLOG_PATH = "BACKLOG.md";
 const PROGRESS_PATH = "PROGRESS.md";

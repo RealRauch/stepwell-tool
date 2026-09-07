@@ -66,23 +66,38 @@ Nachbauten inkl. Drift-/Edge-Cases (fehlende Sektion, unbekanntes Icon, kaputter
 
 ### Phase 2 — MCP-Server (stdio)
 
-**Ziel:** `@method-docs/mcp` stellt die core-Reports als MCP-Tools + Resources bereit
-(Tools: `docs_status`, `backlog_list`, `backlog_show`, `progress_list`, `progress_show`,
-`docs_validate`; Resources: `methoddocs://backlog`, `methoddocs://progress`, `methoddocs://archive/{kind}`).
+**Ziel:** `@method-docs/mcp` stellt die core-Reports als MCP-Tools + Resources bereit.
 
-**Multi-Projekt-Prinzip:** Der Projekt-Root wird **je Tool-Call** übergeben
-(eine Server-Instanz bedient beliebig viele Projekte). Resources laufen als
-Resource-Templates mit Root im URI (z. B. `methoddocs://{root}/backlog`) — Details
-in 2.1/2.4 festzurren.
+**SDK-Festlegung (2.1, Beschluss 09/2026):** `@modelcontextprotocol/sdk` **v1.x stabil
+(pinning `^1.30.0`)** mit `McpServer.registerTool` + `StdioServerTransport` und zod v3.
+Gegen v2-alpha (`registerTool` mit z.object/zod v4, `serveStdio`) bewusst entschieden —
+v2 ist nicht stabil. Tests laufen protokollecht über `InMemoryTransport.createLinkedPair()`
++ `Client` (automatisierter Ersatz für den manuellen Inspector-Test; Inspector bleibt als
+manuelle Verifikation dokumentiert). **Multi-Projekt-Prinzip:** Der Projekt-Root wird
+**je Tool-Call** übergeben; Resources sind Resource-Templates mit **percent-encoded Root**
+im URI (`methoddocs://{root}/backlog`) — Windows-Pfade enthalten `/` und `:`, daher wird
+der Root ausschließlich encoded in den URI eingesetzt und im Read-Callback dekodiert.
 
-**Offen vor Start:** SDK-Version festlegen (v1 stabil vs. v2-alpha: `registerTool`/`serveStdio`-API,
-Zod v4) — Recherche-Step 2.1. Detaillierte Paketierung erfolgt bei Phasenstart hier.
+**Umfang (Steps):**
 
-**Umfang (grob):** 2.1 SDK-Festlegung + Grundserver (Echo-Tool, Inspector-Test) ·
-2.2 Read-Tools backlog_* · 2.3 Read-Tools progress_* + docs_validate ·
-2.4 Resources + Resource-Templates · 2.5 opencode-Integration (`opencode.json`) + README ·
-2.6 CLI (`method-docs <status|backlog|progress|validate>`, bin-Eintrag, stdout-Reports;
-Thin-Wrapper über core, Basis für `npx`-Nutzung in beliebigen Folgeprojekten).
+- **2.1 SDK-Festlegung + Grundserver:** Workspace `packages/mcp` (package.json, tsconfig,
+  deps), `createDocsServer()` mit Echo-Tool, Protokoll-Tests via InMemory-Client
+  (tools/list, callTool), stdio-Einstieg `serve.ts`.
+- **2.2 Read-Tools backlog:** `backlog_list(root, priority[], open?, section?)` **ohne
+  `raw`** (schlanker Payload), `backlog_show(root, id)` inkl. `raw`+`span` (Merge-Sicht
+  aus core). Fehler (fehlende Pflichtdatei, unbekannte ID) → `isError: true` mit klarer
+  Meldung, kein Absturz des Servers.
+- **2.3 Read-Tools progress + validate:** `progress_list(root, status?)`,
+  `progress_show(root, phase)`, `docs_status(root)`, `docs_validate(root)` — JSON-Payloads
+  aus core, `isError`-Kapselung wie 2.2.
+- **2.4 Resources + Resource-Templates:** `methoddocs://{root}/backlog`,
+  `methoddocs://{root}/progress`, `methoddocs://{root}/archive/{kind}`
+  (kind ∈ backlog|progress), mimeType `text/markdown`; Read-Callback dekodiert den Root.
+- **2.5 opencode-Integration + Doku:** `opencode.json` im Repo (lokaler stdio-Server,
+  Node ≥ 22.18 — natives TS-Stripping), README-Ausbau (Tools, Resources, CLI, Inspector).
+- **2.6 CLI:** `method-docs <status|backlog|progress|validate>` mit Flags `--root`,
+  `--priority`, `--open`, `--status`, `--json`; `bin`-Eintrag auf TS-Entry (Node ≥ 22.18
+  führt sie direkt aus), testbare `runCli(args, stdout)`-Funktion über core.
 
 ### Phase 3 — Mutation (`archive_item`, `progress_update`)
 
@@ -108,7 +123,7 @@ das Tool automatisiert nur die fehleranfälligen, strukturellen Operationen (Les
 | 1.4 | Archiv-Reader | ✅ |
 | 1.5 | docs_status | ✅ |
 | 1.6 | docs_validate | ✅ |
-| 2.1 | SDK-Festlegung + Grundserver | ⬜ |
+| 2.1 | SDK-Festlegung + Grundserver | 🔄 |
 | 2.2 | MCP Read-Tools backlog | ⬜ |
 | 2.3 | MCP Read-Tools progress + validate | ⬜ |
 | 2.4 | MCP Resources | ⬜ |

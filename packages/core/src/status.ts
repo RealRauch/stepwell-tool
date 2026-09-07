@@ -1,7 +1,7 @@
-import { loadProject } from "./project.js";
-import { scopeSteps } from "./progress.js";
-import { docsValidate } from "./validate.js";
-import type { DocsStatus, Priority, ProgressRow } from "./types.js";
+import { loadProject } from "./project.ts";
+import { scopeSteps } from "./progress.ts";
+import { docsValidate } from "./validate.ts";
+import type { DocsStatus, Priority, ProgressRow } from "./types.ts";
 
 export function docsStatus(root: string): DocsStatus {
   const docs = loadProject(root);

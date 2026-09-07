@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { parseProgress, readProgress } from "../src/progress.js";
-import type { ParseResult, Progress } from "../src/types.js";
+import { parseProgress, readProgress } from "../src/progress.ts";
+import type { ParseResult, Progress } from "../src/types.ts";
 
 const fixtures = join(import.meta.dirname, "fixtures");
 

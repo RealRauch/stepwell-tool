@@ -1,6 +1,6 @@
-import { parseBacklog } from "./backlog.js";
-import { parseProgress } from "./progress.js";
-import type { ArchiveItem, ParseResult, PhaseBlock } from "./types.js";
+import { parseBacklog } from "./backlog.ts";
+import { parseProgress } from "./progress.ts";
+import type { ArchiveItem, ParseResult, PhaseBlock } from "./types.ts";
 
 const ERLEDIGT_LINE = /^-\s+\*\*Erledigt:\*\*\s*(.+?)\s*$/u;
 

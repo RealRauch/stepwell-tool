@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { docsValidate } from "../src/validate.js";
+import { docsValidate } from "../src/validate.ts";
 
 const fixtures = join(import.meta.dirname, "fixtures");
 

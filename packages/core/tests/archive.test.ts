@@ -1,9 +1,9 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { parseBacklogArchive, parseProgressArchive } from "../src/archive.js";
-import { backlogShow, loadProject } from "../src/project.js";
-import type { ArchiveItem, ParseResult, PhaseBlock } from "../src/types.js";
+import { parseBacklogArchive, parseProgressArchive } from "../src/archive.ts";
+import { backlogShow, loadProject } from "../src/project.ts";
+import type { ArchiveItem, ParseResult, PhaseBlock } from "../src/types.ts";
 
 const fixtures = join(import.meta.dirname, "fixtures");
 
