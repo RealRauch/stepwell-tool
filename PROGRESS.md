@@ -124,9 +124,9 @@ das Tool automatisiert nur die fehleranfälligen, strukturellen Operationen (Les
 | 1.5 | docs_status | ✅ |
 | 1.6 | docs_validate | ✅ |
 | 2.1 | SDK-Festlegung + Grundserver | ✅ |
-| 2.2 | MCP Read-Tools backlog | 🔄 |
-| 2.3 | MCP Read-Tools progress + validate | ⬜ |
-| 2.4 | MCP Resources | ⬜ |
+| 2.2 | MCP Read-Tools backlog | ✅ |
+| 2.3 | MCP Read-Tools progress + validate | ✅ |
+| 2.4 | MCP Resources | 🔄 |
 | 2.5 | opencode-Integration + Doku | ⬜ |
 | 2.6 | CLI | ⬜ |
 | 3.1 | archive_item (Dry-run) | ⬜ |

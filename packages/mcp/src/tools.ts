@@ -3,9 +3,15 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import {
   backlogShow,
+  docsStatus,
+  docsValidate,
   readBacklog,
+  readProgress,
+  loadProject,
   type BacklogItem,
+  type PhaseBlock,
   type Priority,
+  type Status,
 } from "@method-docs/core";
 
 type ToolResult = CallToolResult;
@@ -90,6 +96,85 @@ export function registerDocsTools(server: McpServer): void {
         }
         return entry;
       }),
+  );
+
+  const STATUS_VALUES = ["⬜", "🔄", "✅", "⛔", "unknown"] as const;
+
+  server.registerTool(
+    "progress_list",
+    {
+      title: "Fortschrittsliste",
+      description:
+        "Listet die Zeilen der Fortschrittstabelle aus PROGRESS.md inkl. Parse-Warnungen; " +
+        "Filter: status (Icon oder \"unknown\").",
+      inputSchema: {
+        root: ROOT_FIELD,
+        status: z.enum(STATUS_VALUES).optional().describe("Filter auf Status-Icon."),
+      },
+    },
+    ({ root, status }) =>
+      asResult(() => {
+        const parsed = readProgress(root);
+        let rows = parsed.value.rows;
+        if (status !== undefined) {
+          rows = rows.filter((r) => r.status === (status as Status));
+        }
+        return { count: rows.length, rows, warnings: parsed.warnings };
+      }),
+  );
+
+  const matchesPhase = (block: PhaseBlock, phase: string): boolean =>
+    block.name === phase ||
+    block.title === phase ||
+    `${block.name} — ${block.title}` === phase;
+
+  server.registerTool(
+    "progress_show",
+    {
+      title: "Phasen-Detail",
+      description:
+        "Detail-Block einer Phase (inkl. raw) — Suche über laufende Phasen und Archiv; " +
+        "erkannt werden Name (\"Phase 2\"), Titel oder beides (\"Phase 2 — UI-Polish\").",
+      inputSchema: {
+        root: ROOT_FIELD,
+        phase: z.string().describe("Phasen-Name oder -Titel, z. B. \"Phase 2\"."),
+      },
+    },
+    ({ root, phase }) =>
+      asResult(() => {
+        const docs = loadProject(root);
+        const block =
+          docs.progress().value.phases.find((p) => matchesPhase(p, phase)) ??
+          docs.progressArchive().value.find((p) => matchesPhase(p, phase));
+        if (block === undefined) {
+          throw new Error(`unknown phase: ${phase} (weder laufende Phase noch Archiv)`);
+        }
+        return block;
+      }),
+  );
+
+  server.registerTool(
+    "docs_status",
+    {
+      title: "Doku-Status",
+      description:
+        "Aggregat eines STEPWELL-Projekts: offene Items je Priorität, laufende Steps/Phasen, " +
+        "✅-Quote und sämtliche Validierungs-/Parse-Warnungen.",
+      inputSchema: { root: ROOT_FIELD },
+    },
+    ({ root }) => asResult(() => docsStatus(root)),
+  );
+
+  server.registerTool(
+    "docs_validate",
+    {
+      title: "Doku-Validierung",
+      description:
+        "Prüft die Querkonsistenz der vier Doku-Dateien (Erledigt-Index ↔ Archiv, Checkbox ↔ " +
+        "Archivierung, 🔄 ↔ Detail-Block, ID-/Datum-Konvention) und sammelt Parse-Warnungen ein.",
+      inputSchema: { root: ROOT_FIELD },
+    },
+    ({ root }) => asResult(() => docsValidate(root)),
   );
 }
 
