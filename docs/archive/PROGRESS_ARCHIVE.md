@@ -201,3 +201,21 @@ synchronisiert (byte-identisch in stadtpfad-pwa); Suite + validate grün.
   README; dazu Methoden-Änderungen (PLAYBOOK §0.4, LESSONS 17) mit Sync-Pflicht
   (BACKLOG M1) — Gate-Regel: Implementierung startet erst nach menschlicher Freigabe.
 **Verifikation:** serverInfo.name=stepwell (InMemory+stdio getestet), opencode-Registrierung + README umgestellt; PLAYBOOK 0.3 Freigabe-Gate + LESSONS 17 in allen Kopien synchronisiert (stadtpfad-pwa@f6e2277)
+
+---
+
+### Phase 6
+
+**Umfang (Steps):**
+
+- **6.1 Mutation-Regressionstests (R5)**
+- **6.2 Stale-Span-Fix planProgressUpdate (R1)**
+- **6.3 Locale-Synonyme zentralisieren (R2)**
+- **6.4 CRLF-Roundtrip Archiv-Anhang (R3)**
+- **6.5 Stale-Check beim Apply (R4)**
+- **6.6 STEP_DUPLICATE-Validate (R6)**
+- **6.7 CLI-ASCII-Aliase für Prio/Status (T3)**
+- **6.8 Titel-/Scope-Edits als Tool (T2)**
+- **6.9 Backlog-CRUD-Tools (T1)**
+- **6.10 Phasen-Planung als Tool (T4)**
+**Verifikation:** Alle 10 Steps verifiziert: typecheck + 188/188 Tests grün; R1–R6/T1–T4 archiviert. Commits 36e89c2…9fea4bc.
