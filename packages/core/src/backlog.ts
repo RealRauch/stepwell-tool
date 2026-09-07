@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { allSynonyms, escapeRegExp, synonymPattern } from "./profile.ts";
 import type {
   Backlog,
   BacklogItem,
@@ -16,8 +17,16 @@ const SEPARATOR = /^(.*?)\s+—\s+([\s\S]*)$/;
 const TITLE_SUFFIX = /^(.*\S)\s+—\s+(\S+)$/u;
 const OPTIONAL_SUFFIX = /\s*\*\([^()]*\)\*$/u;
 const BULLET = /^-\s+\*\*.+?:\*\*/u;
-const LOCATION_BULLET = /^-\s+\*\*(?:Ort|Location):\*\*\s+(.+?)\s*$/u;
-const DONE_LINE = /^-\s+(.+?)\s+—\s+(.+?)\s+—\s+(?:erledigt|done)(?:\s+in\s+`([^`]+)`)?/u;
+const union = (words: readonly string[]): string => words.map(escapeRegExp).join("|");
+const LOCATION_BULLET = new RegExp(
+  `^-\\s+\\*\\*(?:${union(allSynonyms("locationLabel"))}):\\*\\*\\s+(.+?)\\s*$`,
+  "u",
+);
+const DONE_LINE = new RegExp(
+  `^-\\s+(.+?)\\s+—\\s+(.+?)\\s+—\\s+(?:${union(allSynonyms("doneWord"))})(?:\\s+in\\s+\`([^\`]+)\`)?`,
+  "u",
+);
+const DONE_INDEX_HEADING = synonymPattern("doneIndexHeading");
 const SEPARATOR_RULE = /^-{3,}\s*$/u;
 
 const isKnownPriority = (token: string): token is Exclude<Priority, "unknown"> =>
@@ -215,7 +224,7 @@ export function parseBacklog(content: string, file = "BACKLOG.md"): ParseResult<
     if (sectionMatch) {
       endSection();
       const heading = sectionMatch[1]!.trim();
-      if (/(?:Erledigt-Index|Done Index)/iu.test(heading)) {
+      if (DONE_INDEX_HEADING.test(heading)) {
         inDoneIndex = true;
         continue;
       }

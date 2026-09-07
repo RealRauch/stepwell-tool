@@ -1,12 +1,18 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { allSynonyms, escapeRegExp } from "./profile.ts";
 import { loadProject } from "./project.ts";
 import { scopeSteps } from "./progress.ts";
 import type { Warning } from "./types.ts";
 
 const ID_CONVENTION = /^[A-Z][0-9]+$/;
-const LEGACY_DATE =
-  /(?:\((?:erledigt|done|abgeschlossen|completed)\s+|\bStand:\s*|\bAs of:\s*)(?<!\d)(\d{2}\/\d{4})(?!\d)/gu;
+const union = (words: readonly string[]): string => words.map(escapeRegExp).join("|");
+const LEGACY_DATE = new RegExp(
+  `(?:\\((?:${union([...allSynonyms("doneWord"), ...allSynonyms("completedMarker")])})\\s+` +
+    `|\\b(?:${union(allSynonyms("standMarker"))})\\s*)` +
+    `(?<!\\d)(\\d{2}\\/\\d{4})(?!\\d)`,
+  "gu",
+);
 
 function scanLegacyDates(filePath: string, file: string, findings: Warning[]): void {
   let content: string;
