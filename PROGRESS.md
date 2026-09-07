@@ -24,6 +24,9 @@ Fortschrittstabelle `| # | Häppchen | Status |`, Status-Icons ⬜🔄✅⛔.
 **Abnahme (je Häppchen test-first):** `npm run typecheck` + `npm run test` grün;
 Parser gegen Fixtures (`packages/core/tests/fixtures/`) — realistische, anonymisierte
 Nachbauten inkl. Drift-/Edge-Cases (fehlende Sektion, unbekanntes Icon, kaputter Block).
+**Fixtures v1 liegen bereits** (Session-Prep 09/2026, Commit siehe Log): `project-a` (sauber)
++ `project-b-drift` (Fälle D1–D12) — Spezifikation/Erwartungen in `fixtures/README.md`;
+1.2 beginnt mit den roten Tests dagegen.
 
 **Umfang (Häppchen):**
 
