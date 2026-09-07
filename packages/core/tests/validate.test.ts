@@ -1,8 +1,23 @@
+import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { docsValidate } from "../src/validate.ts";
 
 const fixtures = join(import.meta.dirname, "fixtures");
+
+const tempDirs: string[] = [];
+function tempCopy(project: string): string {
+  const dir = mkdtempSync(join(tmpdir(), "method-docs-validate-"));
+  tempDirs.push(dir);
+  cpSync(join(fixtures, project), dir, { recursive: true });
+  return dir;
+}
+afterEach(() => {
+  for (const dir of tempDirs.splice(0)) {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
 
 describe("docsValidate — project-a (clean)", () => {
   const result = docsValidate(join(fixtures, "project-a"));
@@ -65,5 +80,47 @@ describe("docsValidate — project-b-drift (all validate rules)", () => {
   it("never reports convention findings against the append-only archive", () => {
     const archiveFiles = result.findings.filter((f) => f.file.includes("ARCHIVE"));
     expect(archiveFiles.map((f) => f.code)).toEqual(["ARCHIVE_WITHOUT_INDEX"]);
+  });
+});
+
+describe("docsValidate — STEP_DUPLICATE (R6)", () => {
+  it("reports duplicated step numbers from the second occurrence on", () => {
+    const dir = tempCopy("project-a");
+    const progressPath = join(dir, "PROGRESS.md");
+    writeFileSync(
+      progressPath,
+      readFileSync(progressPath, "utf8").replace(
+        "| 2.3 | U22 Ladezustände | ⬜ |",
+        "| 2.3 | U22 Ladezustände | ⬜ |\n| 2.1 | Strings-Modul | ⬜ |",
+      ),
+      "utf8",
+    );
+
+    const result = docsValidate(dir);
+
+    expect(result.ok).toBe(false);
+    expect(result.findings).toHaveLength(1);
+    const finding = result.findings[0]!;
+    expect(finding.code).toBe("STEP_DUPLICATE");
+    expect(finding.file).toBe(progressPath);
+    expect(finding.line).toBe(41);
+    expect(finding.message).toContain("2.1");
+  });
+
+  it("reports each additional occurrence of a triplicated step", () => {
+    const dir = tempCopy("project-a");
+    const progressPath = join(dir, "PROGRESS.md");
+    writeFileSync(
+      progressPath,
+      readFileSync(progressPath, "utf8").replace(
+        "| 2.3 | U22 Ladezustände | ⬜ |",
+        "| 2.3 | U22 Ladezustände | ⬜ |\n| 1.1 | Migrations-Skript | ✅ |\n| 1.1 | Migrations-Skript (Kopie) | ✅ |",
+      ),
+      "utf8",
+    );
+
+    const result = docsValidate(dir);
+
+    expect(result.findings.filter((f) => f.code === "STEP_DUPLICATE")).toHaveLength(2);
   });
 });

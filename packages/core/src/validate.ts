@@ -145,6 +145,27 @@ export function docsValidate(root: string): {
     }
   }
 
+  const stepLines = new Map<string, number[]>();
+  const TABLE_ROW = /^\|\s*(\d+(?:\.\d+)?)\s*\|/;
+  for (const [idx, line] of readFileSync(progressPath, "utf8").split(/\r?\n/).entries()) {
+    const m = TABLE_ROW.exec(line);
+    if (m) {
+      const lines = stepLines.get(m[1]!) ?? [];
+      lines.push(idx + 1);
+      stepLines.set(m[1]!, lines);
+    }
+  }
+  for (const [step, lines] of stepLines) {
+    for (const line of lines.slice(1)) {
+      findings.push({
+        code: "STEP_DUPLICATE",
+        file: progressPath,
+        line,
+        message: `Step-Nummer "${step}" kommt doppelt in der Fortschrittstabelle vor (erste Zeile: ${lines[0]}) — progress_update pflegt bei Dubletten nur die erste Zeile.`,
+      });
+    }
+  }
+
   scanLegacyDates(backlogPath, backlogPath, findings);
   scanLegacyDates(progressPath, progressPath, findings);
 
