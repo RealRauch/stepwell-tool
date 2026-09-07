@@ -3,9 +3,21 @@ import { join } from "node:path";
 import { lineDiff } from "./diff.ts";
 import { docsValidate } from "./validate.ts";
 import { loadProject } from "./project.ts";
-import type { ArchiveItemPlan, ApplyResult, PlanChange } from "./types.ts";
+import type {
+  ArchiveItemPlan,
+  ApplyResult,
+  PhaseBlock,
+  PlanChange,
+  ProgressUpdatePlan,
+  Status,
+} from "./types.ts";
 
 export interface ArchiveItemOptions {
+  dryRun?: boolean;
+  note?: string;
+}
+
+export interface ProgressUpdateOptions {
   dryRun?: boolean;
   note?: string;
 }
@@ -167,5 +179,208 @@ export function applyArchivePlan(plan: ArchiveItemPlan): ApplyResult {
   else for (const f of findings) messages.push(`${f.code}: ${f.message}`);
 
   const ok = !stillOpen && inArchive && inIndex && findings.length === 0;
+  return { written, verification: { ok, messages } };
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+}
+
+function extractScopeName(scopeEntry: string): string | undefined {
+  const m = /^\*{0,2}\s*\d+(?:\.\d+)?\s+(.+?)\*{0,2}\s*(?:\s*—.*)?$/u.exec(scopeEntry);
+  return m?.[1]?.trim();
+}
+
+function tableLineHasStep(line: string, step?: string): boolean {
+  if (!line.trim().startsWith("|")) return false;
+  const cells = line.split("|");
+  if (cells.length < 4) return false;
+  const cell = cells[1]?.trim() ?? "";
+  return step === undefined ? /^\d+(?:\.\d+)?$/u.test(cell) : cell === step;
+}
+
+function phaseMatches(block: PhaseBlock, phase: string): boolean {
+  return block.name === phase || block.title === phase || `${block.name} — ${block.title}` === phase;
+}
+
+const SECTION_RULE = /^-{3,}\s*$/u;
+
+function removeSpan(lines: string[], start: number, end: number): void {
+  lines.splice(start - 1, end - start + 1);
+  if (
+    start - 2 >= 0 &&
+    (lines[start - 2]?.trim() ?? "x") === "" &&
+    (lines[start - 1]?.trim() ?? "x") === ""
+  ) {
+    lines.splice(start - 1, 1);
+  }
+}
+
+export function planProgressUpdate(
+  root: string,
+  phase: string,
+  step: string,
+  status: Status,
+  options: ProgressUpdateOptions = {},
+): ProgressUpdatePlan {
+  const dryRun = options.dryRun ?? true;
+  const note = normalizeNote(options.note);
+  const docs = loadProject(root);
+  const progress = docs.progress().value;
+
+  const block = progress.phases.find((p) => phaseMatches(p, phase)) ?? undefined;
+  const row = progress.rows.find((r) => r.step === step);
+
+  if (block === undefined && status !== "🔄") {
+    throw new Error(`unknown phase: ${phase} (nur 🔄-Phasen können neu angelegt werden)`);
+  }
+  if (block === undefined && row !== undefined) {
+    const paramPrefix = /^Phase\s+(\d+)/u.exec(phase);
+    if (paramPrefix && !row.step.startsWith(`${paramPrefix[1]!}.`)) {
+      throw new Error(`unknown step: ${step} (gehört nicht zur neu anzulegenden Phase ${phase})`);
+    }
+  }
+  const scopeEntry =
+    block?.scope.find((entry) =>
+      new RegExp(`^\\*{0,2}\\s*${escapeRegExp(step)}\\b`).test(entry),
+    ) ?? undefined;
+  if (block !== undefined && row === undefined && scopeEntry === undefined) {
+    throw new Error(`unknown step: ${step} (weder in der Tabelle noch im Scope der Phase)`);
+  }
+
+  const prefixMatch = block === undefined ? undefined : /^Phase\s+(\d+)/u.exec(block.name);
+  const remainingOpen = prefixMatch
+    ? progress.rows.filter(
+        (r) =>
+          r.step.startsWith(`${prefixMatch[1]!}.`) &&
+          r.step !== step &&
+          (r.status === "🔄" || r.status === "⬜"),
+      )
+    : ["kept-open"];
+  const completedPhase = status === "✅" && prefixMatch !== undefined && remainingOpen.length === 0;
+
+  const progressRel = "PROGRESS.md";
+  const archiveRel = join("docs", "archive", "PROGRESS_ARCHIVE.md");
+  const rowName = row?.name ?? (scopeEntry !== undefined ? extractScopeName(scopeEntry) : undefined) ?? step;
+
+  const editProgress = (content: string, eol: string): string => {
+    const lines = content.split(eol);
+
+    if (row !== undefined) {
+      const idx = lines.findIndex((l) => tableLineHasStep(l, row.step));
+      if (idx === -1) throw new Error(`table row for step ${row.step} not found`);
+      const cells = lines[idx]!.split("|");
+      cells[3] = ` ${status} `;
+      lines[idx] = cells.join("|");
+    } else {
+      let lastRow = -1;
+      lines.forEach((l, i) => {
+        if (tableLineHasStep(l)) lastRow = i;
+      });
+      if (lastRow === -1) throw new Error("no progress table found in PROGRESS.md");
+      lines.splice(lastRow + 1, 0, `| ${step} | ${rowName} | ${status} |`);
+    }
+
+    if (block === undefined) {
+      const sectionStart = lines.findIndex((l) => /^##\s+.*Laufende Phasen/u.test(l));
+      if (sectionStart === -1) throw new Error("missing 'Laufende Phasen' section in PROGRESS.md");
+      let end = sectionStart + 1;
+      while (end < lines.length && !/^##\s/u.test(lines[end]!) && !SECTION_RULE.test(lines[end]!)) {
+        end += 1;
+      }
+      let insertAt = end;
+      while (insertAt > sectionStart + 1 && (lines[insertAt - 1]?.trim() ?? "") === "") {
+        insertAt -= 1;
+      }
+      lines.splice(
+        insertAt,
+        0,
+        `### ${phase}`,
+        "",
+        "**Umfang (Steps):**",
+        "",
+        `- **${step} ${rowName}**`,
+        "",
+      );
+    } else if (!completedPhase && scopeEntry === undefined) {
+      lines.splice(block.span.end, 0, `- **${step} ${rowName}**`);
+    }
+
+    if (completedPhase && block !== undefined) {
+      removeSpan(lines, block.span.start, block.span.end);
+    }
+    return lines.join(eol);
+  };
+
+  const edits: FileEdit[] = [
+    {
+      relPath: progressRel,
+      description: completedPhase
+        ? `Step ${step} auf ${status} setzen und Detail-Block "${block?.name}" ins Archiv verschieben`
+        : `Step ${step} in der Fortschrittstabelle auf ${status} setzen`,
+      transform: editProgress,
+    },
+  ];
+  if (completedPhase && block !== undefined) {
+    edits.push({
+      relPath: archiveRel,
+      description: `Detail-Block "${block.name}" verbatim ans PROGRESS_ARCHIVE anhängen${note !== undefined ? " (mit Verifikations-Zeile)" : ""}`,
+      transform: (content, eol) => {
+        const blockLines = block.raw.split(eol);
+        if (note !== undefined) {
+          blockLines.push(`**Verifikation:** ${note}`);
+        }
+        const trimmed = content.replace(/\s+$/u, "");
+        return `${trimmed}${eol}${eol}---${eol}${eol}${blockLines.join(eol)}${eol}`;
+      },
+    });
+  }
+
+  const changes = buildChanges(root, edits);
+  return { root, phase, step, status, dryRun, note, completedPhase, changes };
+}
+
+export function applyProgressPlan(plan: ProgressUpdatePlan): ApplyResult {
+  if (plan.dryRun) {
+    throw new Error(
+      "refusing to apply a dry-run plan — create the plan with dryRun: false to apply",
+    );
+  }
+  const written: string[] = [];
+  for (const change of plan.changes) {
+    writeFileSync(change.file, change.after, "utf8");
+    written.push(change.file);
+  }
+
+  const messages: string[] = [];
+  const fresh = loadProject(plan.root);
+  const progress = fresh.progress().value;
+  const row = progress.rows.find((r) => r.step === plan.step);
+  const statusOk = row !== undefined && row.status === plan.status;
+  messages.push(
+    statusOk
+      ? `step ${plan.step} has status ${plan.status}`
+      : `step ${plan.step} MISSING from the table or has the wrong status`,
+  );
+
+  let archiveOk = true;
+  if (plan.completedPhase) {
+    const stillThere = progress.phases.some((p) => phaseMatches(p, plan.phase));
+    const inArchive = fresh.progressArchive().value.some((p) => phaseMatches(p, plan.phase));
+    archiveOk = !stillThere && inArchive;
+    messages.push(
+      archiveOk
+        ? "phase block moved to PROGRESS_ARCHIVE"
+        : "phase block move FAILED (missing in archive or still in PROGRESS)",
+    );
+  }
+
+  const findings = docsValidate(plan.root)
+    .findings
+    .filter((f) => f.message.includes(plan.step));
+  if (findings.length === 0) messages.push("docs_validate reports no findings for this step");
+  else for (const f of findings) messages.push(`${f.code}: ${f.message}`);
+
+  const ok = statusOk && archiveOk && findings.length === 0;
   return { written, verification: { ok, messages } };
 }

@@ -1,9 +1,14 @@
-import { cpSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { lineDiff } from "../src/diff.ts";
-import { applyArchivePlan, planArchiveItem } from "../src/mutations.ts";
+import {
+  applyArchivePlan,
+  applyProgressPlan,
+  planArchiveItem,
+  planProgressUpdate,
+} from "../src/mutations.ts";
 
 const fixtures = join(import.meta.dirname, "fixtures");
 const tempDirs: string[] = [];
@@ -157,5 +162,127 @@ describe("applyArchivePlan — apply + verification (3.2)", () => {
     expect(
       result.verification.messages.join("\n"),
     ).not.toMatch(/NOT_ARCHIVED/);
+  });
+});
+
+describe("planProgressUpdate — dry-run planning (3.3)", () => {
+  it("updates a table cell and keeps everything else verbatim", () => {
+    const dir = tempCopy("project-a");
+    const plan = planProgressUpdate(dir, "Phase 2", "2.2", "🔄");
+
+    expect(plan.dryRun).toBe(true);
+    expect(plan.completedPhase).toBe(false);
+    expect(plan.changes).toHaveLength(1);
+    const change = plan.changes[0]!;
+    expect(change.file.endsWith("PROGRESS.md")).toBe(true);
+    expect(change.after).toContain("| 2.2 | U21 Fehlertexte | 🔄 |");
+    expect(change.after).toContain("| 2.1 | Strings-Modul | 🔄 |");
+    expect(change.before).toContain("| 2.2 | U21 Fehlertexte | ⬜ |");
+  });
+
+  it("does not complete the phase while open steps remain", () => {
+    const dir = tempCopy("project-a");
+    const plan = planProgressUpdate(dir, "Phase 2", "2.1", "✅");
+    expect(plan.completedPhase).toBe(false);
+    expect(plan.changes).toHaveLength(1);
+  });
+
+  it("completes the phase and plans the archive move when nothing stays open", () => {
+    const dir = tempCopy("project-a");
+    const progressPath = join(dir, "PROGRESS.md");
+    writeFileSync(
+      progressPath,
+      readFileSync(progressPath, "utf8")
+        .replace("| 2.0 | Auth-Entscheidung | ⛔ |", "| 2.0 | Auth-Entscheidung | ✅ |")
+        .replace("| 2.2 | U21 Fehlertexte | ⬜ |", "| 2.2 | U21 Fehlertexte | ✅ |")
+        .replace("| 2.3 | U22 Ladezustände | ⬜ |", "| 2.3 | U22 Ladezustände | ✅ |"),
+      "utf8",
+    );
+
+    const plan = planProgressUpdate(dir, "Phase 2", "2.1", "✅", { note: "Suite 132/132 grün" });
+
+    expect(plan.completedPhase).toBe(true);
+    expect(plan.changes).toHaveLength(2);
+    const progressChange = plan.changes.find((c) => c.file.endsWith("PROGRESS.md"))!;
+    expect(progressChange.after).toContain("| 2.1 | Strings-Modul | ✅ |");
+    expect(progressChange.after).not.toContain("### Phase 2 — UI-Polish");
+    const archiveChange = plan.changes.find((c) => c.file.endsWith("PROGRESS_ARCHIVE.md"))!;
+    expect(archiveChange.after).toContain("### Phase 2 — UI-Polish");
+    expect(archiveChange.after).toContain("**Verifikation:** Suite 132/132 grün");
+  });
+
+  it("creates a skeleton block and table row for a new phase (🔄)", () => {
+    const dir = tempCopy("project-b-drift");
+    const plan = planProgressUpdate(dir, "Phase 9 — Drift-Fixes", "9.1", "🔄");
+
+    const change = plan.changes[0]!;
+    expect(change.after).toContain("### Phase 9 — Drift-Fixes");
+    expect(change.after).toContain("**Umfang (Steps):**");
+    expect(change.after).toContain("- **9.1 9.1**");
+    expect(change.after).toContain("| 9.1 | 9.1 | 🔄 |");
+  });
+
+  it("appends a missing table row from the scope entry", () => {
+    const dir = tempCopy("project-a");
+    const progressPath = join(dir, "PROGRESS.md");
+    writeFileSync(
+      progressPath,
+      readFileSync(progressPath, "utf8").replace("| 2.2 | U21 Fehlertexte | ⬜ |\n", ""),
+      "utf8",
+    );
+
+    const plan = planProgressUpdate(dir, "Phase 2", "2.2", "🔄");
+
+    const change = plan.changes[0]!;
+    expect(change.after).toContain("| 2.2 | U21 Fehlertexte migrieren | 🔄 |");
+  });
+
+  it("rejects unknown phases and steps", () => {
+    const dir = tempCopy("project-a");
+    expect(() => planProgressUpdate(dir, "Phase 99", "2.1", "🔄")).toThrow(/unknown step/);
+    expect(() => planProgressUpdate(dir, "Phase 99", "2.1", "✅")).toThrow(/unknown phase/);
+    expect(() => planProgressUpdate(dir, "Phase 2", "9.9", "🔄")).toThrow(/unknown step/);
+  });
+});
+
+describe("applyProgressPlan — apply + verification (3.3)", () => {
+  it("refuses to apply a dry-run plan", () => {
+    const dir = tempCopy("project-a");
+    const plan = planProgressUpdate(dir, "Phase 2", "2.2", "🔄");
+    expect(() => applyProgressPlan(plan)).toThrow(/dryRun/);
+  });
+
+  it("writes the status change and verifies fresh state", () => {
+    const dir = tempCopy("project-a");
+    const plan = planProgressUpdate(dir, "Phase 2", "2.2", "🔄", { dryRun: false });
+
+    const result = applyProgressPlan(plan);
+
+    expect(result.verification.ok).toBe(true);
+    expect(readFileSync(join(dir, "PROGRESS.md"), "utf8")).toContain("| 2.2 | U21 Fehlertexte | 🔄 |");
+  });
+
+  it("moves a completed phase block into the archive and verifies", () => {
+    const dir = tempCopy("project-a");
+    const progressPath = join(dir, "PROGRESS.md");
+    writeFileSync(
+      progressPath,
+      readFileSync(progressPath, "utf8")
+        .replace("| 2.0 | Auth-Entscheidung | ⛔ |", "| 2.0 | Auth-Entscheidung | ✅ |")
+        .replace("| 2.2 | U21 Fehlertexte | ⬜ |", "| 2.2 | U21 Fehlertexte | ✅ |")
+        .replace("| 2.3 | U22 Ladezustände | ⬜ |", "| 2.3 | U22 Ladezustände | ✅ |"),
+      "utf8",
+    );
+
+    const plan = planProgressUpdate(dir, "Phase 2", "2.1", "✅", { dryRun: false, note: "Suite 132/132 grün" });
+    const result = applyProgressPlan(plan);
+
+    expect(result.verification.ok).toBe(true);
+    const progress = readFileSync(progressPath, "utf8");
+    expect(progress).toContain("| 2.1 | Strings-Modul | ✅ |");
+    expect(progress).not.toContain("### Phase 2 — UI-Polish");
+    const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.md"), "utf8");
+    expect(archive).toContain("### Phase 2 — UI-Polish");
+    expect(archive).toContain("**Verifikation:** Suite 132/132 grün");
   });
 });

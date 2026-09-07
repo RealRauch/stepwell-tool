@@ -1,15 +1,18 @@
 #!/usr/bin/env node
 import {
   applyArchivePlan,
+  applyProgressPlan,
   docsStatus,
   docsValidate,
   planArchiveItem,
+  planProgressUpdate,
   readBacklog,
   readProgress,
   type ArchiveItemPlan,
   type ApplyResult,
   type DocsStatus,
   type PlanChange,
+  type ProgressUpdatePlan,
 } from "@method-docs/core";
 
 export interface CliIo {
@@ -26,6 +29,8 @@ interface CliOptions {
   status: string | undefined;
   id: string | undefined;
   note: string | undefined;
+  phase: string | undefined;
+  step: string | undefined;
   apply: boolean;
 }
 
@@ -37,16 +42,17 @@ commands:
   progress         Fortschrittstabelle listen
   validate         Konsistenz prüfen (Exit 1 bei Funden)
   archive          Erledigtes Item ins Archiv verschieben (Dry-run; --apply zum Schreiben)
+  progress-update  Step-Status pflegen inkl. Phasen-Abschluss (Dry-run; --apply zum Schreiben)
 
 options:
   --root <dir>       Projekt-Root (Pflicht)
   --priority <list>  Komma-Liste: 🔴,🟠,🟡,🟢,🔵,unknown
   --open <bool>      Checkbox-Filter (true/false, nur backlog)
   --section <title>  Exakter Sektions-Titel (nur backlog)
-  --status <icon>    Status-Filter (nur progress): ⬜,🔄,✅,⛔,unknown
+  --status <icon>    Status-Filter (progress) bzw. neues Icon (progress-update): ⬜,🔄,✅,⛔
   --id <id>          Item-ID (nur archive)
-  --note <text>      Erledigt-Notiz, z. B. Commit-Hash (nur archive)
-  --apply            Änderungen schreiben (nur archive; Default: Dry-run-Vorschau)
+  --note <text>      Erledigt-/Verifikations-Notiz (archive, progress-update)
+  --apply            Änderungen schreiben (archive, progress-update; Default: Dry-run-Vorschau)
   --json             Roh-Payloads statt Lesbarkeit
 `;
 
@@ -60,6 +66,8 @@ function parseArgs(argv: string[]): { command: string | undefined; options: CliO
     status: undefined,
     id: undefined,
     note: undefined,
+    phase: undefined,
+    step: undefined,
     apply: false,
   };
   let command: string | undefined;
@@ -96,6 +104,12 @@ function parseArgs(argv: string[]): { command: string | undefined; options: CliO
         break;
       case "--apply":
         options.apply = true;
+        break;
+      case "--phase":
+        options.phase = next();
+        break;
+      case "--step":
+        options.step = next();
         break;
       default:
         if (command === undefined && !arg.startsWith("-")) {
@@ -165,7 +179,7 @@ function validateText(result: { findings: Array<{ code: string; file: string; li
   return lines.join("\n");
 }
 
-function planText(plan: ArchiveItemPlan): string {
+function planText(plan: { dryRun: boolean; changes: PlanChange[] }): string {
   const lines: string[] = [
     plan.dryRun ? "Dry-run — es wurde nichts geschrieben (--apply zum Anwenden)." : "Apply — Änderungen geschrieben:",
     "",
@@ -202,7 +216,7 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
     throw err;
   }
 
-  if (command === undefined || !["status", "backlog", "progress", "validate", "archive"].includes(command)) {
+  if (command === undefined || !["status", "backlog", "progress", "validate", "archive", "progress-update"].includes(command)) {
     io.stderr.write(USAGE);
     return 2;
   }
@@ -264,6 +278,33 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
           return 0;
         }
         const result = applyArchivePlan(plan);
+        if (options.json) {
+          io.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+        } else {
+          io.stdout.write(applyResultText(result));
+        }
+        return result.verification.ok ? 0 : 1;
+      }
+      case "progress-update": {
+        const root = requireRoot(options);
+        if (options.phase === undefined || options.phase === "") {
+          throw new UsageError("missing required option: --phase <phase>");
+        }
+        if (options.step === undefined || options.step === "") {
+          throw new UsageError("missing required option: --step <nr>");
+        }
+        if (options.status === undefined || !["⬜", "🔄", "✅", "⛔"].includes(options.status)) {
+          throw new UsageError("invalid --status: erwartet wird ⬜, 🔄, ✅ oder ⛔");
+        }
+        const plan = planProgressUpdate(root, options.phase, options.step, options.status as "⬜" | "🔄" | "✅" | "⛔", {
+          dryRun: !options.apply,
+          ...(options.note !== undefined ? { note: options.note } : {}),
+        });
+        if (plan.dryRun) {
+          io.stdout.write(options.json ? `${JSON.stringify(plan, null, 2)}\n` : planText(plan));
+          return 0;
+        }
+        const result = applyProgressPlan(plan);
         if (options.json) {
           io.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
         } else {

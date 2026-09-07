@@ -153,6 +153,42 @@ describe("runCli — archive (3.2)", () => {
   });
 });
 
+describe("runCli — progress-update (3.3)", () => {
+  it("previews the plan without writing by default", async () => {
+    const io = makeIo();
+    const code = await runCli(
+      ["progress-update", "--root", projectA, "--phase", "Phase 2", "--step", "2.2", "--status", "🔄"],
+      io.io,
+    );
+    expect(code).toBe(0);
+    expect(io.stdout).toContain("Dry-run");
+    expect(io.stdout).toContain("+| 2.2 | U21 Fehlertexte | 🔄 |");
+    expect(readFileSync(join(projectA, "PROGRESS.md"), "utf8")).toContain("| 2.2 | U21 Fehlertexte | ⬜ |");
+  });
+
+  it("writes with --apply and prints the verification", async () => {
+    const dir = tempProject("project-a");
+    const io = makeIo();
+    const code = await runCli(
+      ["progress-update", "--root", dir, "--phase", "Phase 2", "--step", "2.2", "--status", "🔄", "--apply"],
+      io.io,
+    );
+    expect(code).toBe(0);
+    expect(io.stdout).toContain("OK");
+    expect(readFileSync(join(dir, "PROGRESS.md"), "utf8")).toContain("| 2.2 | U21 Fehlertexte | 🔄 |");
+  });
+
+  it("rejects invalid status icons with usage exit 2", async () => {
+    const io = makeIo();
+    const code = await runCli(
+      ["progress-update", "--root", projectA, "--phase", "Phase 2", "--step", "2.2", "--status", "wow"],
+      io.io,
+    );
+    expect(code).toBe(2);
+    expect(io.stderr).toContain("--status");
+  });
+});
+
 describe("runCli — usage and errors", () => {
   it("prints usage and exits 2 without a command", async () => {
     const io = makeIo();

@@ -172,5 +172,5 @@ Nutzer-Freigabe „Phase 3 komplett implementieren" aufgehoben):**
 | 2.5 | opencode-Integration + Doku | ✅ |
 | 2.6 | CLI | ✅ |
 | 3.1 | archive_item (Dry-run) | ✅ |
-| 3.2 | archive_item (Apply) + Verifikation | 🔄 |
-| 3.3 | progress_update (Dry-run + Apply) | ⬜ |
+| 3.2 | archive_item (Apply) + Verifikation | ✅ |
+| 3.3 | progress_update (Dry-run + Apply) | ✅ |

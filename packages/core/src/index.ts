@@ -6,8 +6,11 @@ export type { ProjectDocs } from "./project.ts";
 export { lineDiff } from "./diff.ts";
 export {
   applyArchivePlan,
+  applyProgressPlan,
   planArchiveItem,
+  planProgressUpdate,
   type ArchiveItemOptions,
+  type ProgressUpdateOptions,
 } from "./mutations.ts";
 export { docsStatus } from "./status.ts";
 export { docsValidate } from "./validate.ts";
@@ -27,6 +30,7 @@ export type {
   Priority,
   Progress,
   ProgressRow,
+  ProgressUpdatePlan,
   Status,
   ValidateResult,
   Warning,
