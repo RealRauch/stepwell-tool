@@ -155,12 +155,29 @@ export function planArchiveItem(
   return { root, id, dryRun, note, changes };
 }
 
+function assertFreshChanges(changes: PlanChange[]): void {
+  for (const change of changes) {
+    let current: string;
+    try {
+      current = readFileSync(change.file, "utf8");
+    } catch {
+      throw new Error(`stale plan: ${change.file} is no longer readable — create a new plan`);
+    }
+    if (current !== change.before) {
+      throw new Error(
+        `stale plan: ${change.file} changed since the plan was created — create a new plan (dryRun: false) before applying`,
+      );
+    }
+  }
+}
+
 export function applyArchivePlan(plan: ArchiveItemPlan): ApplyResult {
   if (plan.dryRun) {
     throw new Error(
       "refusing to apply a dry-run plan — create the plan with dryRun: false to apply",
     );
   }
+  assertFreshChanges(plan.changes);
   const written: string[] = [];
   for (const change of plan.changes) {
     writeFileSync(change.file, change.after, "utf8");
@@ -366,6 +383,7 @@ export function applyProgressPlan(plan: ProgressUpdatePlan): ApplyResult {
       "refusing to apply a dry-run plan — create the plan with dryRun: false to apply",
     );
   }
+  assertFreshChanges(plan.changes);
   const written: string[] = [];
   for (const change of plan.changes) {
     writeFileSync(change.file, change.after, "utf8");
