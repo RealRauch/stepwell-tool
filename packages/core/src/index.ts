@@ -4,11 +4,17 @@ export { parseBacklogArchive, parseProgressArchive } from "./archive.ts";
 export { backlogShow, loadProject } from "./project.ts";
 export type { ProjectDocs } from "./project.ts";
 export { lineDiff } from "./diff.ts";
-export { planArchiveItem, type ArchiveItemOptions } from "./mutations.ts";
+export {
+  applyArchivePlan,
+  planArchiveItem,
+  type ArchiveItemOptions,
+} from "./mutations.ts";
 export { docsStatus } from "./status.ts";
 export { docsValidate } from "./validate.ts";
 export type {
   ArchiveItem,
+  ArchiveItemPlan,
+  ApplyResult,
   Backlog,
   BacklogEntry,
   BacklogItem,
@@ -17,6 +23,7 @@ export type {
   DocsStatus,
   ParseResult,
   PhaseBlock,
+  PlanChange,
   Priority,
   Progress,
   ProgressRow,

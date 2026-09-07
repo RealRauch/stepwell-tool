@@ -1,8 +1,9 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { lineDiff } from "./diff.ts";
+import { docsValidate } from "./validate.ts";
 import { loadProject } from "./project.ts";
-import type { ArchiveItemPlan, PlanChange } from "./types.ts";
+import type { ArchiveItemPlan, ApplyResult, PlanChange } from "./types.ts";
 
 export interface ArchiveItemOptions {
   dryRun?: boolean;
@@ -131,5 +132,40 @@ export function planArchiveItem(
     },
   ]);
 
-  return { id, dryRun, note, changes };
+  return { root, id, dryRun, note, changes };
+}
+
+export function applyArchivePlan(plan: ArchiveItemPlan): ApplyResult {
+  if (plan.dryRun) {
+    throw new Error(
+      "refusing to apply a dry-run plan — create the plan with dryRun: false to apply",
+    );
+  }
+  const written: string[] = [];
+  for (const change of plan.changes) {
+    writeFileSync(change.file, change.after, "utf8");
+    written.push(change.file);
+  }
+
+  const messages: string[] = [];
+  const fresh = loadProject(plan.root);
+  const backlog = fresh.backlog().value;
+  const stillOpen = backlog.items.some((i) => i.id === plan.id);
+  const inArchive = fresh.backlogArchive().value.some((i) => i.id === plan.id);
+  const inIndex = backlog.doneIndex.some((d) => d.id === plan.id);
+  if (!stillOpen) messages.push(`item "${plan.id}" removed from open BACKLOG`);
+  else messages.push(`item "${plan.id}" is STILL in the open BACKLOG`);
+  if (inArchive) messages.push(`item "${plan.id}" present in BACKLOG_ARCHIVE`);
+  else messages.push(`item "${plan.id}" MISSING from BACKLOG_ARCHIVE`);
+  if (inIndex) messages.push(`item "${plan.id}" present in the Erledigt-Index`);
+  else messages.push(`item "${plan.id}" MISSING from the Erledigt-Index`);
+
+  const findings = docsValidate(plan.root)
+    .findings
+    .filter((f) => f.message.includes(`"${plan.id}"`));
+  if (findings.length === 0) messages.push("docs_validate reports no findings for this id anymore");
+  else for (const f of findings) messages.push(`${f.code}: ${f.message}`);
+
+  const ok = !stillOpen && inArchive && inIndex && findings.length === 0;
+  return { written, verification: { ok, messages } };
 }

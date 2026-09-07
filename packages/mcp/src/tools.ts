@@ -2,6 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import {
+  applyArchivePlan,
   backlogShow,
   docsStatus,
   docsValidate,
@@ -198,10 +199,11 @@ export function registerDocsTools(server: McpServer): void {
     },
     ({ root, id, note, dryRun }) =>
       asResult(() => {
-        if (!dryRun) {
-          throw new Error("apply is not unlocked yet (Step 3.2) — call with dryRun: true");
-        }
-        return planArchiveItem(root, id, note !== undefined ? { note } : {});
+        const plan = planArchiveItem(root, id, {
+          dryRun,
+          ...(note !== undefined ? { note } : {}),
+        });
+        return plan.dryRun ? plan : applyArchivePlan(plan);
       }),
   );
 }
