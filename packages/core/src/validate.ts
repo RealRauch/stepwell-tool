@@ -111,6 +111,7 @@ export function docsValidate(root: string): {
 
   const doneIds = new Set(backlog.value.doneIndex.map((done) => done.id));
   for (const item of backlogArchive.value) {
+    if (item.open) continue;
     if (!doneIds.has(item.id)) {
       findings.push({
         code: "ARCHIVE_WITHOUT_INDEX",

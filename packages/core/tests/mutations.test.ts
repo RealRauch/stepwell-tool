@@ -3,11 +3,19 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { lineDiff } from "../src/diff.ts";
+import { parseBacklog } from "../src/backlog.ts";
 import { parseProgress } from "../src/progress.ts";
+import { docsValidate } from "../src/validate.ts";
 import {
   applyArchivePlan,
+  applyBacklogAddPlan,
+  applyBacklogRemovePlan,
+  applyBacklogUpdatePlan,
   applyProgressPlan,
   planArchiveItem,
+  planBacklogAdd,
+  planBacklogRemove,
+  planBacklogUpdate,
   planProgressUpdate,
 } from "../src/mutations.ts";
 import { canonical } from "../src/profile.ts";
@@ -479,6 +487,151 @@ describe("mutation regressions — R5 (Phase 6)", () => {
     const change = plan.changes[0]!;
     expect(change.after).toContain("### Phase 9 — Drift-Fixes");
     expect(change.after).not.toContain("### Phase 9\n");
+  });
+});
+
+describe("backlog CRUD (T1, 6.9)", () => {
+  it("add derives the next id of the priority series and appends to the section", () => {
+    const dir = tempCopy("project-a");
+    const backlogPath = join(dir, "BACKLOG.md");
+
+    const plan = planBacklogAdd(dir, {
+      dryRun: false,
+      section: "HOCH",
+      title: "Rate-Limit für Login",
+      priority: "🟠",
+      text: "- **Ort:** `src/auth/login.ts`\n- **Problem:** Brute-Force ungehindert.",
+    });
+    expect(plan.id).toBe("H3");
+    const result = applyBacklogAddPlan(plan);
+    expect(result.verification.ok).toBe(true);
+
+    const backlog = readFileSync(backlogPath, "utf8");
+    expect(backlog).toContain("### [ ] H3 — Rate-Limit für Login — 🟠");
+    expect(backlog).toContain("- **Ort:** `src/auth/login.ts`");
+    const h3At = backlog.indexOf("### [ ] H3");
+    const h2Body = backlog.indexOf("- **Abnahme:** Cookie-Flags");
+    const rule = backlog.indexOf("---", h2Body);
+    expect(h3At).toBeGreaterThan(h2Body);
+    expect(h3At).toBeLessThan(rule);
+    expect(backlog).not.toMatch(/\n{3,}/u);
+
+    const parsed = parseBacklog(backlog).value;
+    const added = parsed.items.find((i) => i.id === "H3");
+    expect(added?.open).toBe(true);
+    expect(added?.priority).toBe("🟠");
+    expect(added?.section).toBe("HOCH");
+    expect(added?.location).toBe("`src/auth/login.ts`");
+    const h1 = parsed.items.find((i) => i.id === "H1");
+    expect(h1?.raw).toContain("Kein `limits.fileSize` gesetzt");
+  });
+
+  it("add refreshes the Stand timestamp in the heading", () => {
+    const dir = tempCopy("project-a");
+    const plan = planBacklogAdd(dir, {
+      section: "MITTEL",
+      title: "Irgendwas",
+      priority: "🟡",
+    });
+    const heading = plan.changes[0]!.after.split("\n")[0]!;
+    expect(heading).toMatch(/Stand: \d{6}\/\d{4}/u);
+    expect(heading).not.toContain("260907/1200");
+    expect(plan.id).toBe("M8");
+  });
+
+  it("add rejects non-conforming, duplicate ids and unknown sections", () => {
+    const dir = tempCopy("project-a");
+    expect(() =>
+      planBacklogAdd(dir, { section: "HOCH", title: "X", priority: "🟠", id: "nope_1" }),
+    ).toThrow(/Nomenklatur|convention/iu);
+    expect(() =>
+      planBacklogAdd(dir, { section: "HOCH", title: "X", priority: "🟠", id: "H1" }),
+    ).toThrow(/H1/);
+    expect(() =>
+      planBacklogAdd(dir, { section: "GIBT_ES_NICHT", title: "X", priority: "🟠" }),
+    ).toThrow(/GIBT_ES_NICHT/);
+    expect(() =>
+      planBacklogAdd(dir, { section: "TEST-LÜCKEN", title: "X", priority: "🔵" }),
+    ).toThrow(/id/iu);
+  });
+
+  it("update rewrites title in place and keeps the body verbatim", () => {
+    const dir = tempCopy("project-a");
+    const plan = planBacklogUpdate(dir, "H2", {
+      dryRun: false,
+      title: "Session-Cookie ohne SameSite und Secure",
+    });
+    const result = applyBacklogUpdatePlan(plan);
+    expect(result.verification.ok).toBe(true);
+
+    const backlog = readFileSync(join(dir, "BACKLOG.md"), "utf8");
+    expect(backlog).toContain("### [ ] H2 — Session-Cookie ohne SameSite und Secure — 🟠");
+    expect(backlog).toContain("sameSite: \"lax\"");
+    expect(backlog).not.toContain("H2 — Session-Cookie ohne SameSite — 🟠");
+
+    const parsed = parseBacklog(backlog).value;
+    const h2 = parsed.items.find((i) => i.id === "H2");
+    expect(h2?.span.start).toBe(25);
+    expect(h2?.priority).toBe("🟠");
+  });
+
+  it("update moves the block across sections when the priority changes", () => {
+    const dir = tempCopy("project-a");
+    const plan = planBacklogUpdate(dir, "H2", {
+      dryRun: false,
+      priority: "🟢",
+      title: "Session-Cookie-Polish",
+    });
+    const result = applyBacklogUpdatePlan(plan);
+    expect(result.verification.ok).toBe(true);
+
+    const backlog = readFileSync(join(dir, "BACKLOG.md"), "utf8");
+    const lowSection = backlog.indexOf("## 🟢 NIEDRIG");
+    const movedAt = backlog.indexOf("### [ ] H2 — Session-Cookie-Polish — 🟢");
+    const l3 = backlog.indexOf("### [ ] L3");
+    expect(movedAt).toBeGreaterThan(lowSection);
+    expect(movedAt).toBeGreaterThan(l3);
+    const hochSection = backlog.slice(backlog.indexOf("## 🟠 HOCH"), lowSection);
+    expect(hochSection).not.toContain("### [ ] H2");
+
+    const parsed = parseBacklog(backlog).value;
+    const h2 = parsed.items.find((i) => i.id === "H2");
+    expect(h2?.section).toBe("NIEDRIG");
+    expect(h2?.priority).toBe("🟢");
+  });
+
+  it("update rejects unknown ids", () => {
+    const dir = tempCopy("project-a");
+    expect(() => planBacklogUpdate(dir, "NOPE", { title: "X" })).toThrow(/NOPE/);
+  });
+
+  it("remove moves the block verbatim to the archive without an index line", () => {
+    const dir = tempCopy("project-a");
+    const before = readFileSync(join(dir, "BACKLOG.md"), "utf8");
+    const plan = planBacklogRemove(dir, "R4", { dryRun: false, note: "Thema veraltet" });
+    const result = applyBacklogRemovePlan(plan);
+    expect(result.verification.ok).toBe(true);
+
+    const backlog = readFileSync(join(dir, "BACKLOG.md"), "utf8");
+    expect(backlog).not.toContain("### [ ] R4");
+    expect(backlog).toContain("- R4 — Feldtest auf Zielgeräten — entfernt (Thema veraltet)");
+    expect(backlog).toContain("- S1 — Schema-Migration 001→002 abgesichert — erledigt in `a1b2c3d`");
+    expect(readFileSync(join(dir, "BACKLOG.md"), "utf8")).not.toBe(before);
+
+    const archive = readFileSync(join(dir, "docs", "archive", "BACKLOG_ARCHIVE.md"), "utf8");
+    expect(archive).toContain(
+      "### [ ] R4 — Feldtest auf Zielgeräten — 🟠 *(vor Pilotbetrieb zwingend)*",
+    );
+    expect(archive).toContain("- **Entfernt:** Thema veraltet");
+
+    const validation = docsValidate(dir);
+    expect(validation.findings.filter((f) => f.message.includes("R4"))).toEqual([]);
+  });
+
+  it("remove rejects unknown and already-archived ids", () => {
+    const dir = tempCopy("project-a");
+    expect(() => planBacklogRemove(dir, "NOPE")).toThrow(/NOPE/);
+    expect(() => planBacklogRemove(dir, "S1")).toThrow(/already archived/);
   });
 });
 
