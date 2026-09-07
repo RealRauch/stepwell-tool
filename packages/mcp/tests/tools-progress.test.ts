@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { callTool, connect, payload, projectA, projectDrift } from "./helper.js";
+import { callTool, connect, payload, projectA, projectDrift } from "./helper.ts";
 
 describe("tool progress_list (2.3)", () => {
   it("lists all table rows", async () => {

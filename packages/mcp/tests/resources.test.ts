@@ -5,7 +5,7 @@ import {
   projectDrift,
   resourceMime,
   resourceText,
-} from "./helper.js";
+} from "./helper.ts";
 
 const enc = (p: string): string => encodeURIComponent(p);
 
