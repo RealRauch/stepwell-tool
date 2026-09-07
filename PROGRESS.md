@@ -109,7 +109,49 @@ der Root ausschließlich encoded in den URI eingesetzt und im Read-Callback deko
 
 Bewusste Grenze: Alles andere editiert der Agent **direkt** in den Markdown-Dateien —
 das Tool automatisiert nur die fehleranfälligen, strukturellen Operationen (Lesson L16).
-**Nicht vor** Bewährung von Phase 1+2 starten; detaillierte Paketierung bei Phasenstart.
+
+**Fein-Paketierung (bei Phasenstart 09/2026; das Bewährungs-Gate wurde durch
+Nutzer-Freigabe „Phase 3 komplett implementieren" aufgehoben):**
+
+- **3.1 `archive_item` (Dry-run):** core `planArchiveItem(root, id, {note?})` — Plan aus
+  genau zwei Datei-Änderungen: (a) Item-Block **span-basiert und verbatim** aus
+  `BACKLOG.md` entfernen (Lesson L16), im Archiv-Exemplar die Checkbox zu `[x]` kippen;
+  optionale `note` wird als `- **Erledigt:** <note>` an den Archiv-Block angehängt;
+  (b) Einzeiler `- <ID> — <Titel> — erledigt (note?)` ans **Ende** der Sektion
+  „✅ Erledigt-Index". Je Änderung `before`/`after` + eigenhändiger Mini-Diff
+  (zeilenbasiert, Kontext 2, `src/diff.ts`). MCP-Tool `archive_item` mit `dryRun`
+  **Default `true`**; `dryRun: false` wird in 3.1 noch mit klarem Fehler abgelehnt
+  (Apply folgt in 3.2). Keine Status-Pflege in `PROGRESS.md` durch `archive_item` —
+  die Phasen-„Status-Pflege" aus der Ziel-Beschreibung ist Aufgabe von
+  `progress_update` (3.3); Verhalten hiermit festgelegt.
+- **3.2 Apply + Verifikation:** core `applyArchivePlan(plan)` schreibt beide Dateien
+  (EOL-erhaltend); anschließend Frisch-Verifikation: ID nicht mehr in offenen Items,
+  Block im Archiv, Einzeiler im Index, `docs_validate` ohne ID-bezogene Funde
+  (Ergebnis im `ApplyResult.verification`). Freischaltung: MCP `dryRun: false` und
+  CLI `archive --apply`. Tests **ausschließlich gegen Temp-Kopien der Fixtures**
+  (`fs.cpSync` nach `os.tmpdir()`, Originale unberührt — abgesichert per
+  Vorher/Nachher-Vergleich).
+- **3.3 `progress_update` (Dry-run + Apply):** core `planProgressUpdate(root, phase,
+  step, status, {note?})` — Fortschrittstabelle: Status-Zelle je Step setzen; fehlt
+  die Zeile, wird sie ergänzt (Name aus dem Scope-Bullet des Blocks abgeleitet, sonst
+  der Step selbst). Detail-Block: fehlt er bei 🔄, wird ein Skelett unter „Laufende
+  Phasen" angelegt (`### <Phase>` + `**Umfang (Steps):**` + Step-Bullet) — keine
+  erfundenen Ziel-/Abnahme-Texte (die füllt der Agent direkt); fehlt der Step-Bullet
+  im Block, wird er ergänzt. Ist nach dem Update **kein** Step der Phase mehr 🔄/⬜
+  (Phasen-Präfix `<Nr>.` aus dem Blocknamen), wandert der Block **verbatim** ins
+  `PROGRESS_ARCHIVE` (optionale `note` dabei als `**Verifikation:**`-Zeile am Block).
+  MCP-Tool + CLI `progress-update --apply`.
+- **Interface-Erweiterung (Beschluss 09/2026):** `archive_item` erhält zusätzlich
+  `note?` (Erledigt-Zeile am Archiv-Block + Index-Tail) — Abweichung von der
+  1.2-Schnittstellentafel, dokumentiert in `packages/core/tests/fixtures/README.md`
+  (dort wird die Tool-Tabelle mitgepflegt).
+- **Dogfood nach 3.3 (Echtbetriebs-Verifikation):** Dieses Repo erfüllt die
+  4-Datei-Pflicht (Archive-Skelette angelegt, 09/2026); die Detail-Blöcke Phase 1+2
+  werden via `progress_update` ins Archiv verschoben und BACKLOG-Item `L1` nach dem
+  stadtpfad-pwa-Sync via `archive_item` abgeschlossen; `docs_validate` muss_clean
+  laufen.
+- **Testdaten-Muster:** Player für Mutationen sind ausschließlich Temp-Kopien;
+  `project-a`/`project-b-drift` bleiben forever read-only.
 
 ---
 
@@ -129,6 +171,6 @@ das Tool automatisiert nur die fehleranfälligen, strukturellen Operationen (Les
 | 2.4 | MCP Resources | ✅ |
 | 2.5 | opencode-Integration + Doku | ✅ |
 | 2.6 | CLI | ✅ |
-| 3.1 | archive_item (Dry-run) | ⬜ |
-| 3.2 | archive_item (Apply) + Verifikation | ⬜ |
+| 3.1 | archive_item (Dry-run) | ✅ |
+| 3.2 | archive_item (Apply) + Verifikation | 🔄 |
 | 3.3 | progress_update (Dry-run + Apply) | ⬜ |

@@ -1,7 +1,7 @@
 import { Writable } from "node:stream";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { runCli } from "../src/cli.js";
+import { runCli } from "../src/cli.ts";
 
 const fixtures = join(import.meta.dirname, "..", "..", "core", "tests", "fixtures");
 const projectA = join(fixtures, "project-a");
