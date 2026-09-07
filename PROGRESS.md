@@ -103,11 +103,11 @@ das Tool automatisiert nur die fehleranfälligen, strukturellen Operationen (Les
 | # | Step | Status |
 |---|----------|--------|
 | 1.1 | Monorepo-Grundgerüst | ✅ |
-| 1.2 | BACKLOG-Parser | ⬜ |
-| 1.3 | PROGRESS-Parser | ⬜ |
-| 1.4 | Archiv-Reader | ⬜ |
-| 1.5 | docs_status | ⬜ |
-| 1.6 | docs_validate | ⬜ |
+| 1.2 | BACKLOG-Parser | ✅ |
+| 1.3 | PROGRESS-Parser | ✅ |
+| 1.4 | Archiv-Reader | ✅ |
+| 1.5 | docs_status | ✅ |
+| 1.6 | docs_validate | ✅ |
 | 2.1 | SDK-Festlegung + Grundserver | ⬜ |
 | 2.2 | MCP Read-Tools backlog | ⬜ |
 | 2.3 | MCP Read-Tools progress + validate | ⬜ |
