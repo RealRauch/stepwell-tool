@@ -195,7 +195,9 @@ function escapeRegExp(value: string): string {
 }
 
 function extractScopeName(scopeEntry: string): string | undefined {
-  const m = /^\*{0,2}\s*\d+(?:\.\d+)?\s+(.+?)\*{0,2}\s*(?:\s*—.*)?$/u.exec(scopeEntry);
+  const bold = /^\*{0,2}\s*\d+(?:\.\d+)?\s+(.+?)\s*\*\*(?:\s.*)?$/u.exec(scopeEntry);
+  if (bold) return bold[1]!.trim();
+  const m = /^\*{0,2}\s*\d+(?:\.\d+)?\s+(.+?)\s*(?:—.*)?$/u.exec(scopeEntry);
   return m?.[1]?.trim();
 }
 
@@ -279,6 +281,10 @@ export function planProgressUpdate(
   const editProgress = (content: string, eol: string): string => {
     const lines = content.split(eol);
 
+    if (completedPhase && block !== undefined) {
+      removeSpan(lines, block.span.start, block.span.end);
+    }
+
     if (row !== undefined) {
       const idx = lines.findIndex((l) => tableLineHasStep(l, row.step));
       if (idx === -1) throw new Error(`table row for step ${row.step} not found`);
@@ -322,10 +328,6 @@ export function planProgressUpdate(
       );
     } else if (!completedPhase && scopeEntry === undefined) {
       lines.splice(block.span.end, 0, `- **${step} ${rowName}**`);
-    }
-
-    if (completedPhase && block !== undefined) {
-      removeSpan(lines, block.span.start, block.span.end);
     }
     return lines.join(eol);
   };
