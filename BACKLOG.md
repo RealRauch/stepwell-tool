@@ -1,4 +1,4 @@
-# BACKLOG.md — Offene Punkte (Stand: 260907/2320)
+# BACKLOG.md — Offene Punkte (Stand: 260908/0010)
 
 > **Diese Datei enthält nur OFFENE Items.** Erledigte Items werden nach dem Abschluss
 > **unverändert** in `docs/archive/BACKLOG_ARCHIVE.md` verschoben; hier bleibt je Item nur ein Einzeiler
@@ -22,8 +22,6 @@
 
 ## 🟡 MITTEL
 
-> Keine offenen Items.
-
 ---
 
 ## 🟢 NIEDRIG
@@ -42,5 +40,6 @@
 
 > (Einzeiler je abgeschlossenem Item, mit Commit-Hash; Details im Archiv.)
 - L1 — Methoden-Änderungen (09/2026) in PLAYBOOK-Kopie von stadtpfad-pwa nachziehen — erledigt (Sync 09/2026 in stadtpfad-pwa@01cbc30, beide Kopien byte-identisch)
+- M1 — Methoden-Änderungen (09/2026: Freigabe-Gate, Lesson 17) in PLAYBOOK-/LESSONS-Kopien synchronisieren — erledigt (Sync 09/2026 in stadtpfad-pwa@f6e2277, beide Kopien byte-identisch)
 
 ---

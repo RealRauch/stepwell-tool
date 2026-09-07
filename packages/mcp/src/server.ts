@@ -3,7 +3,7 @@ import { z } from "zod";
 import { registerDocsResources } from "./resources.ts";
 import { registerDocsTools } from "./tools.ts";
 
-export const SERVER_NAME = "method-docs";
+export const SERVER_NAME = "stepwell";
 export const SERVER_VERSION = "0.1.0";
 
 export function createDocsServer(): McpServer {

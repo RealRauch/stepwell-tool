@@ -52,7 +52,7 @@ npm run test:watch
 
 ## MCP-Server
 
-Server-Name `method-docs`, Transport **stdio**, Entry `packages/mcp/src/serve.ts`.
+Server-Name `stepwell` (Transport **stdio**, Entry `packages/mcp/src/serve.ts`).
 
 Dieses Repo bindet den Server bereits in `opencode.json` ein (nach Änderungen an
 der Config opencode **neu starten**). Für andere MCP-Clients (Claude Desktop,
@@ -61,7 +61,7 @@ Cursor, …) das gleiche Muster:
 ```json
 {
   "mcp": {
-    "method-docs": {
+    "stepwell": {
       "type": "local",
       "command": ["node", "/pfad/zu/method-docs/packages/mcp/src/serve.ts"],
       "enabled": true

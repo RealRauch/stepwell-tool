@@ -181,3 +181,23 @@ Auto-Erkennung, Default `de`); Suite + Typecheck grün.
   `archive_item`/`progress_update` (Default `de`, `en`, Auto-Erkennung aus dem
   Datei-Kontext); MCP-Param + CLI `--locale`; README + Interface-Tafel gepflegt.
 **Verifikation:** Parser/Validator bilingual (project-c-en fund-frei), locale-Option auf archive_item/progress_update mit Auto-Erkennung, CLI --locale; Suite 146/146 gruen
+
+---
+
+### Phase 5 — Identität und Prozess-Schärfung
+
+**Ziel:** Der MCP-Server trägt den Methoden-Namen (`stepwell`), und die
+Prozess-Lektionen aus Phase 3/4 sind bindend verankert (Menschen-Gate,
+Tool-Pflicht für Strukturen).
+
+**Abnahme:** `serverInfo.name` ist `stepwell` (InMemory- + stdio-Test),
+opencode-Registry-Schlüssel und README entsprechend; PLAYBOOK §0.4 (Freigabe-Gate)
+und LESSONS 17 (Struktur-Operationen gehören dem Tool) sind verankert und
+synchronisiert (byte-identisch in stadtpfad-pwa); Suite + validate grün.
+
+**Umfang (Steps):**
+
+- **5.1 MCP-Server-Name `stepwell`:** `SERVER_NAME`, Tests, `opencode.json`-Schlüssel,
+  README; dazu Methoden-Änderungen (PLAYBOOK §0.4, LESSONS 17) mit Sync-Pflicht
+  (BACKLOG M1) — Gate-Regel: Implementierung startet erst nach menschlicher Freigabe.
+**Verifikation:** serverInfo.name=stepwell (InMemory+stdio getestet), opencode-Registrierung + README umgestellt; PLAYBOOK 0.3 Freigabe-Gate + LESSONS 17 in allen Kopien synchronisiert (stadtpfad-pwa@f6e2277)
