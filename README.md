@@ -37,7 +37,7 @@ laufen direkt auf TS-Source ohne Build-Schritt).
 | Paket | Zweck |
 |-------|-------|
 | `@method-docs/core` | Parser + Status-/Validierungs-Reports (kein MCP) |
-| `@method-docs/mcp` | MCP-Server (stdio) über core |
+| `@method-docs/mcp` | MCP-Server (stdio) + CLI über core |
 
 ## MCP-Server
 
@@ -81,6 +81,19 @@ npx @modelcontextprotocol/inspector node packages/mcp/src/serve.ts
 
 Die automatisierte Suite (`packages/mcp/tests/`) deckt denselben Protokoll-Pfad
 über `InMemoryTransport` plus einen echten stdio-Handshake-Test ab.
+
+## CLI
+
+```bash
+node packages/mcp/src/cli.ts status   --root <projekt> [--json]
+node packages/mcp/src/cli.ts backlog  --root <projekt> [--priority 🔴,🟠] [--open false] [--section HOCH] [--json]
+node packages/mcp/src/cli.ts progress --root <projekt> [--status 🔄] [--json]
+node packages/mcp/src/cli.ts validate --root <projekt> [--json]
+```
+
+Menschliche Ausgabe auf stdout, `--json` liefert die unveränderten core-Payloads.
+Exit-Codes: 0 = Erfolg bzw. keine Validate-Funde, 1 = Fehler/Funde, 2 = Usage.
+Nach `npm install` steht im Repo auch `npx method-docs …` (via `bin`-Eintrag).
 
 ## Architektur
 

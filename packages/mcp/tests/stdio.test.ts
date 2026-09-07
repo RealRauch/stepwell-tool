@@ -21,10 +21,14 @@ describe("serve.ts — stdio transport (real process)", () => {
 
     const line = await new Promise<string>((resolve, reject) => {
       let buffer = "";
+      let errBuffer = "";
       const timer = setTimeout(() => {
         child.kill();
-        reject(new Error(`timeout waiting for initialize response, got: ${buffer}`));
+        reject(new Error(`timeout waiting for initialize response, got: ${buffer} stderr: ${errBuffer}`));
       }, 10_000);
+      child.stderr.on("data", (chunk: Buffer) => {
+        errBuffer += chunk.toString();
+      });
       child.stdout.on("data", (chunk: Buffer) => {
         buffer += chunk.toString();
         const match = buffer.split("\n").find((l) => l.includes('"id":1'));
@@ -33,9 +37,9 @@ describe("serve.ts — stdio transport (real process)", () => {
           resolve(match);
         }
       });
-      child.on("exit", () => {
+      child.on("exit", (code) => {
         clearTimeout(timer);
-        reject(new Error(`server exited early, got: ${buffer}`));
+        reject(new Error(`server exited early (code ${code}), got: ${buffer} stderr: ${errBuffer}`));
       });
     });
     child.kill();

@@ -5,6 +5,9 @@
   "exports": {
     ".": "./src/index.ts"
   },
+  "bin": {
+    "method-docs": "./src/cli.ts"
+  },
   "dependencies": {
     "@method-docs/core": "*",
     "@modelcontextprotocol/sdk": "^1.30.0",
