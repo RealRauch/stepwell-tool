@@ -38,6 +38,17 @@ unmöglich; es liest, validiert und assistiert. Schreibzugriffe nur Phase 3 (`ar
 | `PROGRESS.md` | Häppchen-Paketierung + Fortschritt |
 | `BACKLOG.md` | Offene Punkte |
 
+## Kickoff für neue Sessions (in dieser Reihenfolge)
+
+1. `docs/PLAYBOOK.md` (Methode) + `docs/LESSONS.md` (Checkliste) lesen — beide bindend.
+2. `PROGRESS.md` → „Laufende Phasen": nächstes offenes Häppchen in definierter Reihenfolge (aktuell: 1.2 BACKLOG-Parser).
+3. **Testdaten:** `packages/core/tests/fixtures/` — die `README.md` dort ist die arbeitende
+   Spezifikation für 1.2–1.6 (erwartete Parser-Ergebnisse + Validate-Funde D1–D12).
+   `project-a` = sauberes Musterprojekt (Parser-Positivpfad) · `project-b-drift` = absichtliche Drift-Fälle (Toleranz + Validate).
+4. **Realformat-Referenz (nur lesen, nicht verändern):** Geschwister-Repo `../stadtpfad-pwa`
+   (`BACKLOG.md`, `PROGRESS.md`, `docs/archive/*`) — Original der Struktur.
+5. Verifikation vor jedem Abschluss: `npm run typecheck` + `npm run test` (Test-First: ROT → GRÜN).
+
 ## Architektur-Entscheidungen
 
 1. **Zwei Schichten:** core ist bibliotheks-fähig (CLI/CI später fast gratis); MCP ist nur Transport.
