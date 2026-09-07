@@ -33,3 +33,4 @@
 | 3.3 | progress_update (Dry-run + Apply) | ✅ |
 | 4.1 | Locale-Profile (lesen) | ✅ |
 | 4.2 | Locale-Profile (schreiben + Schnittstellen) | ✅ |
+| 5.1 | MCP-Server-Name stepwell + Prozess-Verankerung | ✅ |

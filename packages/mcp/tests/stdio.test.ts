@@ -47,7 +47,7 @@ describe("serve.ts — stdio transport (real process)", () => {
     const parsed = JSON.parse(line) as {
       result: { serverInfo: { name: string; version: string } };
     };
-    expect(parsed.result.serverInfo.name).toBe("method-docs");
+    expect(parsed.result.serverInfo.name).toBe("stepwell");
     expect(parsed.result.serverInfo.version).toBe("0.1.0");
   });
 });

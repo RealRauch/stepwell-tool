@@ -15,7 +15,8 @@ Die Reihenfolge ist immer: **Planen → Paketieren → Implementieren.**
 
 1. **Planen:** Vor jeder Umsetzung werden die Schritte zuerst geplant (Ziel, Umfang, Reihenfolge, Risiken) — keine Implementierung „aus dem Handgelenk".
 2. **Paketieren:** Der Plan wird in `PROGRESS.md` in konkrete Aufträge mit **kleinen Step** zerlegt (nummeriert, mit Status und kurzem Umfang je Step).
-3. **Implementieren:** Erst danach wird implementiert — Step für Step nach den Regeln unten (Test-First, Verifikation, Commit).
+3. **Freigabe-Gate (bindend):** Der Übergang von Planung und Paketierung zur Implementierung erfolgt **erst nach expliziter Freigabe durch den Menschen** — Agenten wie Menschen paketieren vor, implementieren aber erst auf Freigabe.
+4. **Implementieren:** Erst danach wird implementiert — Step für Step nach den Regeln unten (Test-First, Verifikation, Commit).
 
 ## 1. Sequenzielles Vorgehen
 

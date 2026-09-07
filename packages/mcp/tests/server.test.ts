@@ -20,7 +20,7 @@ async function connect(): Promise<{ client: Client; close: () => Promise<void> }
 
 describe("createDocsServer — 2.1 grundserver", () => {
   it("exposes SERVER_NAME/VERSION", () => {
-    expect(SERVER_NAME).toBe("method-docs");
+    expect(SERVER_NAME).toBe("stepwell");
     expect(SERVER_VERSION).toBe("0.1.0");
   });
 
