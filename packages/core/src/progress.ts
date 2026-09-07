@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { allSynonyms, getFieldByRole } from "./profile.ts";
+import { allSynonyms, escapeRegExp, getFieldByRole } from "./profile.ts";
 import type {
   ParseResult,
   PhaseBlock,
@@ -15,7 +15,10 @@ const SEPARATOR_ROW = /^[\s|:-]+$/;
 const SEPARATOR_RULE = /^-{3,}\s*$/u;
 const HEADING = /^##\s+(.*)$/;
 const BLOCK_HEADING = /^###\s+(.*)$/;
-const PHASE_SUFFIX = /\s*\*\((?:abgeschlossen|completed)\s+([^)]+)\)\*\s*$/u;
+const PHASE_SUFFIX = new RegExp(
+  `\\s*\\*\\((?:${allSynonyms("completedMarker").map(escapeRegExp).join("|")})\\s+([^)]+)\\)\\*\\s*$`,
+  "u",
+);
 const PHASE_SPLIT = /^(.*?)\s+—\s+([\s\S]*)$/;
 const FIELD = /^\*\*(.+?):\*\*\s*(.*)$/u;
 const SCOPE_BULLET = /^-\s+(.*)$/;
