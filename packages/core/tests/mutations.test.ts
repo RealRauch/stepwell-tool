@@ -291,6 +291,56 @@ describe("locale generation (4.2)", () => {
   });
 });
 
+describe("mutation regressions — R5 (Phase 6)", () => {
+  /** Removes row 2.1 from the table and marks 2.2/2.3 done: updating 2.1 must
+   *  re-insert the row AND complete the phase in the same call (R1 scenario). */
+  function setupForR1(project: string): string {
+    const dir = tempCopy(project);
+    const progressPath = join(dir, "PROGRESS.md");
+    writeFileSync(
+      progressPath,
+      readFileSync(progressPath, "utf8")
+        .replace("| 2.2 | U21 Fehlertexte | ⬜ |", "| 2.2 | U21 Fehlertexte | ✅ |")
+        .replace("| 2.3 | U22 Ladezustände | ⬜ |", "| 2.3 | U22 Ladezustände | ✅ |")
+        .replace("| 2.1 | Strings-Modul | 🔄 |\n", ""),
+      "utf8",
+    );
+    return dir;
+  }
+
+  it("R1: missing row + phase completion keeps table-first PROGRESS.md intact", () => {
+    const dir = setupForR1("project-d-tablefirst");
+
+    const plan = planProgressUpdate(dir, "Phase 2", "2.1", "✅", { dryRun: false, note: "Suite grün" });
+    expect(plan.completedPhase).toBe(true);
+    const result = applyProgressPlan(plan);
+    expect(result.verification.ok).toBe(true);
+
+    const progress = readFileSync(join(dir, "PROGRESS.md"), "utf8");
+    expect(progress).toContain("| 2.1 | Strings-Modul anlegen | ✅ |");
+    expect(progress).not.toContain("### Phase 2 — UI-Polish");
+    expect(progress).not.toContain("- **2.3 U22");
+    expect(progress).not.toMatch(/\n{3,}/u);
+    const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.md"), "utf8");
+    expect(archive).toContain("### Phase 2 — UI-Polish");
+    expect(archive).toContain("**Verifikation:** Suite grün");
+  });
+
+  it("R1: missing row + phase completion keeps blocks-first PROGRESS.md intact (guard)", () => {
+    const dir = setupForR1("project-a");
+
+    const plan = planProgressUpdate(dir, "Phase 2", "2.1", "✅", { dryRun: false });
+    expect(plan.completedPhase).toBe(true);
+    const result = applyProgressPlan(plan);
+    expect(result.verification.ok).toBe(true);
+
+    const progress = readFileSync(join(dir, "PROGRESS.md"), "utf8");
+    expect(progress).toContain("| 2.1 | Strings-Modul anlegen | ✅ |");
+    expect(progress).not.toContain("### Phase 2 — UI-Polish");
+    expect(progress).not.toContain("- **2.3 U22");
+  });
+});
+
 describe("applyProgressPlan — apply + verification (3.3)", () => {
   it("refuses to apply a dry-run plan", () => {
     const dir = tempCopy("project-a");
