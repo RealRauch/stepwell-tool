@@ -6,8 +6,12 @@ import {
   docsValidate,
   planArchiveItem,
   planProgressUpdate,
+  priorityAliasHelp,
   readBacklog,
   readProgress,
+  resolvePriority,
+  resolveStatus,
+  statusAliasHelp,
   type ArchiveItemPlan,
   type ApplyResult,
   type DocsStatus,
@@ -47,10 +51,12 @@ commands:
 
 options:
   --root <dir>       Projekt-Root (Pflicht)
-  --priority <list>  Komma-Liste: 🔴,🟠,🟡,🟢,🔵,unknown
+  --priority <list>  Komma-Liste, Icons oder Aliase: 🔴=red/kritisch/p1, 🟠=orange/hoch/p2,
+                     🟡=yellow/mittel/p3, 🟢=green/niedrig/p4, 🔵=blue/test/p5, unknown
   --open <bool>      Checkbox-Filter (true/false, nur backlog)
   --section <title>  Exakter Sektions-Titel (nur backlog)
-  --status <icon>    Status-Filter (progress) bzw. neues Icon (progress-update): ⬜,🔄,✅,⛔
+  --status <icon>    Status-Filter (progress) bzw. neues Icon (progress-update):
+                     ⬜=open, 🔄=running/wip, ✅=done, ⛔=blocked, unknown (nur Filter)
   --id <id>          Item-ID (nur archive)
   --note <text>      Erledigt-/Verifikations-Notiz (archive, progress-update)
   --locale <de|en>   Sprache generierter Texte (archive, progress-update; Default: Auto-Erkennung)
@@ -147,6 +153,36 @@ function requireLocale(options: CliOptions): "de" | "en" | undefined {
     throw new UsageError("invalid --locale: erlaubt sind de und en");
   }
   return options.locale;
+}
+
+function requirePriorities(options: CliOptions): string[] {
+  return options.priority.map((token) => {
+    const resolved = resolvePriority(token);
+    if (resolved === undefined) {
+      throw new UsageError(`invalid --priority value: "${token}" — erlaubt sind ${priorityAliasHelp()}`);
+    }
+    return resolved;
+  });
+}
+
+function requireStatusFilter(options: CliOptions): string {
+  const resolved = resolveStatus(options.status!);
+  if (resolved === undefined) {
+    throw new UsageError(
+      `invalid --status value: "${options.status}" — erlaubt sind ${statusAliasHelp()}`,
+    );
+  }
+  return resolved;
+}
+
+function requireStatusIcon(options: CliOptions): "⬜" | "🔄" | "✅" | "⛔" {
+  const resolved = resolveStatus(options.status!);
+  if (resolved === undefined || resolved === "unknown") {
+    throw new UsageError(
+      `invalid --status value: "${options.status}" — erlaubt sind ${statusAliasHelp().replace(", unknown", "")}`,
+    );
+  }
+  return resolved;
 }
 
 function statusText(s: DocsStatus): string {
@@ -246,8 +282,9 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
         const root = requireRoot(options);
         const parsed = readBacklog(root);
         let items = parsed.value.items;
-        if (options.priority.length > 0) {
-          const wanted = new Set(options.priority);
+        const priorities = requirePriorities(options);
+        if (priorities.length > 0) {
+          const wanted = new Set(priorities);
           items = items.filter((i) => wanted.has(i.priority));
         }
         if (options.open !== undefined) {
@@ -267,8 +304,9 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
         const root = requireRoot(options);
         const parsed = readProgress(root);
         let rows = parsed.value.rows;
-        if (options.status !== undefined) {
-          rows = rows.filter((r) => r.status === options.status);
+        if (options.status !== undefined && options.status !== "") {
+          const wanted = requireStatusFilter(options);
+          rows = rows.filter((r) => r.status === wanted);
         }
         io.stdout.write(options.json ? `${JSON.stringify({ count: rows.length, rows, warnings: parsed.warnings }, null, 2)}\n` : progressText(rows));
         return 0;
@@ -309,10 +347,11 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
         if (options.step === undefined || options.step === "") {
           throw new UsageError("missing required option: --step <nr>");
         }
-        if (options.status === undefined || !["⬜", "🔄", "✅", "⛔"].includes(options.status)) {
-          throw new UsageError("invalid --status: erwartet wird ⬜, 🔄, ✅ oder ⛔");
+        if (options.status === undefined || options.status === "") {
+          throw new UsageError("missing required option: --status <icon|alias>");
         }
-        const plan = planProgressUpdate(root, options.phase, options.step, options.status as "⬜" | "🔄" | "✅" | "⛔", {
+        const statusIcon = requireStatusIcon(options);
+        const plan = planProgressUpdate(root, options.phase, options.step, statusIcon, {
           dryRun: !options.apply,
           ...(options.note !== undefined ? { note: options.note } : {}),
           ...(requireLocale(options) !== undefined ? { locale: requireLocale(options)! } : {}),

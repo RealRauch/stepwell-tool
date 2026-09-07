@@ -210,6 +210,54 @@ describe("runCli — archive locale (4.2)", () => {
   });
 });
 
+describe("runCli — ascii aliases (T3, 6.7)", () => {
+  it("accepts --status running for progress-update and writes the icon", async () => {
+    const dir = tempProject("project-a");
+    const io = makeIo();
+    const code = await runCli(
+      ["progress-update", "--root", dir, "--phase", "Phase 2", "--step", "2.2", "--status", "running", "--apply"],
+      io.io,
+    );
+    expect(code).toBe(0);
+    expect(readFileSync(join(dir, "PROGRESS.md"), "utf8")).toContain("| 2.2 | U21 Fehlertexte | 🔄 |");
+  });
+
+  it("accepts --priority red,yellow for the backlog filter", async () => {
+    const io = makeIo();
+    const code = await runCli(["backlog", "--root", projectA, "--priority", "red,yellow"], io.io);
+    expect(code).toBe(0);
+    expect(io.stdout).toContain("U21");
+    expect(io.stdout).toContain("U22");
+    expect(io.stdout).not.toContain("H1");
+  });
+
+  it("accepts --status done for the progress filter", async () => {
+    const io = makeIo();
+    const code = await runCli(["progress", "--root", projectA, "--status", "done"], io.io);
+    expect(code).toBe(0);
+    expect(io.stdout).toContain("0.1");
+    expect(io.stdout).not.toContain("2.2");
+  });
+
+  it("lists the allowed aliases for an invalid priority (exit 2)", async () => {
+    const io = makeIo();
+    const code = await runCli(["backlog", "--root", projectA, "--priority", "bogus"], io.io);
+    expect(code).toBe(2);
+    expect(io.stderr).toContain("bogus");
+    expect(io.stderr).toContain("🔴=red/kritisch/p1");
+  });
+
+  it("lists the allowed aliases for an invalid status (exit 2)", async () => {
+    const io = makeIo();
+    const code = await runCli(
+      ["progress-update", "--root", projectA, "--phase", "Phase 2", "--step", "2.2", "--status", "wow"],
+      io.io,
+    );
+    expect(code).toBe(2);
+    expect(io.stderr).toContain("🔄=running/wip");
+  });
+});
+
 describe("runCli — usage and errors", () => {
   it("prints usage and exits 2 without a command", async () => {
     const io = makeIo();

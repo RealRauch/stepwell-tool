@@ -25,6 +25,14 @@ export {
 } from "./profile.ts";
 export { docsStatus } from "./status.ts";
 export { docsValidate } from "./validate.ts";
+export {
+  PRIORITY_ALIASES,
+  STATUS_ALIASES,
+  priorityAliasHelp,
+  resolvePriority,
+  resolveStatus,
+  statusAliasHelp,
+} from "./aliases.ts";
 export type {
   ArchiveItem,
   ArchiveItemPlan,
