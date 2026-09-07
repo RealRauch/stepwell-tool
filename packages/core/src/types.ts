@@ -92,3 +92,33 @@ export interface ValidateResult {
   warnings: Warning[];
   ok: boolean;
 }
+
+export interface PlanChange {
+  file: string;
+  description: string;
+  before: string;
+  after: string;
+  diff: string;
+}
+
+export interface ArchiveItemPlan {
+  id: string;
+  dryRun: boolean;
+  note: string | undefined;
+  changes: PlanChange[];
+}
+
+export interface ProgressUpdatePlan {
+  phase: string;
+  step: string;
+  status: Status;
+  dryRun: boolean;
+  note: string | undefined;
+  completedPhase: boolean;
+  changes: PlanChange[];
+}
+
+export interface ApplyResult {
+  written: string[];
+  verification: { ok: boolean; messages: string[] };
+}

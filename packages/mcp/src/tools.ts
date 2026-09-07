@@ -5,9 +5,10 @@ import {
   backlogShow,
   docsStatus,
   docsValidate,
+  loadProject,
+  planArchiveItem,
   readBacklog,
   readProgress,
-  loadProject,
   type BacklogItem,
   type PhaseBlock,
   type Priority,
@@ -175,6 +176,33 @@ export function registerDocsTools(server: McpServer): void {
       inputSchema: { root: ROOT_FIELD },
     },
     ({ root }) => asResult(() => docsValidate(root)),
+  );
+
+  server.registerTool(
+    "archive_item",
+    {
+      title: "Item archivieren (Dry-run)",
+      description:
+        "Plant die verbatim-Verschiebung eines erledigten Backlog-Items ins BACKLOG_ARCHIVE " +
+        "(Checkbox → [x], optionale note als **Erledigt:**-Zeile) plus Einzeiler im " +
+        "Erledigt-Index. Liefert den Plan mit Diff-Vorschau; geschrieben wird nur mit " +
+        "dryRun: false.",
+      inputSchema: {
+        root: ROOT_FIELD,
+        id: z.string().describe("Item-ID des offenen Backlog-Items, exakt (z. B. \"H1\")."),
+        note: z.string().optional()
+          .describe("Optionale Erledigt-Notiz (z. B. Commit-Hash) — landet im Archiv-Block und Index-Tail."),
+        dryRun: z.boolean().default(true)
+          .describe("true (Default): nur Plan/Diff-Vorschau; false: Änderungen schreiben."),
+      },
+    },
+    ({ root, id, note, dryRun }) =>
+      asResult(() => {
+        if (!dryRun) {
+          throw new Error("apply is not unlocked yet (Step 3.2) — call with dryRun: true");
+        }
+        return planArchiveItem(root, id, note !== undefined ? { note } : {});
+      }),
   );
 }
 

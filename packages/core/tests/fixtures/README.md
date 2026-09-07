@@ -156,7 +156,7 @@ Sektions-Emoji als Fallback (+ Warnung `PRIO_MISSING`) → nur wenn beides fehlt
 | `progress_list` | `root` | `status` | Tabellenzeilen |
 | `progress_show` | `root`, `phase` | — | Detail-Block inkl. `raw` |
 | `docs_validate` | `root` | — | Validate-Funde + eingesammelte Parse-Warnungen |
-| `archive_item` (3.x) | `root`, `id` | `dryRun` (**Default `true`**) | Diff-Vorschau vor Apply |
+| `archive_item` (3.x) | `root`, `id` | `dryRun` (**Default `true`**), `note?` *(Erweiterung 09/2026, Phase 3: Erledigt-Zeile am Archiv-Block + Index-Tail)* | Diff-Vorschau vor Apply |
 | `progress_update` (3.3) | `root`, `phase`, `step`, `status` | `dryRun` (**Default `true`**), `note?` | Tabelle + Detail-Block |
 
 ### Datei-Pflicht (Beschluss 09/2026: strikt)

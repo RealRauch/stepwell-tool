@@ -1,7 +1,7 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { join } from "node:path";
-import { createDocsServer } from "../src/server.js";
+import { createDocsServer } from "../src/server.ts";
 
 export const fixtures = join(import.meta.dirname, "..", "..", "core", "tests", "fixtures");
 export const projectA = join(fixtures, "project-a");
