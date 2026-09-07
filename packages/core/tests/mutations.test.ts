@@ -386,6 +386,45 @@ describe("mutation regressions — R5 (Phase 6)", () => {
     expect(archive).toContain("### Phase 2 — UI-Polish");
     expect(loneLf(archive)).toBe(0);
   });
+  it("R4: refuses to apply an archive plan after an interim file change", () => {
+    const dir = tempCopy("project-a");
+    const plan = planArchiveItem(dir, "H1", { dryRun: false });
+    const backlogPath = join(dir, "BACKLOG.md");
+    writeFileSync(
+      backlogPath,
+      readFileSync(backlogPath, "utf8").replace(
+        "# BACKLOG.md — Offene Punkte",
+        "# BACKLOG.md — Offene Punkte (editiert)",
+      ),
+      "utf8",
+    );
+    expect(() => applyArchivePlan(plan)).toThrow(/stale/i);
+    expect(readFileSync(backlogPath, "utf8")).toContain("(editiert)");
+    expect(readFileSync(backlogPath, "utf8")).toContain("### [ ] H1");
+  });
+
+  it("R4: refuses to apply a progress plan after an interim file change", () => {
+    const dir = tempCopy("project-a");
+    const plan = planProgressUpdate(dir, "Phase 2", "2.2", "🔄", { dryRun: false });
+    const progressPath = join(dir, "PROGRESS.md");
+    writeFileSync(
+      progressPath,
+      readFileSync(progressPath, "utf8").replace(
+        "# Projekt-Tracking: Demo-Projekt",
+        "# Projekt-Tracking: Demo-Projekt (editiert)",
+      ),
+      "utf8",
+    );
+    expect(() => applyProgressPlan(plan)).toThrow(/stale/i);
+    expect(readFileSync(progressPath, "utf8")).toContain("| 2.2 | U21 Fehlertexte | ⬜ |");
+  });
+
+  it("R4: applies cleanly when the file is untouched since planning", () => {
+    const dir = tempCopy("project-a");
+    const plan = planArchiveItem(dir, "H1", { dryRun: false });
+    const result = applyArchivePlan(plan);
+    expect(result.verification.ok).toBe(true);
+  });
 });
 
 describe("applyProgressPlan — apply + verification (3.3)", () => {
