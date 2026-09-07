@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { loadProject } from "./project.js";
-import { scopeSteps } from "./progress.js";
-import type { Warning } from "./types.js";
+import { loadProject } from "./project.ts";
+import { scopeSteps } from "./progress.ts";
+import type { Warning } from "./types.ts";
 
 const ID_CONVENTION = /^[A-Z][0-9]+$/;
 const LEGACY_DATE =

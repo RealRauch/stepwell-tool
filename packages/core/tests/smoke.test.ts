@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TOOL_NAME, TOOL_VERSION } from "../src/index.js";
+import { TOOL_NAME, TOOL_VERSION } from "../src/index.ts";
 
 describe("toolchain smoke", () => {
   it("resolves workspace source through vitest", () => {

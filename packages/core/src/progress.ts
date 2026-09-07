@@ -7,7 +7,7 @@ import type {
   ProgressRow,
   Status,
   Warning,
-} from "./types.js";
+} from "./types.ts";
 
 const STATUS_ICONS: readonly string[] = ["⬜", "🔄", "✅", "⛔"];
 const SEPARATOR_ROW = /^[\s|:-]+$/;

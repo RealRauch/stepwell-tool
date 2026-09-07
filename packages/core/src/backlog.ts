@@ -8,7 +8,7 @@ import type {
   ParseResult,
   Priority,
   Warning,
-} from "./types.js";
+} from "./types.ts";
 
 const PRIORITY_EMOJIS: readonly string[] = ["🔴", "🟠", "🟡", "🟢", "🔵"];
 const PICTOGRAPHIC = /^[\p{Extended_Pictographic}\uFE0F\u200D]+$/u;
