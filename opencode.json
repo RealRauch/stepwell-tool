@@ -1,0 +1,10 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "method-docs": {
+      "type": "local",
+      "command": ["node", "packages/mcp/src/serve.ts"],
+      "enabled": true
+    }
+  }
+}
