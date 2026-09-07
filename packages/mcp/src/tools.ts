@@ -3,12 +3,18 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import {
   applyArchivePlan,
+  applyBacklogAddPlan,
+  applyBacklogRemovePlan,
+  applyBacklogUpdatePlan,
   applyProgressPlan,
   backlogShow,
   docsStatus,
   docsValidate,
   loadProject,
   planArchiveItem,
+  planBacklogAdd,
+  planBacklogRemove,
+  planBacklogUpdate,
   planProgressUpdate,
   readBacklog,
   readProgress,
@@ -37,6 +43,12 @@ async function asResult(fn: () => unknown): Promise<ToolResult> {
 }
 
 const PRIORITY_VALUES = ["🔴", "🟠", "🟡", "🟢", "🔵", "unknown"] as const;
+const PRIORITY_WRITE_VALUES = ["🔴", "🟠", "🟡", "🟢", "🔵"] as const;
+
+const TEXT_FIELD = z.string().optional()
+  .describe("Item-Body als Bullets (z. B. \"- **Ort:** …\\n- **Problem:** …\") — wird verbatim übernommen.");
+const DRYRUN_FIELD = z.boolean().default(true)
+  .describe("true (Default): nur Plan/Diff-Vorschau; false: Änderungen schreiben.");
 
 const ROOT_FIELD = z.string().describe("Absoluter Pfad zum Projekt-Root (mit BACKLOG.md/PROGRESS.md).");
 const LOCALE_FIELD = z.enum(["de", "en"]).optional()
@@ -245,6 +257,102 @@ export function registerDocsTools(server: McpServer): void {
           ...(locale !== undefined ? { locale: locale as Locale } : {}),
         });
         return plan.dryRun ? plan : applyProgressPlan(plan);
+      }),
+  );
+
+  server.registerTool(
+    "backlog_add",
+    {
+      title: "Backlog-Item anlegen (Dry-run)",
+      description:
+        "Legt ein offenes Backlog-Item am Ende der Ziel-Sektion an: konforme ID (Serien-Konvention, " +
+        "Auto-Vergabe K/H/M/L je Priorität oder explizit), korrektes Block-Format, " +
+        "Stand:-Zeitstempel wird aktualisiert. Liefert den Plan mit Diff-Vorschau; geschrieben " +
+        "wird nur mit dryRun: false.",
+      inputSchema: {
+        root: ROOT_FIELD,
+        section: z.string().describe("Ziel-Sektion (Titel ohne Emoji, z. B. \"HOCH\")."),
+        title: z.string().describe("Item-Titel nach der ID."),
+        priority: z.enum(PRIORITY_WRITE_VALUES).describe("Prioritäts-Emoji (Teil des Titels)."),
+        id: z.string().optional()
+          .describe("Explizite Item-ID (Konvention ^[A-Z][0-9]+$); fehlt sie, wird die nächste freie Nummer der Prioritäts-Serie (K/H/M/L) vergeben. 🔵 erfordert eine explizite ID."),
+        text: TEXT_FIELD,
+        dryRun: DRYRUN_FIELD,
+      },
+    },
+    ({ root, section, title, priority, id, text, dryRun }) =>
+      asResult(() => {
+        const plan = planBacklogAdd(root, {
+          dryRun,
+          section,
+          title,
+          priority: priority as Exclude<Priority, "unknown">,
+          ...(id !== undefined ? { id } : {}),
+          ...(text !== undefined ? { text } : {}),
+        });
+        return plan.dryRun ? plan : applyBacklogAddPlan(plan);
+      }),
+  );
+
+  server.registerTool(
+    "backlog_update",
+    {
+      title: "Backlog-Item ändern (Dry-run)",
+      description:
+        "Ändert Titel, Priorität, Text oder Sektion eines offenen Items im Block-Format " +
+        "(Span-Neuberechnung, Stand:-Zeitstempel). Prioritätswechsel verschiebt den Block in die " +
+        "passende Prioritäts-Sektion. Liefert den Plan mit Diff-Vorschau; geschrieben wird nur " +
+        "mit dryRun: false.",
+      inputSchema: {
+        root: ROOT_FIELD,
+        id: z.string().describe("Item-ID des offenen Backlog-Items, exakt (z. B. \"H1\")."),
+        title: z.string().optional().describe("Neuer Titel."),
+        priority: z.enum(PRIORITY_WRITE_VALUES).optional().describe("Neue Priorität."),
+        section: z.string().optional()
+          .describe("Neue Ziel-Sektion (Titel ohne Emoji); Default: passende Prioritäts-Sektion bei Prioritätswechsel, sonst bleibt das Item in-place."),
+        text: TEXT_FIELD,
+        dryRun: DRYRUN_FIELD,
+      },
+    },
+    ({ root, id, title, priority, section, text, dryRun }) =>
+      asResult(() => {
+        const plan = planBacklogUpdate(root, id, {
+          dryRun,
+          ...(title !== undefined ? { title } : {}),
+          ...(priority !== undefined ? { priority: priority as Exclude<Priority, "unknown"> } : {}),
+          ...(section !== undefined ? { section } : {}),
+          ...(text !== undefined ? { text } : {}),
+        });
+        return plan.dryRun ? plan : applyBacklogUpdatePlan(plan);
+      }),
+  );
+
+  server.registerTool(
+    "backlog_remove",
+    {
+      title: "Backlog-Item entfernen (Dry-run)",
+      description:
+        "Entfernt ein offenes Item OHNE Hard-Delete: der Block wandert verbatim ins BACKLOG_ARCHIVE " +
+        "(Checkbox bleibt [ ], optionale note als **Entfernt:**-Zeile), im Erledigt-Index erscheint " +
+        "ein Tail ohne Erledigt-Marker. Liefert den Plan mit Diff-Vorschau; geschrieben wird nur " +
+        "mit dryRun: false.",
+      inputSchema: {
+        root: ROOT_FIELD,
+        id: z.string().describe("Item-ID des offenen Backlog-Items, exakt (z. B. \"H1\")."),
+        note: z.string().optional()
+          .describe("Optionale Entfernt-Notiz — landet im Archiv-Block und Index-Tail."),
+        locale: LOCALE_FIELD,
+        dryRun: DRYRUN_FIELD,
+      },
+    },
+    ({ root, id, note, locale, dryRun }) =>
+      asResult(() => {
+        const plan = planBacklogRemove(root, id, {
+          dryRun,
+          ...(note !== undefined ? { note } : {}),
+          ...(locale !== undefined ? { locale: locale as Locale } : {}),
+        });
+        return plan.dryRun ? plan : applyBacklogRemovePlan(plan);
       }),
   );
 }

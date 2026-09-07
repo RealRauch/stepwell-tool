@@ -17,6 +17,8 @@ export const SYNONYMS = {
   verificationLabel: { de: ["Verifikation"], en: ["Verification"] },
   scopeLabel: { de: ["Umfang"], en: ["Scope"] },
   doneWord: { de: ["erledigt"], en: ["done"] },
+  removedWord: { de: ["entfernt"], en: ["removed"] },
+  removedLabel: { de: ["Entfernt"], en: ["Removed"] },
   completedMarker: { de: ["abgeschlossen"], en: ["completed"] },
   standMarker: { de: ["Stand:"], en: ["As of:"] },
 } as const;

@@ -105,6 +105,97 @@ describe("tool progress_update title param (T2, 6.8)", () => {
   });
 });
 
+describe("tools backlog_add/update/remove (T1, 6.9)", () => {
+  it("backlog_add plans by default and leaves files untouched", async () => {
+    const before = readFileSync(backlogPath, "utf8");
+    const c = await connect();
+    try {
+      const result = await callTool(c, "backlog_add", {
+        root: projectA,
+        section: "HOCH",
+        title: "Rate-Limit für Login",
+        priority: "🟠",
+      });
+      expect(result.isError).toBeFalsy();
+      const data = payload(result);
+      expect(data.dryRun).toBe(true);
+      expect(data.id).toBe("H3");
+      expect(data.changes[0].after).toContain("### [ ] H3 — Rate-Limit für Login — 🟠");
+    } finally {
+      await c.close();
+    }
+    expect(readFileSync(backlogPath, "utf8")).toBe(before);
+  });
+
+  it("backlog_add applies and refreshes the Stand timestamp", async () => {
+    const dir = tempProject("project-a");
+    const c = await connect();
+    try {
+      const result = await callTool(c, "backlog_add", {
+        root: dir,
+        section: "NIEDRIG",
+        title: "Docs-Syntax-Check",
+        priority: "🟢",
+        text: "- **Ort:** `docs/`",
+        dryRun: false,
+      });
+      expect(result.isError).toBeFalsy();
+      const data = payload(result);
+      expect(data.verification.ok).toBe(true);
+    } finally {
+      await c.close();
+    }
+    const backlog = readFileSync(join(dir, "BACKLOG.md"), "utf8");
+    expect(backlog).toContain("### [ ] L4 — Docs-Syntax-Check — 🟢");
+    expect(backlog).not.toContain("260907/1200");
+  });
+
+  it("backlog_update moves the item across the priority section", async () => {
+    const dir = tempProject("project-a");
+    const c = await connect();
+    try {
+      const result = await callTool(c, "backlog_update", {
+        root: dir,
+        id: "H2",
+        priority: "🟡",
+        dryRun: false,
+      });
+      expect(result.isError).toBeFalsy();
+      const data = payload(result);
+      expect(data.verification.ok).toBe(true);
+    } finally {
+      await c.close();
+    }
+    const backlog = readFileSync(join(dir, "BACKLOG.md"), "utf8");
+    const mittel = backlog.indexOf("## 🟡 MITTEL");
+    const moved = backlog.indexOf("### [ ] H2 — Session-Cookie ohne SameSite — 🟡");
+    expect(moved).toBeGreaterThan(mittel);
+  });
+
+  it("backlog_remove archives the block without an erledigt marker", async () => {
+    const dir = tempProject("project-a");
+    const c = await connect();
+    try {
+      const result = await callTool(c, "backlog_remove", {
+        root: dir,
+        id: "T8",
+        note: "durch H3 abgedeckt",
+        dryRun: false,
+      });
+      expect(result.isError).toBeFalsy();
+      const data = payload(result);
+      expect(data.verification.ok).toBe(true);
+    } finally {
+      await c.close();
+    }
+    const backlog = readFileSync(join(dir, "BACKLOG.md"), "utf8");
+    expect(backlog).toContain("- T8 — Fehlverhalten bei leerer DB abdecken — entfernt (durch H3 abgedeckt)");
+    const archive = readFileSync(join(dir, "docs", "archive", "BACKLOG_ARCHIVE.md"), "utf8");
+    expect(archive).toContain("### [ ] T8");
+    expect(archive).toContain("- **Entfernt:** durch H3 abgedeckt");
+  });
+});
+
 describe("tool progress_update (3.3)", () => {
   const progressPath = join(projectA, "PROGRESS.md");
 

@@ -121,6 +121,29 @@ export interface ProgressUpdatePlan {
   changes: PlanChange[];
 }
 
+export interface BacklogAddPlan {
+  root: string;
+  id: string;
+  section: string;
+  dryRun: boolean;
+  changes: PlanChange[];
+}
+
+export interface BacklogUpdatePlan {
+  root: string;
+  id: string;
+  dryRun: boolean;
+  changes: PlanChange[];
+}
+
+export interface BacklogRemovePlan {
+  root: string;
+  id: string;
+  dryRun: boolean;
+  note: string | undefined;
+  changes: PlanChange[];
+}
+
 export interface ApplyResult {
   written: string[];
   verification: { ok: boolean; messages: string[] };
