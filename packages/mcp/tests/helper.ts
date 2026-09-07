@@ -43,3 +43,15 @@ export async function callTool(
 export function payload(result: ToolResultLike): any {
   return JSON.parse(result.content[0]!.text) as unknown;
 }
+
+export function resourceText(result: { contents: Array<Record<string, unknown>> }): string {
+  const first = result.contents[0] ?? {};
+  if (typeof first["text"] !== "string") {
+    throw new Error("resource content has no text part");
+  }
+  return first["text"];
+}
+
+export function resourceMime(result: { contents: Array<Record<string, unknown>> }): unknown {
+  return result.contents[0]?.["mimeType"];
+}
