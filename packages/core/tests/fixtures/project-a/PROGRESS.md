@@ -1,7 +1,7 @@
 # Projekt-Tracking: Demo-Projekt
 
 > Quellen-Methode: `docs/PLAYBOOK.md`
-> Fortschrittsdatei — wird nach jedem Häppchen aktualisiert.
+> Fortschrittsdatei — wird nach jedem Step aktualisiert.
 > Legende: ⬜ offen · 🔄 in Arbeit · ✅ fertig · ⛔ blockiert
 
 > **Struktur (Archiv-Muster):** Diese Datei enthält die **vollständige Fortschrittstabelle**
@@ -16,7 +16,7 @@
 
 **Abnahme:** typecheck + unit + e2e grün; U21/U22 abgeschlossen.
 
-**Umfang (Häppchen):**
+**Umfang (Steps):**
 
 - **2.0 Auth-Entscheidung** — ⛔ wartet auf SSO-vs.-PW-Entscheidung (siehe BACKLOG H2-Diskussion)
 - **2.1 Strings-Modul anlegen** (i18n-Fundament, siehe Paketier-Regel im BACKLOG)
@@ -27,7 +27,7 @@
 
 ## Fortschritt
 
-| # | Häppchen | Status |
+| # | Step | Status |
 |---|----------|--------|
 | 0.1 | Projekt einrichten | ✅ |
 | 0.2 | Env & Struktur | ✅ |

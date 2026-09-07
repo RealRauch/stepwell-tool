@@ -1,7 +1,8 @@
 # BACKLOG.md — Offene Punkte (Stand: 09/2026)
 
 > Diese Datei enthält absichtlich **Struktur-Drift** für Parser-/Validate-Tests.
-> Erwartete Reaktionen je Fall: siehe `../README.md` (Tabelle D1–D8).
+> Erwartete Reaktionen je Fall: siehe `../README.md` (Tabellen D1–D8, D14, D15 —
+> die `Stand:`-Kopfzeile unten ist selbst der D15-Fall mit Legacy-Datum).
 
 ---
 
@@ -42,6 +43,11 @@ vollständig als `text` erfassen und das Item listen.
 ### [ ] L10 — Duplizierte ID (Validate-Fall)
 - **Ort:** `docs/y.md`
 - **Problem:** Diese ID kommt doppelt vor; Validator muss die Kollision melden.
+
+### [ ] fix_me — ID verletzt die Nomenklatur (Validate-Fall) — 🟢
+- **Ort:** `src/wip.ts`
+- **Problem:** Kleinbuchstaben mit Unterstrich statt `<Buchstabe><Nummer>`; Validator
+  soll `ID_CONVENTION` warnen, Parser listet das Item trotzdem.
 
 ---
 
