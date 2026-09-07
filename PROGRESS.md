@@ -20,6 +20,7 @@
 - **6.5 Stale-Check beim Apply (R4)**
 - **6.6 STEP_DUPLICATE-Validate (R6)**
 - **6.7 CLI-ASCII-Aliase für Prio/Status (T3)**
+- **6.8 Titel-/Scope-Edits als Tool (T2)**
 
 
 ---
@@ -52,7 +53,7 @@
 | 6.4 | CRLF-Roundtrip Archiv-Anhang (R3) | ✅ |
 | 6.5 | Stale-Check beim Apply (R4) | ✅ |
 | 6.6 | STEP_DUPLICATE-Validate (R6) | ✅ |
-| 6.7 | CLI-ASCII-Aliase für Prio/Status (T3) | 🔄 |
-| 6.8 | Titel-/Scope-Edits als Tool (T2) | ⬜ |
+| 6.7 | CLI-ASCII-Aliase für Prio/Status (T3) | ✅ |
+| 6.8 | Titel-/Scope-Edits als Tool (T2) | 🔄 |
 | 6.9 | Backlog-CRUD-Tools (T1) | ⬜ |
 | 6.10 | Phasen-Planung als Tool (T4) | ⬜ |
