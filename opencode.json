@@ -3,7 +3,7 @@
   "mcp": {
     "method-docs": {
       "type": "local",
-      "command": ["node", "packages/mcp/src/serve.ts"],
+      "command": ["node", "D:/Development/method-docs/packages/mcp/src/serve.ts"],
       "enabled": true
     }
   }
