@@ -1,5 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { registerDocsTools } from "./tools.js";
 
 export const SERVER_NAME = "method-docs";
 export const SERVER_VERSION = "0.1.0";
@@ -18,6 +19,8 @@ export function createDocsServer(): McpServer {
       content: [{ type: "text", text }],
     }),
   );
+
+  registerDocsTools(server);
 
   return server;
 }
