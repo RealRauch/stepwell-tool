@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { allSynonyms, getFieldByRole } from "./profile.ts";
 import type {
   ParseResult,
   PhaseBlock,
@@ -14,7 +15,7 @@ const SEPARATOR_ROW = /^[\s|:-]+$/;
 const SEPARATOR_RULE = /^-{3,}\s*$/u;
 const HEADING = /^##\s+(.*)$/;
 const BLOCK_HEADING = /^###\s+(.*)$/;
-const PHASE_SUFFIX = /\s*\*\(abgeschlossen\s+([^)]+)\)\*\s*$/u;
+const PHASE_SUFFIX = /\s*\*\((?:abgeschlossen|completed)\s+([^)]+)\)\*\s*$/u;
 const PHASE_SPLIT = /^(.*?)\s+—\s+([\s\S]*)$/;
 const FIELD = /^\*\*(.+?):\*\*\s*(.*)$/u;
 const SCOPE_BULLET = /^-\s+(.*)$/;
@@ -61,13 +62,13 @@ function buildBlock(raw: RawBlock, lines: string[]): PhaseBlock {
   const block: PhaseBlock = {
     name,
     title,
-    goal: raw.fields.get("Ziel") ?? "",
+    goal: getFieldByRole(raw.fields, "goalLabel") ?? "",
     scope: raw.scope,
-    acceptance: raw.fields.get("Abnahme") ?? "",
+    acceptance: getFieldByRole(raw.fields, "acceptanceLabel") ?? "",
     span: { start: raw.headingLine, end },
     raw: [lines[raw.headingLine - 1] ?? `### ${raw.headingText}`, ...blockLines].join("\n"),
   };
-  const verification = raw.fields.get("Verifikation");
+  const verification = getFieldByRole(raw.fields, "verificationLabel");
   if (verification !== undefined) {
     block.verification = verification;
   }
@@ -98,7 +99,9 @@ export function parseProgress(content: string, file = "PROGRESS.md"): ParseResul
     const headingMatch = HEADING.exec(line);
     if (headingMatch) {
       flushBlock();
-      inTableSection = /^Fortschritt\b/u.test(headingMatch[1]!.trim());
+      inTableSection = allSynonyms("progressHeading").some((s) =>
+        headingMatch[1]!.trim().toLowerCase().startsWith(s.toLowerCase()),
+      );
       continue;
     }
 
@@ -128,7 +131,9 @@ export function parseProgress(content: string, file = "PROGRESS.md"): ParseResul
       const field = FIELD.exec(line.trim());
       if (field) {
         current.fields.set(field[1]!, field[2]!.trim());
-        current.scopeOpen = /^Umfang/u.test(field[1]!);
+        current.scopeOpen = allSynonyms("scopeLabel").some((s) =>
+          field[1]!.toLowerCase().startsWith(s.toLowerCase()),
+        );
       } else if (line.trim() !== "") {
         const bullet = SCOPE_BULLET.exec(line.trim());
         if (bullet && current.scopeOpen) {

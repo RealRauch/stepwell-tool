@@ -16,8 +16,8 @@ const SEPARATOR = /^(.*?)\s+—\s+([\s\S]*)$/;
 const TITLE_SUFFIX = /^(.*\S)\s+—\s+(\S+)$/u;
 const OPTIONAL_SUFFIX = /\s*\*\([^()]*\)\*$/u;
 const BULLET = /^-\s+\*\*.+?:\*\*/u;
-const LOCATION_BULLET = /^-\s+\*\*Ort:\*\*\s+(.+?)\s*$/u;
-const DONE_LINE = /^-\s+(.+?)\s+—\s+(.+?)\s+—\s+erledigt(?:\s+in\s+`([^`]+)`)?/u;
+const LOCATION_BULLET = /^-\s+\*\*(?:Ort|Location):\*\*\s+(.+?)\s*$/u;
+const DONE_LINE = /^-\s+(.+?)\s+—\s+(.+?)\s+—\s+(?:erledigt|done)(?:\s+in\s+`([^`]+)`)?/u;
 const SEPARATOR_RULE = /^-{3,}\s*$/u;
 
 const isKnownPriority = (token: string): token is Exclude<Priority, "unknown"> =>
@@ -215,7 +215,7 @@ export function parseBacklog(content: string, file = "BACKLOG.md"): ParseResult<
     if (sectionMatch) {
       endSection();
       const heading = sectionMatch[1]!.trim();
-      if (/Erledigt-Index/u.test(heading)) {
+      if (/(?:Erledigt-Index|Done Index)/iu.test(heading)) {
         inDoneIndex = true;
         continue;
       }
