@@ -227,6 +227,8 @@ export function registerDocsTools(server: McpServer): void {
         phase: z.string().describe("Phasen-Name, -Titel oder beides (z. B. \"Phase 2\" / \"Phase 2 — UI-Polish\")."),
         step: z.string().describe("Step-Nummer laut Tabelle/Scope (z. B. \"2.2\")."),
         status: z.enum(["⬜", "🔄", "✅", "⛔"]).describe("Neues Status-Icon."),
+        title: z.string().optional()
+          .describe("Neuer Phasen-Titel — benennt das Detail-Block-Heading konsistent um (Tabelle bleibt unverändert); bei Phasen-Abschluss im selben Call wandert der Block unter dem neuen Titel ins Archiv."),
         note: z.string().optional()
           .describe("Optionale Notiz — bei Phasen-Abschluss als **Verifikation:**-Zeile am Archiv-Block."),
         locale: LOCALE_FIELD,
@@ -234,10 +236,11 @@ export function registerDocsTools(server: McpServer): void {
           .describe("true (Default): nur Plan/Diff-Vorschau; false: Änderungen schreiben."),
       },
     },
-    ({ root, phase, step, status, note, locale, dryRun }) =>
+    ({ root, phase, step, status, title, note, locale, dryRun }) =>
       asResult(() => {
         const plan = planProgressUpdate(root, phase, step, status as Status, {
           dryRun,
+          ...(title !== undefined ? { title } : {}),
           ...(note !== undefined ? { note } : {}),
           ...(locale !== undefined ? { locale: locale as Locale } : {}),
         });

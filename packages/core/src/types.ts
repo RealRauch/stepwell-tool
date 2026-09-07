@@ -114,6 +114,7 @@ export interface ProgressUpdatePlan {
   phase: string;
   step: string;
   status: Status;
+  title: string | undefined;
   dryRun: boolean;
   note: string | undefined;
   completedPhase: boolean;

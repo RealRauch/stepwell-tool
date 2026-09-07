@@ -33,6 +33,7 @@ interface CliOptions {
   status: string | undefined;
   id: string | undefined;
   note: string | undefined;
+  title: string | undefined;
   phase: string | undefined;
   step: string | undefined;
   locale: string | undefined;
@@ -59,6 +60,7 @@ options:
                      ⬜=open, 🔄=running/wip, ✅=done, ⛔=blocked, unknown (nur Filter)
   --id <id>          Item-ID (nur archive)
   --note <text>      Erledigt-/Verifikations-Notiz (archive, progress-update)
+  --title <text>     Neuer Phasen-Titel (progress-update) — benennt Block-Heading um
   --locale <de|en>   Sprache generierter Texte (archive, progress-update; Default: Auto-Erkennung)
   --apply            Änderungen schreiben (archive, progress-update; Default: Dry-run-Vorschau)
   --json             Roh-Payloads statt Lesbarkeit
@@ -74,6 +76,7 @@ function parseArgs(argv: string[]): { command: string | undefined; options: CliO
     status: undefined,
     id: undefined,
     note: undefined,
+    title: undefined,
     phase: undefined,
     step: undefined,
     locale: undefined,
@@ -110,6 +113,9 @@ function parseArgs(argv: string[]): { command: string | undefined; options: CliO
         break;
       case "--note":
         options.note = next();
+        break;
+      case "--title":
+        options.title = next();
         break;
       case "--apply":
         options.apply = true;
@@ -353,6 +359,7 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
         const statusIcon = requireStatusIcon(options);
         const plan = planProgressUpdate(root, options.phase, options.step, statusIcon, {
           dryRun: !options.apply,
+          ...(options.title !== undefined && options.title !== "" ? { title: options.title } : {}),
           ...(options.note !== undefined ? { note: options.note } : {}),
           ...(requireLocale(options) !== undefined ? { locale: requireLocale(options)! } : {}),
         });

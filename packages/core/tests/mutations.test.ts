@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { lineDiff } from "../src/diff.ts";
+import { parseProgress } from "../src/progress.ts";
 import {
   applyArchivePlan,
   applyProgressPlan,
@@ -424,6 +425,60 @@ describe("mutation regressions — R5 (Phase 6)", () => {
     const plan = planArchiveItem(dir, "H1", { dryRun: false });
     const result = applyArchivePlan(plan);
     expect(result.verification.ok).toBe(true);
+  });
+  it("T2: title renames the phase heading and nothing else (6.8)", () => {
+    const dir = tempCopy("project-a");
+    const progressPath = join(dir, "PROGRESS.md");
+    const beforeLines = readFileSync(progressPath, "utf8").split("\n");
+
+    const plan = planProgressUpdate(dir, "Phase 2", "2.2", "🔄", {
+      dryRun: false,
+      title: "UI-Polish & i18n",
+    });
+    expect(plan.title).toBe("UI-Polish & i18n");
+    const result = applyProgressPlan(plan);
+    expect(result.verification.ok).toBe(true);
+
+    const afterLines = readFileSync(progressPath, "utf8").split("\n");
+    expect(afterLines).toHaveLength(beforeLines.length);
+    const changed = beforeLines
+      .map((line, i) => [i, line !== afterLines[i]] as const)
+      .filter(([, differs]) => differs)
+      .map(([i]) => i);
+    expect(changed).toEqual([12, 38]);
+    expect(afterLines[12]).toBe("### Phase 2 — UI-Polish & i18n");
+    expect(afterLines[38]).toBe("| 2.2 | U21 Fehlertexte | 🔄 |");
+
+    const fresh = parseProgress(readFileSync(progressPath, "utf8")).value;
+    const renamed = fresh.phases.find((p) => p.title === "UI-Polish & i18n");
+    expect(renamed?.name).toBe("Phase 2");
+  });
+
+  it("T2: title + phase completion archives the block under the new title", () => {
+    const dir = setupForR1("project-a");
+    const plan = planProgressUpdate(dir, "Phase 2", "2.1", "✅", {
+      dryRun: false,
+      note: "Suite grün",
+      title: "UI-Polish Final",
+    });
+    expect(plan.completedPhase).toBe(true);
+    const result = applyProgressPlan(plan);
+    expect(result.verification.ok).toBe(true);
+
+    const progress = readFileSync(join(dir, "PROGRESS.md"), "utf8");
+    expect(progress).not.toContain("### Phase 2");
+    expect(progress).toContain("| 2.1 | Strings-Modul anlegen | ✅ |");
+    const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.md"), "utf8");
+    expect(archive).toContain("### Phase 2 — UI-Polish Final");
+    expect(archive).toContain("**Verifikation:** Suite grün");
+  });
+
+  it("T2: title completes a new-phase skeleton heading", () => {
+    const dir = tempCopy("project-b-drift");
+    const plan = planProgressUpdate(dir, "Phase 9", "9.1", "🔄", { title: "Drift-Fixes" });
+    const change = plan.changes[0]!;
+    expect(change.after).toContain("### Phase 9 — Drift-Fixes");
+    expect(change.after).not.toContain("### Phase 9\n");
   });
 });
 

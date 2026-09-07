@@ -80,6 +80,31 @@ describe("tool archive_item — dry-run only (3.1)", () => {
   });
 });
 
+describe("tool progress_update title param (T2, 6.8)", () => {
+  it("renames the block heading via the title parameter", async () => {
+    const dir = tempProject("project-a");
+    const c = await connect();
+    try {
+      const result = await callTool(c, "progress_update", {
+        root: dir,
+        phase: "Phase 2",
+        step: "2.3",
+        status: "🔄",
+        title: "Polish & i18n",
+        dryRun: false,
+      });
+      expect(result.isError).toBeFalsy();
+      const data = payload(result);
+      expect(data.verification.ok).toBe(true);
+    } finally {
+      await c.close();
+    }
+    const progress = readFileSync(join(dir, "PROGRESS.md"), "utf8");
+    expect(progress).toContain("### Phase 2 — Polish & i18n");
+    expect(progress).toContain("| 2.3 | U22 Ladezustände | 🔄 |");
+  });
+});
+
 describe("tool progress_update (3.3)", () => {
   const progressPath = join(projectA, "PROGRESS.md");
 
