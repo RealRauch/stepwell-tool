@@ -196,6 +196,59 @@ describe("tools backlog_add/update/remove (T1, 6.9)", () => {
   });
 });
 
+describe("tool progress_plan_phase (T4, 6.10)", () => {
+  it("plans a new phase with rows and skeleton, then progress_update continues without workaround", async () => {
+    const dir = tempProject("project-a");
+    const c = await connect();
+    try {
+      const result = await callTool(c, "progress_plan_phase", {
+        root: dir,
+        phase: "Phase 7 — Rundung",
+        steps: [
+          { step: "7.1", name: "Erster Step" },
+          { step: "7.2", name: "Zweiter Step" },
+        ],
+        dryRun: false,
+      });
+      expect(result.isError).toBeFalsy();
+      const data = payload(result);
+      expect(data.verification.ok).toBe(true);
+
+      const followUp = await callTool(c, "progress_update", {
+        root: dir,
+        phase: "Phase 7",
+        step: "7.1",
+        status: "🔄",
+        dryRun: false,
+      });
+      expect(followUp.isError).toBeFalsy();
+      expect(payload(followUp).verification.ok).toBe(true);
+    } finally {
+      await c.close();
+    }
+    const progress = readFileSync(join(dir, "PROGRESS.md"), "utf8");
+    expect(progress).toContain("### Phase 7 — Rundung");
+    expect(progress).toContain("| 7.1 | Erster Step | 🔄 |");
+    expect(progress).toContain("| 7.2 | Zweiter Step | ⬜ |");
+    expect(progress.match(/### Phase 7 — Rundung/gu)).toHaveLength(1);
+  });
+
+  it("rejects step numbers outside the phase as tool errors", async () => {
+    const c = await connect();
+    try {
+      const result = await callTool(c, "progress_plan_phase", {
+        root: tempProject("project-a"),
+        phase: "Phase 7",
+        steps: [{ step: "8.1", name: "Fremd" }],
+      });
+      expect(result.isError).toBe(true);
+      expect(result.content[0]?.text).toContain("8.1");
+    } finally {
+      await c.close();
+    }
+  });
+});
+
 describe("tool progress_update (3.3)", () => {
   const progressPath = join(projectA, "PROGRESS.md");
 

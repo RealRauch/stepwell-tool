@@ -6,6 +6,7 @@ import {
   applyBacklogAddPlan,
   applyBacklogRemovePlan,
   applyBacklogUpdatePlan,
+  applyPhasePlan,
   applyProgressPlan,
   backlogShow,
   docsStatus,
@@ -15,6 +16,7 @@ import {
   planBacklogAdd,
   planBacklogRemove,
   planBacklogUpdate,
+  planPhase,
   planProgressUpdate,
   readBacklog,
   readProgress,
@@ -353,6 +355,31 @@ export function registerDocsTools(server: McpServer): void {
           ...(locale !== undefined ? { locale: locale as Locale } : {}),
         });
         return plan.dryRun ? plan : applyBacklogRemovePlan(plan);
+      }),
+  );
+
+  server.registerTool(
+    "progress_plan_phase",
+    {
+      title: "Phase vorausplanen (Dry-run)",
+      description:
+        "Plant eine neue Phase: legt Tabellen-Zeilen für alle Steps (⬜, mit Namen) und ein " +
+        "Detail-Block-Skelett mit vollständigem Scope unter 'Laufende Phasen' an. Validiert, dass " +
+        "die Step-Nummern zum Phasen-Namen passen (Phase <N> → <N>.<x>) und Phase/Steps noch frei " +
+        "sind. Liefert den Plan mit Diff-Vorschau; geschrieben wird nur mit dryRun: false.",
+      inputSchema: {
+        root: ROOT_FIELD,
+        phase: z.string().describe('Neue Phase im Muster "Phase <Nr>[ — Titel]", z. B. "Phase 7 — Rundung".'),
+        steps: z
+          .array(z.object({ step: z.string(), name: z.string() }))
+          .describe("Steps der Phase in Reihenfolge (z. B. [{ step: \"7.1\", name: \"Setup\" }])."),
+        dryRun: DRYRUN_FIELD,
+      },
+    },
+    ({ root, phase, steps, dryRun }) =>
+      asResult(() => {
+        const plan = planPhase(root, phase, steps, { dryRun });
+        return plan.dryRun ? plan : applyPhasePlan(plan);
       }),
   );
 }
