@@ -326,6 +326,21 @@ describe("mutation regressions — R5 (Phase 6)", () => {
     expect(archive).toContain("**Verifikation:** Suite grün");
   });
 
+  /** Converts all four docs files of a copied project to CRLF line endings. */
+  function toCrlf(dir: string): void {
+    for (const rel of [
+      "BACKLOG.md",
+      "PROGRESS.md",
+      join("docs", "archive", "BACKLOG_ARCHIVE.md"),
+      join("docs", "archive", "PROGRESS_ARCHIVE.md"),
+    ]) {
+      const path = join(dir, rel);
+      writeFileSync(path, readFileSync(path, "utf8").replace(/\n/gu, "\r\n"), "utf8");
+    }
+  }
+
+  const loneLf = (content: string): number => (content.match(/(?<!\r)\n/gu) ?? []).length;
+
   it("R1: missing row + phase completion keeps blocks-first PROGRESS.md intact (guard)", () => {
     const dir = setupForR1("project-a");
 
@@ -338,6 +353,38 @@ describe("mutation regressions — R5 (Phase 6)", () => {
     expect(progress).toContain("| 2.1 | Strings-Modul anlegen | ✅ |");
     expect(progress).not.toContain("### Phase 2 — UI-Polish");
     expect(progress).not.toContain("- **2.3 U22");
+  });
+  it("R3: archive_item keeps CRLF line endings in the archive", () => {
+    const dir = tempCopy("project-a");
+    toCrlf(dir);
+    const plan = planArchiveItem(dir, "H1", { dryRun: false, note: "Commit `deadbee`" });
+    const result = applyArchivePlan(plan);
+    expect(result.verification.ok).toBe(true);
+    const archive = readFileSync(join(dir, "docs", "archive", "BACKLOG_ARCHIVE.md"), "utf8");
+    expect(archive).toContain("### [x] H1");
+    expect(archive).toContain("- **Erledigt:** Commit `deadbee`");
+    expect(loneLf(archive)).toBe(0);
+    expect(loneLf(readFileSync(join(dir, "BACKLOG.md"), "utf8"))).toBe(0);
+  });
+
+  it("R3: progress_update phase completion keeps CRLF line endings", () => {
+    const dir = tempCopy("project-a");
+    toCrlf(dir);
+    const progressPath = join(dir, "PROGRESS.md");
+    writeFileSync(
+      progressPath,
+      readFileSync(progressPath, "utf8")
+        .replace("| 2.2 | U21 Fehlertexte | ⬜ |", "| 2.2 | U21 Fehlertexte | ✅ |")
+        .replace("| 2.3 | U22 Ladezustände | ⬜ |", "| 2.3 | U22 Ladezustände | ✅ |"),
+      "utf8",
+    );
+    const plan = planProgressUpdate(dir, "Phase 2", "2.1", "✅", { dryRun: false, note: "Suite grün" });
+    const result = applyProgressPlan(plan);
+    expect(result.verification.ok).toBe(true);
+    expect(loneLf(readFileSync(progressPath, "utf8"))).toBe(0);
+    const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.md"), "utf8");
+    expect(archive).toContain("### Phase 2 — UI-Polish");
+    expect(loneLf(archive)).toBe(0);
   });
 });
 

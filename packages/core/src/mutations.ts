@@ -128,7 +128,7 @@ export function planArchiveItem(
   };
 
   const appendToArchive = (content: string, eol: string): string => {
-    const blockLines = item.raw.split(eol);
+    const blockLines = item.raw.split(/\r?\n/);
     const heading = blockLines[0] ?? `### [ ] ${item.id}`;
     blockLines[0] = heading.replace(/^###\s+\[ \]/u, "### [x]");
     if (note !== undefined) {
@@ -346,7 +346,7 @@ export function planProgressUpdate(
       relPath: archiveRel,
       description: `Detail-Block "${block.name}" verbatim ans PROGRESS_ARCHIVE anhängen${note !== undefined ? " (mit Verifikations-Zeile)" : ""}`,
       transform: (content, eol) => {
-        const blockLines = block.raw.split(eol);
+        const blockLines = block.raw.split(/\r?\n/);
         if (note !== undefined) {
           blockLines.push(`**${verificationLabel}:** ${note}`);
         }
