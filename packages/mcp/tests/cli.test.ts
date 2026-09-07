@@ -189,6 +189,27 @@ describe("runCli — progress-update (3.3)", () => {
   });
 });
 
+describe("runCli — archive locale (4.2)", () => {
+  it("generates English markers with --locale en (4.2)", async () => {
+    const dir = tempProject("project-a");
+    const io = makeIo();
+    const code = await runCli(
+      ["archive", "--root", dir, "--id", "H2", "--note", "Commit `9f8e7d6`", "--locale", "en", "--apply"],
+      io.io,
+    );
+    expect(code).toBe(0);
+    const backlog = readFileSync(join(dir, "BACKLOG.md"), "utf8");
+    expect(backlog).toContain("- H2 — Session-Cookie ohne SameSite — done (Commit `9f8e7d6`)");
+  });
+
+  it("rejects invalid locales with usage exit 2", async () => {
+    const io = makeIo();
+    const code = await runCli(["archive", "--root", projectA, "--id", "H1", "--locale", "fr"], io.io);
+    expect(code).toBe(2);
+    expect(io.stderr).toContain("--locale");
+  });
+});
+
 describe("runCli — usage and errors", () => {
   it("prints usage and exits 2 without a command", async () => {
     const io = makeIo();

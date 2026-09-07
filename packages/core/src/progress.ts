@@ -138,7 +138,7 @@ export function parseProgress(content: string, file = "PROGRESS.md"): ParseResul
         const bullet = SCOPE_BULLET.exec(line.trim());
         if (bullet && current.scopeOpen) {
           current.scope.push(bullet[1]!.trim());
-        } else {
+        } else if (!current.scopeOpen || !/^\s/u.test(line)) {
           current.scopeOpen = false;
         }
       }

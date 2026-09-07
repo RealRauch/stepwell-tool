@@ -32,6 +32,11 @@ export function allSynonyms(role: SynonymRole): string[] {
   return Object.values(SYNONYMS[role]).flat();
 }
 
+/** Union-Regex einer Rolle über alle Locales (Detection). */
+export function synonymPattern(role: SynonymRole, flags = "iu"): RegExp {
+  return new RegExp(allSynonyms(role).map(escapeRegExp).join("|"), flags);
+}
+
 /** Kanonische Schreibform einer Rolle für eine Ziel-Sprache (Generation). */
 export function canonical(role: SynonymRole, locale: Locale): string {
   return SYNONYMS[role][locale][0]!;

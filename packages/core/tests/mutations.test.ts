@@ -9,6 +9,7 @@ import {
   planArchiveItem,
   planProgressUpdate,
 } from "../src/mutations.ts";
+import { canonical } from "../src/profile.ts";
 
 const fixtures = join(import.meta.dirname, "fixtures");
 const tempDirs: string[] = [];
@@ -242,6 +243,51 @@ describe("planProgressUpdate — dry-run planning (3.3)", () => {
     expect(() => planProgressUpdate(dir, "Phase 99", "2.1", "🔄")).toThrow(/unknown step/);
     expect(() => planProgressUpdate(dir, "Phase 99", "2.1", "✅")).toThrow(/unknown phase/);
     expect(() => planProgressUpdate(dir, "Phase 2", "9.9", "🔄")).toThrow(/unknown step/);
+  });
+});
+
+describe("locale generation (4.2)", () => {
+  it("auto-detects English and generates done/Done markers", () => {
+    const dir = tempCopy("project-c-en");
+    const plan = planArchiveItem(dir, "E1", { note: "Commit `f0e1d2c`" });
+    expect(plan.note).toBe("Commit `f0e1d2c`");
+
+    const backlogChange = plan.changes.find((c) => c.file.endsWith("BACKLOG.md"))!;
+    expect(backlogChange.after).toContain("- E1 — Upload endpoint without size limit — done (Commit `f0e1d2c`)");
+    const archiveChange = plan.changes.find((c) => c.file.endsWith("BACKLOG_ARCHIVE.md"))!;
+    expect(archiveChange.after).toContain("- **Done:** Commit `f0e1d2c`");
+  });
+
+  it("honors an explicit locale override on a German project", () => {
+    const dir = tempCopy("project-a");
+    const plan = planArchiveItem(dir, "H1", { locale: "en", note: "Commit `aabbcc1`" });
+
+    const backlogChange = plan.changes.find((c) => c.file.endsWith("BACKLOG.md"))!;
+    expect(backlogChange.after).toContain("- H1 — Upload-Endpunkt ohne Größenlimit — done (Commit `aabbcc1`)");
+    const archiveChange = plan.changes.find((c) => c.file.endsWith("BACKLOG_ARCHIVE.md"))!;
+    expect(archiveChange.after).toContain("- **Done:** Commit `aabbcc1`");
+  });
+
+  it("generates English skeletons and verification lines for progress_update", () => {
+    const dir = tempCopy("project-c-en");
+    const skeleton = planProgressUpdate(dir, "Phase 3 — Widgets", "3.1", "🔄");
+    const skeletonChange = skeleton.changes[0]!;
+    expect(skeletonChange.after).toContain("**Scope (Steps):**");
+    expect(skeletonChange.after).not.toContain("**Umfang (Steps):**");
+
+    const progressPath = join(dir, "PROGRESS.md");
+    writeFileSync(
+      progressPath,
+      readFileSync(progressPath, "utf8").replace("| 2.2 | U21 error texts | ⬜ |", "| 2.2 | U21 error texts | ✅ |").replace("| 2.3 | U22 loading states | ⬜ |", "| 2.3 | U22 loading states | ✅ |"),
+      "utf8",
+    );
+    const plan = planProgressUpdate(dir, "Phase 2", "2.1", "✅", { note: "suite green" });
+    const archiveChange = plan.changes.find((c) => c.file.endsWith("PROGRESS_ARCHIVE.md"))!;
+    expect(archiveChange.after).toContain("**Verification:** suite green");
+  });
+
+  it("keeps German as the fallback for empty content (canonical)", () => {
+    expect(canonical("doneWord", "de")).toBe("erledigt");
   });
 });
 
