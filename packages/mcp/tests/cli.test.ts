@@ -178,6 +178,18 @@ describe("runCli — progress-update (3.3)", () => {
     expect(readFileSync(join(dir, "PROGRESS.md"), "utf8")).toContain("| 2.2 | U21 Fehlertexte | 🔄 |");
   });
 
+  it("accepts --title for progress-update and renames the block heading", async () => {
+    const dir = tempProject("project-a");
+    const io = makeIo();
+    const code = await runCli(
+      ["progress-update", "--root", dir, "--phase", "Phase 2", "--step", "2.3", "--status", "🔄", "--title", "Polish & i18n", "--apply"],
+      io.io,
+    );
+    expect(code).toBe(0);
+    expect(io.stdout).toContain("OK");
+    expect(readFileSync(join(dir, "PROGRESS.md"), "utf8")).toContain("### Phase 2 — Polish & i18n");
+  });
+
   it("rejects invalid status icons with usage exit 2", async () => {
     const io = makeIo();
     const code = await runCli(

@@ -22,6 +22,7 @@ export interface ArchiveItemOptions {
 export interface ProgressUpdateOptions {
   dryRun?: boolean;
   note?: string;
+  title?: string;
   locale?: Locale;
 }
 
@@ -252,6 +253,7 @@ export function planProgressUpdate(
 ): ProgressUpdatePlan {
   const dryRun = options.dryRun ?? true;
   const note = normalizeNote(options.note);
+  const newTitle = normalizeNote(options.title);
   const docs = loadProject(root);
   const progress = docs.progress().value;
   const progressText = readText(join(root, "PROGRESS.md")).content;
@@ -298,6 +300,16 @@ export function planProgressUpdate(
   const editProgress = (content: string, eol: string): string => {
     const lines = content.split(eol);
 
+    // Reihenfolge definiert (T2): 1) Titel-Rename (zeilenzahlneutral), 2) Phasen-
+    // Entfernung (Span noch gültig, R1), 3) Tabellen-Zeile, 4) Skelett/Scope.
+    if (newTitle !== undefined && block !== undefined) {
+      const headingIdx = block.span.start - 1;
+      if (!/^###/u.test(lines[headingIdx] ?? "")) {
+        throw new Error(`phase heading for "${block.name}" not found in PROGRESS.md`);
+      }
+      lines[headingIdx] = `### ${block.name} — ${newTitle}`;
+    }
+
     if (completedPhase && block !== undefined) {
       removeSpan(lines, block.span.start, block.span.end);
     }
@@ -336,7 +348,7 @@ export function planProgressUpdate(
       lines.splice(
         insertAt,
         0,
-        `### ${phase}`,
+        `### ${newTitle !== undefined ? `${phase} — ${newTitle}` : phase}`,
         "",
         `**${scopeHeading}**`,
         "",
@@ -364,6 +376,9 @@ export function planProgressUpdate(
       description: `Detail-Block "${block.name}" verbatim ans PROGRESS_ARCHIVE anhängen${note !== undefined ? " (mit Verifikations-Zeile)" : ""}`,
       transform: (content, eol) => {
         const blockLines = block.raw.split(/\r?\n/);
+        if (newTitle !== undefined) {
+          blockLines[0] = `### ${block.name} — ${newTitle}`;
+        }
         if (note !== undefined) {
           blockLines.push(`**${verificationLabel}:** ${note}`);
         }
@@ -374,7 +389,7 @@ export function planProgressUpdate(
   }
 
   const changes = buildChanges(root, edits);
-  return { root, phase, step, status, dryRun, note, completedPhase, changes };
+  return { root, phase, step, status, title: newTitle, dryRun, note, completedPhase, changes };
 }
 
 export function applyProgressPlan(plan: ProgressUpdatePlan): ApplyResult {
