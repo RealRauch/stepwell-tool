@@ -219,3 +219,25 @@ synchronisiert (byte-identisch in stadtpfad-pwa); Suite + validate grün.
 - **6.9 Backlog-CRUD-Tools (T1)**
 - **6.10 Phasen-Planung als Tool (T4)**
 **Verifikation:** Alle 10 Steps verifiziert: typecheck + 188/188 Tests grün; R1–R6/T1–T4 archiviert. Commits 36e89c2…9fea4bc.
+
+---
+
+### Phase 7 — Distribution & Feldtest
+
+**Ziel:** Das Tool verlässt das Rechenzentrum des Entwicklers — CI verriegelt die Suite
+(D1 — optional als übernehmbares Template, kein Methoden-Pflichtteil), ein echtes
+STEPWELL-Projekt (stadtpfad-pwa) validiert die Tools gegen Realformat (D2), und
+das Package ist pack-/install-fähig (D3; README-Versprechen `npx method-docs`).
+Paketiert aus den Items D1–D3 gem. Decision 14 (Backlog-Wurzel); D4 (PLAYBOOK-Sync) und
+D5 (Step-Ergänzung als Tool) folgen im nächsten Packaging.
+
+**Abnahme:** Workflow grün; Feldtest-Protokoll je Tool, Anomalien als BACKLOG-Items;
+`npm pack` nur mit Source, bin-Shim funktioniert, Install-Abschnitt stimmt.
+Je Step gilt die Abnahme seines Wurzel-Items (D1–D3).
+
+**Umfang (Steps):**
+
+- **7.1 CI-Workflow (typecheck + test + validate)**
+- **7.2 Feldtest stadtpfad-pwa**
+- **7.3 Publishing-Pack-Check**
+**Verifikation:** 7.1 CI-Template (df55385) · 7.2 Feldtest-Protokoll + Funde W1/W2 (a35493c) · 7.3 files-Felder + Pack-/Bin-Check (f8a87b7); stadtpfad-pwa byte-identisch; typecheck + 190/190 Tests grün
