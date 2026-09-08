@@ -170,12 +170,7 @@ export function docsValidate(root: string): {
   scanLegacyDates(backlogPath, backlogPath, findings);
   scanLegacyDates(progressPath, progressPath, findings);
 
-  const warnings = [
-    ...backlog.warnings,
-    ...progress.warnings,
-    ...backlogArchive.warnings,
-    ...progressArchive.warnings,
-  ];
+  const warnings = [...backlog.warnings, ...progress.warnings];
 
   return { findings, warnings, ok: findings.length === 0 };
 }
