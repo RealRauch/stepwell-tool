@@ -239,3 +239,12 @@
 - **Fix:** `thresholds` in der Vitest-Config setzen (Zahlen im Step festlegen, Vorschlag: core statements/lines 90, branches 85 · mcp 85/80); CI scheitert bei Unterschreitung; Ausschlüsse nur für Boilerplate (types-only), dokumentiert.
 - **Abnahme:** Gate aktiv und belegt (künstlicher Coverage-Abfall → CI rot); Suite inkl. Thresholds grün.
 - **Erledigt:** 9.1: vitest.config.ts-Thresholds (core 90/85/95/90, mcp 85/78/90/85 per-glob), exclude types-only + barrels + stdio-Bootstrap; CI-Aktivierung via bestehendes --coverage in .github/workflows/ci.yml (Phase 7.1).
+
+---
+
+### [x] M2 — MCP-Tool-Annotations ergänzen (readOnly/destructive/idempotent) — 🟡
+- **Ort:** `packages/mcp/src/tools.ts` (alle registerTool-Aufrufe); Fundstelle: Tool-Vergleich mit MrLesk/Backlog.md 09/2026 (dort konsequente Annotations auf der gesamten MCP-Surface).
+- **Problem:** Unsere Tools tragen nur `title`/`description` — die MCP-Annotations `readOnlyHint`/`destructiveHint`/`idempotentHint` fehlen; Clients können Sicherheits-Entscheidungen (Autonomie, Retry) nicht aus den Metadaten ableiten.
+- **Fix:** Annotations je Tool nachfügen: readOnly für echo/docs_status/docs_validate/backlog_show/backlog_list/progress_list/progress_show; destruktiv für archive_item/backlog_remove; progress_update/backlog_add/backlog_update/progress_plan_phase als nicht-destruktiv mit dryRun-Default; Read-Tools zusätzlich idempotent. Test-first: Zuordnung über die registrierten Metadaten asserten.
+- **Abnahme:** Alle Tools tragen vollständige Annotations; Metadaten-Test grün; `npm run typecheck && npm run test` grün.
+- **Erledigt:** Commit f6fe0f1
