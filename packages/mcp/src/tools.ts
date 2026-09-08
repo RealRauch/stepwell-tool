@@ -364,7 +364,9 @@ export function registerDocsTools(server: McpServer): void {
       title: "Phase vorausplanen (Dry-run)",
       description:
         "Plant eine neue Phase: legt Tabellen-Zeilen für alle Steps (⬜, mit Namen) und ein " +
-        "Detail-Block-Skelett mit vollständigem Scope unter 'Laufende Phasen' an. Validiert, dass " +
+        "Detail-Block-Skelett mit vollständigem Scope unter 'Laufende Phasen' an. Existiert die " +
+        "Phase bereits als laufende Phase, wird sie um die Steps erweitert (fehlende Tabellen-Zeilen " +
+        "+ Scope-Bullets, ohne Nachbar-Zeilen anzutasten). Validiert, dass " +
         "die Step-Nummern zum Phasen-Namen passen (Phase <N> → <N>.<x>) und Phase/Steps noch frei " +
         "sind. Liefert den Plan mit Diff-Vorschau; geschrieben wird nur mit dryRun: false.",
       inputSchema: {

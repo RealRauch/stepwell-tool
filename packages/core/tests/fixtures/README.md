@@ -201,7 +201,7 @@ Sektions-Emoji als Fallback (+ Warnung `PRIO_MISSING`) → nur wenn beides fehlt
 | `backlog_add` (6.9) | `root`, `section`, `title`, `priority` | `id?` *(Auto-Vergabe K/H/M/L je Prio; Konventionsprüfung)*, `text?`, `dryRun` | Item am Ende der Sektion, `Stand:`-Refresh |
 | `backlog_update` (6.9) | `root`, `id` | `title?`, `priority?`, `section?`, `text?`, `dryRun` | Prio-Wechsel verschiebt in die passende Sektion |
 | `backlog_remove` (6.9) | `root`, `id` | `note?`, `locale?`, `dryRun` | verbatim ins Archiv, Checkbox bleibt `[ ]`, Index-Tail mit `entfernt|removed` statt `erledigt|done` |
-| `progress_plan_phase` (6.10) | `root`, `phase`, `steps: [{step, name}]` | `dryRun` | Zeilen `⬜` + Skeleton mit vollem Scope; Step-Präfix wird validiert |
+| `progress_plan_phase` (6.10) | `root`, `phase`, `steps: [{step, name}]` | `dryRun` | Zeilen `⬜` + Skeleton mit vollem Scope; Step-Präfix wird validiert; **existierende laufende Phase** → Erweiterungs-Modus (fehlende Zeilen + Scope-Bullets, Nachbar-Zeilen byte-identisch; D5/8.3) |
 
 ### Datei-Pflicht (Beschluss 09/2026: strikt)
 
