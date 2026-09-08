@@ -279,6 +279,36 @@ function appendTableRows(lines: string[], rows: string[]): void {
   lines.splice(lastRow + 1, 0, ...rows);
 }
 
+const FIELD_LINE = /^\*\*(.+?):\*\*/u;
+const BULLET_LINE = /^-\s+/u;
+
+function appendScopeBullets(
+  lines: string[],
+  block: PhaseBlock,
+  scopeHeading: string,
+  bullets: string[],
+): void {
+  const start = block.span.start - 1;
+  const end = block.span.end - 1;
+  let scopeIdx = -1;
+  let lastBullet = -1;
+  for (let i = start; i <= end; i++) {
+    const line = (lines[i] ?? "").trim();
+    if (scopeIdx === -1) {
+      const field = FIELD_LINE.exec(line);
+      if (field && allSynonyms("scopeLabel").some((s) => field[1]!.toLowerCase().startsWith(s.toLowerCase()))) {
+        scopeIdx = i;
+      }
+    } else if (BULLET_LINE.test(line)) {
+      lastBullet = i;
+    }
+  }
+  if (scopeIdx === -1) {
+    throw new Error(`scope section ("${scopeHeading}") im Block "${block.name}" nicht gefunden`);
+  }
+  lines.splice((lastBullet === -1 ? scopeIdx : lastBullet) + 1, 0, ...bullets);
+}
+
 export function planProgressUpdate(
   root: string,
   phase: string,
@@ -502,7 +532,17 @@ export function planPhase(
   }
   const running = progress.phases.find((p) => phaseMatches(p, phase.trim()));
   if (running !== undefined) {
-    throw new Error(`phase "${phase}" existiert bereits unter den laufenden Phasen`);
+    for (const entry of steps) {
+      const step = entry.step.trim();
+      const inScope = running.scope.some((s) =>
+        new RegExp(`^\\*{0,2}\\s*${escapeRegExp(step)}\\b`).test(s),
+      );
+      if (inScope) {
+        throw new Error(
+          `step "${step}" ist bereits im Scope der laufenden Phase "${running.name}"`,
+        );
+      }
+    }
   }
   const archived = docs.progressArchive().value.find((p) => phaseMatches(p, phase.trim()));
   if (archived !== undefined) {
@@ -518,19 +558,30 @@ export function planPhase(
   const edit = (content: string, eol: string): string => {
     const lines = content.split(eol);
     appendTableRows(lines, steps.map((s) => `| ${s.step.trim()} | ${s.name.trim()} | ⬜ |`));
-    insertRunningPhaseSkeleton(
-      lines,
-      phaseHeading,
-      scopeHeading,
-      steps.map((s) => `- **${s.step.trim()} ${s.name.trim()}**`),
-    );
+    if (running === undefined) {
+      insertRunningPhaseSkeleton(
+        lines,
+        phaseHeading,
+        scopeHeading,
+        steps.map((s) => `- **${s.step.trim()} ${s.name.trim()}**`),
+      );
+    } else {
+      appendScopeBullets(
+        lines,
+        running,
+        scopeHeading,
+        steps.map((s) => `- **${s.step.trim()} ${s.name.trim()}**`),
+      );
+    }
     return lines.join(eol);
   };
 
   const changes = buildChanges(root, [
     {
       relPath: "PROGRESS.md",
-      description: `Phase "${phase.trim()}" mit ${steps.length} Steps vorausplanen (Tabellen-Zeilen ⬜ + Detail-Block-Skelett)`,
+      description: running !== undefined
+        ? `Laufende Phase "${running.name}" um ${steps.length} Steps erweitern (Tabellen-Zeilen ⬜ + Scope-Bullets)`
+        : `Phase "${phase.trim()}" mit ${steps.length} Steps vorausplanen (Tabellen-Zeilen ⬜ + Detail-Block-Skelett)`,
       transform: edit,
     },
   ]);

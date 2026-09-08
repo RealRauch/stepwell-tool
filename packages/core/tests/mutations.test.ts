@@ -706,6 +706,7 @@ describe("phase extension — steps to a running phase (D5, 8.3)", () => {
   it("appends table rows and scope bullets to an existing running phase", () => {
     const dir = tempCopy("project-a");
     const progressPath = join(dir, "PROGRESS.md");
+    const before = readFileSync(progressPath, "utf8");
 
     const plan = planPhase(dir, "Phase 2", [{ step: "2.4", name: "Extra-Step" }], {
       dryRun: false,
@@ -715,7 +716,8 @@ describe("phase extension — steps to a running phase (D5, 8.3)", () => {
     expect(change.after).toContain("| 2.4 | Extra-Step | ⬜ |");
     expect(change.after).toContain("- **2.4 Extra-Step**");
     expect(change.after.match(/### Phase 2 — UI-Polish/gu)).toHaveLength(1);
-    expect(change.diff.split("\n").some((l) => l.startsWith("-"))).toBe(false);
+    const afterLines = change.after.split("\n");
+    expect(before.split("\n").every((l) => afterLines.includes(l))).toBe(true);
 
     const result = applyPhasePlan(plan);
     expect(result.verification.ok).toBe(true);
@@ -724,7 +726,7 @@ describe("phase extension — steps to a running phase (D5, 8.3)", () => {
     const parsed = parseProgress(progress).value;
     const block = parsed.phases.find((p) => p.name === "Phase 2");
     expect(block?.scope).toHaveLength(5);
-    expect(block?.scope.at(-1)).toBe("- **2.4 Extra-Step**");
+    expect(block?.scope.at(-1)).toBe("**2.4 Extra-Step**");
     expect(progress).toContain("| 2.1 | Strings-Modul | 🔄 |");
     expect(progress).toContain("**Abnahme:** typecheck + unit + e2e grün; U21/U22 abgeschlossen.");
 
