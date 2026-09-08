@@ -241,3 +241,32 @@ Je Step gilt die Abnahme seines Wurzel-Items (D1–D3).
 - **7.2 Feldtest stadtpfad-pwa**
 - **7.3 Publishing-Pack-Check**
 **Verifikation:** 7.1 CI-Template (df55385) · 7.2 Feldtest-Protokoll + Funde W1/W2 (a35493c) · 7.3 files-Felder + Pack-/Bin-Check (f8a87b7); stadtpfad-pwa byte-identisch; typecheck + 190/190 Tests grün
+
+---
+
+### Phase 8 — Feldtest-Fixes & Methoden-Sync
+
+**Ziel:** Die Feldtest-Funde aus stadtpfad-pwa (W1/W2) Richtung Realformat beheben —
+der Erledigt-Index in Tabellenform wird erkannt, Archiv-Warnungen fluten nicht mehr —,
+die letzte bekannte Tool-Lücke schließen (D5: Step zu laufender Phase ergänzen), und
+alle offenen Methoden-Ergänzungen in einem textgleichen PLAYBOOK-Sync-Schlag in beide
+Kopien bringen (D4 mit G1/G2, A1, G3). Reihenfolge bewusst: W1/W2 und D5 zuerst —
+W1 liefert die Methoden-Entscheidung (Index-Tabelle kanonisch ja/nein) für den Sync,
+D5 macht die Scope-Erweiterung laufender Phasen selbst tool-gestützt, bevor der
+Sync-Schlag als letzter Step läuft.
+
+**Backlog-Wurzel (Decision 14), Item → Step:**
+8.1 ← W1 · 8.2 ← W2 · 8.3 ← D5 · 8.4 ← D4 (integriert G1, G2), A1, G3.
+
+**Abnahme:** Je Step gilt die Abnahme seines Wurzel-Items (W1/W2/D5: typecheck + Tests
+grün, neue Fixture-Fälle, `docs_validate` am Referenzprojekt stadtpfad-pwa ohne die
+Feldtest-Funde; 8.4: beide PLAYBOOK-Kopien textgleich ergänzt, deckungsgleich mit
+AGENTS Decisions 13/14, `docs_validate` beider Projekte clean).
+
+**Umfang (Steps):**
+
+- **8.1 Erledigt-Index-Tabelle parsen (W1)**
+- **8.2 Archiv-Parse-Warnungen ausblenden (W2)**
+- **8.3 Step zu laufender Phase ergänzen (D5)**
+- **8.4 PLAYBOOK-Sync-Schlag (D4/G1/G2/A1/G3)**
+**Verifikation:** 8.1 Index-Tabelle toleriert (54→13 ehrliche Funde) · 8.2 Archiv-Warnungen 55→0 · 8.3 planPhase-Erweiterungs-Modus · 8.4 Sync-Schlag textgleich in beide Kopien (method-docs@abb6dcf, stadtpfad-pwa@08d2613) mit Klärung Erledigt-Index-Formate; typecheck + 199/199 Tests grün; docs_validate method-docs clean
