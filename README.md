@@ -181,6 +181,24 @@ Validate-Funde · `2` Usage-Fehler (unbekanntes Kommando, fehlende Pflicht-Optio
 
 ---
 
+## CI (optional)
+
+Dieses Repo nutzt GitHub Actions (`.github/workflows/ci.yml`): install → typecheck
+→ test (JUnit- + Coverage-Report als Artefakt) → `validate --root .` (Exit 1 bei
+Doku-Funden schlägt den Job um).
+
+**Für kleinere Projekte genügt der lokale Lauf** — die Pipeline ist Kanonen auf
+Spatzen, wenn niemand auf sie schaut:
+
+```bash
+npm install && npm run typecheck && npm run test && node packages/mcp/src/cli.ts validate --root .
+```
+
+STEPWELL-Projekte können `ci.yml` als Vorlage kopieren; die Methode (PLAYBOOK)
+verlangt keine CI.
+
+---
+
 ## Warnungs-Codes
 
 **Parse-Warnungen** entstehen beim Parsen einzelner Dateien (Drift-Toleranz),
