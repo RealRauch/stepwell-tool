@@ -1,4 +1,4 @@
-# BACKLOG.md — Offene Punkte (Stand: 260908/0046)
+# BACKLOG.md — Offene Punkte (Stand: 260908/2113
 
 > **Diese Datei enthält nur OFFENE Items.** Erledigte Items werden nach dem Abschluss
 > **unverändert** in `docs/archive/BACKLOG_ARCHIVE.md` verschoben; hier bleibt je Item nur ein Einzeiler
@@ -22,9 +22,43 @@
 
 ## 🟡 MITTEL
 
+### [ ] D1 — CI-Workflow einrichten (typecheck + test + validate) — 🟡
+- **Ort:** `.github/workflows/` (fehlt bislang)
+- **Problem:** Suite und `docs_validate` laufen nur lokal — Regressionen und Drift-Funde landen erst beim nächsten lokalen Lauf; README nennt `validate` „CI-tauglich", nutzt es aber nicht selbst.
+- **Fix:** GitHub Actions-Workflow: `npm install` → `typecheck` → `test` → `validate --root .` (Exit 1 bei Funden). Konfig-Ausnahme gem. PLAYBOOK §6 (keine Unit-Tests auf YAML) im Commit vermerken.
+- **Abnahme:** Workflow läuft grün auf push/PR; Validate-Exit-Code-Verhalten ist im Workflow sichtbar.
+- **Paketierung:** Step 7.1 in Phase 7 (Distribution & Feldtest).
+
+### [ ] D2 — Feldtest gegen stadtpfad-pwa (Realformat) — 🟡
+- **Ort:** `../stadtpfad-pwa` (BACKLOG.md, PROGRESS.md, docs/archive/*) — Realformat-Referenz, **nur lesen, nie verändern**.
+- **Problem:** Die Tools sind nie gegen ein echtes STEPWELL-Projekt außerhalb der Fixtures gelaufen; Realformat-Abweichungen (Layout, Serien, Kopfregeln, Erledigt-Index-Formate) würden als ungeparste Drift durchrutschen.
+- **Fix:** Alle Read-Tools (`docs_status`, `backlog_list/show`, `progress_list/show`, `docs_validate`) plus CLI-Kommandos gegen das Geschwister-Repo laufen lassen; Protokoll je Tool; jede Anomalie → eigenes BACKLOG-Item mit Fundstelle + Abnahmekriterium.
+- **Abnahme:** Protokoll je Tool existiert; Anomalien sind als Items erfasst; stadtpfad-pwa bleibt byte-identisch.
+- **Paketierung:** Step 7.2 in Phase 7.
+
+### [ ] D4 — PLAYBOOK ergänzen: Backlog-Wurzel + Inline-Fix-Lane (alle Kopien) — 🟡
+- **Ort:** `docs/PLAYBOOK.md` §0/§2 — **in allen Kopien simultan** (method-docs, stadtpfad-pwa; Kopfregel der Methode).
+- **Problem:** Decision 14 (AGENTS.md) definiert Backlog-Wurzel + Inline-Fix-Lane nur projektlokal — die Methode selbst sagt es nicht, andere Kopien verhalten sich abweichend.
+- **Fix:** Zwei Sätze ergänzen: (1) Jeder Step einer Phase ist aus mindestens einem offenen BACKLOG-Item abgeleitet (Verweis Item → Step wird je Item dokumentiert). (2) Inline-Fix-Lane: im freigegebenen laufenden Step entdeckte Bugs (im Code-Scope, ≤ ~10 Zeilen, keine API-/Schema-/Design-Entscheidung) dürfen sofort gefixt werden; Pflicht danach: retro `backlog_add` (Serie `F`) + sofortiges `archive_item` mit Commit-Hash.
+- **Abnahme:** Beide PLAYBOOK-Kopien textgleich ergänzt, deckungsgleich mit AGENTS Decision 14; `docs_validate` beider Projekte clean.
+- **Bemerkung:** Als Step 7.4 paketierbar, sobald D5 (Step-Ergänzung als Tool) umgesetzt ist — sonst Mikro-Paketierung nach Phase 7.
+
+### [ ] D5 — Tool-Lücke: Step zu laufender Phase ergänzen — 🟡
+- **Ort:** `packages/core/src/mutations.ts` (`planPhase` lehnt existierende Phase ab; `planProgressUpdate` wirft „unknown step", wenn der Step weder in Tabelle noch Scope steht)
+- **Problem:** Die Scope-Erweiterung einer **laufenden** Phase (z. B. +1 Step) ist nur per Hand-Edit an Tabellen-Zeile und Scope-Bullet möglich — genau die Struktur-Edits, die LESSONS 17 dem Tool zuordnen will. Aufgedeckt bei der Phase-7-Paketierung (PLAYBOOK-Sync wollte als 7.4 rein).
+- **Fix:** `progress_plan_phase` für existierende Phasen öffnen oder Zusatz-Modus: fehlende Tabellen-Zeile + Scope-Bullet in bestehender Phase ergänzen (Step-Präfix-Validierung, Dry-run-Modell), test-first.
+- **Abnahme:** Laufende Phase wird ohne Hand-Edit um einen Step erweitert; Nachbar-Zeilen byte-identisch; `npm run typecheck && npm run test` grün.
+
 ---
 
 ## 🟢 NIEDRIG
+
+### [ ] D3 — Publishing-Pack-Check (npm pack, bin, README-Install) — 🟢
+- **Ort:** `packages/*/package.json` (keine `files`-Felder), `README.md` (Installations-Abschnitt)
+- **Problem:** README verspricht `npx method-docs`; ohne `files`-Felder würde `npm pack` Tests und Fixtures mit ausliefern; der bin-Shim (`.ts`-Entry, Shebang) ist nie real ausgeführt worden; scoped (`@method-docs/mcp`) vs. unscoped Name ist ungeklärt.
+- **Fix:** `files`-Felder setzen, `npm pack` Dry-run je Workspace prüfen, bin lokal ausführen (`method-docs status --root .`), README-Installations-Abschnitt korrigieren.
+- **Abnahme:** Pack-Inhalt nur Source (keine tests/fixtures), bin funktioniert lokal, Doku stimmt mit dem Package überein.
+- **Paketierung:** Step 7.3 in Phase 7.
 
 ---
 
