@@ -74,5 +74,5 @@ AGENTS Decisions 13/14, `docs_validate` beider Projekte clean).
 | 7.3 | Publishing-Pack-Check | ✅ |
 | 8.1 | Erledigt-Index-Tabelle parsen (W1) | ✅ |
 | 8.2 | Archiv-Parse-Warnungen ausblenden (W2) | ✅ |
-| 8.3 | Step zu laufender Phase ergänzen (D5) | ⬜ |
+| 8.3 | Step zu laufender Phase ergänzen (D5) | ✅ |
 | 8.4 | PLAYBOOK-Sync-Schlag (D4/G1/G2/A1/G3) | ⬜ |
