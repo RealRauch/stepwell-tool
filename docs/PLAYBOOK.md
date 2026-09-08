@@ -15,8 +15,11 @@ Die Reihenfolge ist immer: **Planen → Paketieren → Implementieren.**
 
 1. **Planen:** Vor jeder Umsetzung werden die Schritte zuerst geplant (Ziel, Umfang, Reihenfolge, Risiken) — keine Implementierung „aus dem Handgelenk".
 2. **Paketieren:** Der Plan wird in `PROGRESS.md` in konkrete Aufträge mit **kleinen Step** zerlegt (nummeriert, mit Status und kurzem Umfang je Step).
-3. **Freigabe-Gate (bindend):** Der Übergang von Planung und Paketierung zur Implementierung erfolgt **erst nach expliziter Freigabe durch den Menschen** — Agenten wie Menschen paketieren vor, implementieren aber erst auf Freigabe.
-4. **Implementieren:** Erst danach wird implementiert — Step für Step nach den Regeln unten (Test-First, Verifikation, Commit).
+3. **Backlog-Wurzel (bindend):** Jeder Step einer Phase ist aus mindestens einem offenen Item in `BACKLOG.md` abgeleitet (Verweis Item → Step wird je Item dokumentiert) — die Kette Fund → Item → Step bleibt lückenlos; Planung entsteht nicht lautlos im Chat.
+4. **Freigabe-Gate (bindend):** Der Übergang von Planung und Paketierung zur Implementierung erfolgt **erst nach expliziter Freigabe durch den Menschen** — Agenten wie Menschen paketieren vor, implementieren aber erst auf Freigabe.
+5. **Content-Gates (Risiko-Matrix, bindend):** Die Freigabe wirkt zeitlich (vor Phasenstart) **und** inhaltlich je Dateiklasse: **Niedrig** — Source-/Test-Edits im Step-Scope → autonom; **Mittel** — Dependency-Manifeste, Dockerfiles → anhalten, Freigabe je Vorkommnis; **Hoch** — `.env`, CI-Workflows, Löschen existierender Tests, Schema-Migrationen → explizites menschliches Gate. Jeder Fall ist in einem Satz entscheidbar: welche Dateiklasse, welche Stufe.
+6. **Inline-Fix-Lane (einzige Ausnahme von der Step-Grenze, bindend):** Ein während eines freigegebenen, laufenden Steps entdeckter Bug darf sofort gefixt werden, wenn er (a) im Code-Scope des Steps liegt, (b) klein ist (Faustregel ≤ ~10 Zeilen; keine API-/Schema-/Design-Entscheidung, keine neue Abhängigkeit) und (c) ausschließlich die Dateiklasse „Niedrig" berührt. **Pflicht danach:** retro als Item (Serie `F`) ins `BACKLOG.md` und sofortige Archivierung mit Commit-Hash — die Kette Fund → Item → Erledigt-Index bleibt lückenlos. Alles andere bleibt reguläres offenes Item.
+7. **Implementieren:** Erst danach wird implementiert — Step für Step nach den Regeln unten (Test-First, Verifikation, Commit).
 
 ## 1. Sequenzielles Vorgehen
 
@@ -62,23 +65,41 @@ Datums-/Zeit-Angaben in den vier Doku-Dateien werden immer im Format `JJMMDD/HHM
 - Konventions-Warnungen (`ID_CONVENTION`, `DATE_LEGACY`) betreffen **nur offene Dateien**, nie Archive.
 - Neue Projekte legen **alle vier Dateien** (inkl. leerer Archive) bei Projektstart an.
 
+### Erledigt-Index-Formate (bindend)
+
+- **Kanonisch** ist der Bullet-Einzeiler je erledigtem Item: `- <ID> — <Kurztext> — erledigt in <sha> …` — alle Schreibpfade (auch Tools) erzeugen genau dieses Format.
+- **Toleriert beim Lesen:** Ein Erledigt-Index als Tabelle (`| Serie | Item (kurz) | Commit/Phase |`) wird erkannt und geparst (Spalte `Item` → ID + Kurztext, Spalte `Commit/Phase` → Commit-Hash); neu angelegt wird sie nicht — Bestands-Tabellen migrieren beim nächsten natürlichen Edit in Einzeiler.
+- **Kompakt-Zeilen sind Drift:** Range-Zeilen (`L1–L11 …`) und Sammel-Zeilen (`R1 … + R1-A …`) gelten nicht als Index-Eintrag je Item — die Validierung meldet jeden `[x]`-Archiv-Block ohne eigenen Einzeiler als Fund.
+
+### Adoption Bestandsprojekte (bindend)
+
+Die Einführung von STEPWELL in einem Projekt **ohne** die vier Dateien (Gray-/Brownfield) folgt diesem Modell — Greenfield-Projekte starten direkt mit allen vier Dateien:
+
+1. **Adoption = Snapshot:** Die vier Dateien werden beim Adoptions-Commit mit dem IST-Zustand angelegt: `BACKLOG.md` nur mit den **bekannten** offenen Punkten, Erledigt-Index und Archive **leer**, `PROGRESS.md` mit genau einer Zeile `0.1 STEPWELL-Adoption (Baseline <sha>)` ✅ — keine rückwirkende Historie, nie.
+2. **Budget-Inventar:** Ein zeitgeboxter Inventar-Step (Kopf-Wissen, TODO-/FIXME-Scan, Issue-Import) füllt `BACKLOG.md` mit den wichtigsten Items. Danach entsteht BACKLOG-Wissen nur noch in Arbeit: Fund → Item.
+3. **Verifikationsstufen (deklariert in der `PROGRESS.md`-Kopfzeile):** **Stufe 0** — kein automatisierter Test (Verifikation als Prüfprotokoll in der Step-Notiz; neue Kernlogik bringt ihren Test mit) · **Stufe 1** — Characterization-/Golden-Master-Tests (dürfen grün sein — Beobachtung vor Spezifikation) · **Stufe 2** — volles ROT→GRÜN. Ein Stufenwechsel ist ein Commit.
+4. **Strangler-Prinzip:** Die STEPWELL-Standards gelten für neue Arbeit und angefasste Zonen — keine Sanierungsphase, keine Großumstellung des Bestands.
+
 ## 4. Commit-Disziplin
 
 - Commit nach jedem abgeschlossenen Step, zwingend nach jeder vollständig abgeschlossenen Phase.
 - Vor dem Commit: `git status`, `git diff`, `git log --oneline -10` inspizieren.
 - Nur intendierte Dateien stagen. Keine Secrets, keine `.env`-Dateien.
 - Konsistente, kurze Commit-Messages im Repo-Stil (imperativ, Englisch, kleingeschrieben, z. B. `feat: add env config`).
+- Test-First-Kette auditierbar im Log: neue Tests zuerst im eigenen `test(scope): …`-Commit (die Suite ist ROT; der Failure-Beleg steht in der Commit-Message bzw. der Step-Notiz), danach `feat(scope): …` mit der Implementierung.
 - Schlägt ein Commit fehl (Hooks): Fehler fixen und neuen Commit erstellen — nicht amendieren.
 
 ## 5. Verifikation vor Abschluss
 
 - Typprüfung (strict), Unit-/Integration-Suite und E2E-Suite müssen **fehlerfrei** laufen (projektspezifische Befehle: siehe `AGENTS.md`).
 - Kein Step als „fertig" markieren ohne bestandene Verifikation.
+- **Optional — Smell-Budget (Qualitäts-Gate):** Wer es in der `PROGRESS.md`-Kopfzeile deklariert, für den gilt: (1) **Weiche Smells** (Feature Envy, Gott-Konzept, Namensgebung) sind Funde → Items im `BACKLOG.md`, nie Gates. (2) **Harte Smells** (Datei-/Funktionslänge, Komplexität, Duplikation, Lint-Regeln) bilden ein **Delta-Budget**: Ein Step darf die Smell-Last seiner angefassten Dateien nicht erhöhen; Absolut-Schwellen nur in Greenfield ab Tag 1, Schwellen werden nur gesenkt und nur beim natürlichen Anlass aktualisiert. (3) Ein Delta-Report ist Freigabe-Kontext, nie Sperre — das Gate bleibt binär (Budget eingehalten ja/nein, lokal oder in CI prüfbar). Wer nichts deklariert, hat kein Budget.
 
 ## 6. Test-First (ROT → GRÜN) — bindend
 
 - **Jeder geschriebene Code muss von Tests abgedeckt werden.** Kein Feature-/Step-Code ohne zugehörige Tests.
 - Reihenfolge: **zuerst** die Tests schreiben (sie schlagen anfangs fehl = ROT, weil die Funktion noch fehlt), **dann** die Implementierung, bis die Tests grün sind (GRÜN).
+- **ROT wird belegt, nicht behauptet:** Die ROT-Phase ist Teil des Nachweises — neuer Test zuerst im eigenen `test(scope): …`-Commit mit Failure-Beleg (Commit-Message oder Step-Notiz), erst dann der `feat(scope): …`-Implementierungs-Commit (siehe §4).
 - Damit steht am Ende jedes Steps eine reproduzierbare Test-Suite, die die Umsetzung belegt.
 - Ausnahmen nur, wenn Tests objektiv nicht sinnvoll sind (z. B. reine Konfigurations-/Strukturdateien); der Grund wird im Commit vermerkt.
 - Neue Tests gehören ins zentrale Testverzeichnis und werden von der Standard-Suite erfasst.
