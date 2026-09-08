@@ -9,6 +9,21 @@
 > wandern nach Abschluss **unverändert** in `docs/archive/PROGRESS_ARCHIVE.md`.
 
 ## Laufende Phasen
+### Phase 7 — Distribution & Feldtest
+
+**Ziel:** Das Tool verlässt das Rechenzentrum des Entwicklers — CI verriegelt die Suite,
+ein echtes STEPWELL-Projekt (stadtpfad-pwa) validiert die Tools gegen Realformat, und
+das Package ist pack-/install-fähig (README-Versprechen `npx method-docs`).
+
+**Abnahme:** Workflow grün; Feldtest-Protokoll je Tool, Anomalien als BACKLOG-Items;
+`npm pack` nur mit Source, bin-Shim funktioniert, Install-Abschnitt stimmt.
+
+**Umfang (Steps):**
+
+- **7.1 CI-Workflow (typecheck + test + validate)**
+- **7.2 Feldtest stadtpfad-pwa**
+- **7.3 Publishing-Pack-Check**
+
 
 
 ---
@@ -45,3 +60,6 @@
 | 6.8 | Titel-/Scope-Edits als Tool (T2) | ✅ |
 | 6.9 | Backlog-CRUD-Tools (T1) | ✅ |
 | 6.10 | Phasen-Planung als Tool (T4) | ✅ |
+| 7.1 | CI-Workflow (typecheck + test + validate) | ⬜ |
+| 7.2 | Feldtest stadtpfad-pwa | ⬜ |
+| 7.3 | Publishing-Pack-Check | ⬜ |
