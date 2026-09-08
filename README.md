@@ -150,7 +150,10 @@ Beispiel: `methoddocs://D%3A%5Cproj%5Cdemo/backlog`
 
 ## CLI
 
-`packages/mcp/src/cli.ts` (nach `npm install` auch als `npx method-docs`).
+`packages/mcp/src/cli.ts` — im Workspace-Repo direkt ausführbar
+(`node packages/mcp/src/cli.ts …`); aus dem installierten Package
+(`npm i -g @method-docs/mcp` bzw. `npx @method-docs/mcp`) unter dem Bin-Namen
+`method-docs`.
 Menschliche Ausgabe auf stdout; `--json` liefert die unveränderten core-Payloads.
 
 ```bash
