@@ -1,0 +1,43 @@
+# Optional CI template (STEPWELL projects may copy this).
+# Small projects are fine with the local run:
+#   npm install && npm run typecheck && npm run test && node packages/mcp/src/cli.ts validate --root .
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install
+        run: npm install
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      # One suite run: console + JUnit report + coverage in one pass.
+      - name: Test (console + junit + coverage)
+        run: >
+          npx vitest run
+          --reporter=default --reporter=junit --outputFile.junit=test-results/junit.xml
+          --coverage --coverage.reportsDirectory=test-results/coverage
+
+      # Exit 1 on findings — fails the job on drift between the four docs files.
+      - name: Validate STEPWELL docs
+        run: node packages/mcp/src/cli.ts validate --root .
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results
