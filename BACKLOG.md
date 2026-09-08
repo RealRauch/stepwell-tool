@@ -1,4 +1,4 @@
-# BACKLOG.md — Offene Punkte (Stand: 260908/2229
+# BACKLOG.md — Offene Punkte (Stand: 260908/2333
 
 > **Diese Datei enthält nur OFFENE Items.** Erledigte Items werden nach dem Abschluss
 > **unverändert** in `docs/archive/BACKLOG_ARCHIVE.md` verschoben; hier bleibt je Item nur ein Einzeiler
@@ -52,13 +52,73 @@
 - **Fix:** JSON-Output um Versionsfeld ergänzen (z. B. `{ schema: 1, ...payload }`); Schema (Felder je Command) im README dokumentieren; Regel: Breaking-Änderung am Schema ⇒ Versionsnummer hoch.
 - **Abnahme:** Alle `--json`-Ausgaben tragen das Versionsfeld; Contract-/Snapshot-Test je Command; README-Doku; `npm run typecheck && npm run test` grün.
 
+### [ ] M7 — SKILL.md als ergänzender Distributionsweg (stepwell-Skill) — 🟡
+- **Ort:** Repo-Root/`packages/mcp` (neues Asset `skills/stepwell/SKILL.md`); Fundstelle: Google Conductor — verteilt die Methode als portable Markdown-Skills (Gemini CLI, Antigravity, Claude Code, Codex-Port), agent-übergreifend; passt zu Phase 7 „Distribution & Feldtest".
+- **Problem:** Unser Vertriebsweg ist nur MCP (Server-Setup nötig); Agenten in Skill-Ökosystemen (SKILL.md-Format) bekommen keine Anleitung, WANN sie welches stepwell-Tool aufrufen — die Methoden-Disziplin lebt sonst nur in AGENTS.md-Kopien.
+- **Fix:** Schlankes SKILL.md („wann rufe ich welches Tool auf": Statuspflege nur via Tools, Freigabe-Gate, Test-First) als zweiter Distributionskanal neben MCP; verweist auf die MCP-Tools, ersetzt sie nicht; Decisions 13/15 einpreisen.
+- **Abnahme:** Skill-Datei liegt im npm-Pack (files-Check), Inhalt konsistent mit PLAYBOOK; README-Distributionsabschnitt nennt beide Kanäle.
+
+### [ ] M8 — Projekt-Init: Vorlagen-Auslieferung klären (Resources vs. init_project) — 🟡
+- **Ort:** `packages/core` (kanonische Skeletons, von CLI + MCP geteilt) + `packages/mcp` (Resources oder neues Tool); Fundstelle: Google Conductor — `/conductor:setup` scaffolded die Kontext-Dateien (product.md, workflow.md, …); Lücke verwandt mit M5 (Init-Fallback liefert bisher nur Anleitung zum Selbst-Anlegen).
+- **Problem:** Neuanlage eines STEPWELL-Projekts erfordert manuelles Nachbauen der vier Pflichtdateien (Kopfregeln, Legende, Prioritäts-Sektionen, Erledigt-Index) — Drift-Quelle ab Minute null; das Tool kann lesen/prüfen/schreiben, aber nicht aufsetzen.
+- **Fix:** Entscheidung zwischen zwei Varianten: **A** Templates als Read-Only-Resources (`methoddocs://templates/backlog|progress|archive/…`), Agent legt Dateien selbst an (kein Write-Surface-Wachstum) — oder **B** `init_project`-Tool (scaffold nur wenn alle vier Dateien fehlen, sonst harter Fehler; Dry-run-Modell wie gehabt; M4-Guardrail-Begründung nötig). Skeletons kanonisch in `packages/core` ablegen, Abgleich mit Fixture `project-a` (Parser-Positivpfad); M5-Anleitung auf den neuen Weg verweisen.
+- **Abnahme:** Entscheidung (inkl. Begründung) dokumentiert; gewählte Variante test-first umgesetzt (Resources bzw. Tool inkl. Guard-Fälle „Datei existiert bereits"); `docs_validate` an den geleerten Skeletons clean; `npm run typecheck && npm run test` grün.
+
 ---
 
 ## 🟢 NIEDRIG
 
+### [ ] L2 — Checkpoint-SHA je Phase in PROGRESS verankern — 🟢
+- **Ort:** `packages/core` (Phasen-Abschluss in planProgressUpdate) + `packages/mcp` (progress_update-Parameter); Fundstelle: Google Conductor (gemini-cli-extensions/conductor, 09/2026) — `[checkpoint: <sha>]` je Phase im plan.md, Phase-Diff-Scoping über den vorherigen Checkpoint-SHA.
+- **Problem:** Commit-SHAs landen bei uns nur im Erledigt-Index (archive_item-note); PROGRESS speichert pro Phase keinen Verifikations-Anker — „was hat diese Phase geändert?" ist nachträglich nicht per Git beantwortbar (Diff-Range fehlt), logisches Revert je Phase nicht ableitbar.
+- **Fix:** progress_update bei Phase-Abschluss optionalen `checkpoint`-Parameter (SHA) spendieren, der in die **Verifikation:**-Zeile des Archiv-Blocks bzw. den Index-Einzeiler übernommen wird; Format grob validieren (7–40 Hex), keine Pflicht. Test-first: Plan-/Apply-Tests für die SHA-Durchreichung.
+- **Abnahme:** Phase-Abschluss mit checkpoint-SHA erscheint verbatim in Archiv + Index; ohne Parameter unverändertes Verhalten; `npm run typecheck && npm run test` grün.
+
+### [ ] L3 — Verifikation als ausführbarer Plan formatieren — 🟢
+- **Ort:** PLAYBOOK-Kopien (§6 Verifikation) + Konvention für die Verifikations-Zeile bei progress_update; Fundstelle: Google Conductor — „Manual Verification Steps" (Command, Ausführung, erwartetes Ergebnis) mit Pause bis expliziter menschlicher Bestätigung.
+- **Problem:** Unsere Verifikation reduziert sich auf „typecheck + test grün" — die Zeile dokumentiert, DASS geprüft wurde, aber nicht WIE ein Mensch nachprüft; Reproduzierbarkeit für Dritte (Review, Feldtest, neue Session) leidet.
+- **Fix:** Konvention ergänzen (Prosa-Edit, keine Code-Änderung): Verifikations-Zeile/-Liste nennt mindestens einen nachlaufbaren Befehl + erwartetes Ergebnis; Vorlage in PLAYBOOK §6; bewusst ohne docs_validate-Warnung (zu weich, reine Konvention).
+- **Abnahme:** PLAYBOOK-Änderung in beiden Kopien textgleich; ein Beispiel-Verifikationsblock im Archiv zeigt das Format.
+
+### [ ] L4 — Doc-Sync-Reminder bei Phasen-Abschluss — 🟢
+- **Ort:** `packages/mcp` (progress_update-Antwort bei Phasen-Abschluss); Fundstelle: Google Conductor — „Synchronize Project Documentation": nach Track-Abschluss werden product.md/tech-stack.md-Updates vorgeschlagen (Diff + Approval).
+- **Problem:** Nach Phasen-Abschluss erinnert nichts daran, dass Projekt-Doku sync-bedürftig sein kann (AGENTS-Kickoff, README, PLAYBOOK-Abweichungen) — der Sync-Schlag hängt aktuell an Erinnerung.
+- **Fix:** Plan-Antwort bei Phasen-Abschluss um statischen Reminder-Bullet ergänzen („Doku-Sync prüfen: AGENTS-Kickoff, README, PLAYBOOK-Kopien"); reiner Textbaustein ohne Logik; Test auf Antwortinhalt.
+- **Abnahme:** Phasen-Abschluss-Antwort enthält Reminder; übrige Antworten unverändert; `npm run typecheck && npm run test` grün.
+
+### [ ] L5 — docs_review-Tool-Idee: Phasen-Review gegen Plan/Spec — 🟢
+- **Ort:** `packages/core` + `packages/mcp` (neues Tool — Surface-Gewinn muss die M4-Guardrail bestehen); Fundstelle: Google Conductor — review-Skill (Plan-Compliance-Check, strukturierter Report mit Severity-Findings + Diff-Vorschlägen; Review-Fixes werden als Tasks getrackt — entspricht unserer Inline-Fix-Lane, Decision 14).
+- **Problem:** Review läuft heute manuell (LESSONS-Checkliste + docs_validate); ein diff-basiertes Review „Phase X gegen ihre Steps/Items" (Plan-Compliance, Tests gelaufen?, Findings mit Datei/Zeile) ist nicht tool-gestützt.
+- **Fix:** Erst Alternativprüfung nach M4 (Parameter an docs_status/progress_show? Resource?), dann Minimal-Entwurf: Review-Report als Read-Only-Tool; Findings-Format ans Warning-Modell (Decision 6) anlehnen.
+- **Abnahme:** Entwurfsentscheidung dokumentiert (neues Tool vs. Erweiterung Bestand); falls Tool: Annotations, Tests und M4-Begründung im README.
+
+### [ ] L6 — Release-Prozess: CHANGELOG, Versionspolitik, Pack-Smoke in CI — 🟢
+- **Ort:** Repo-Root (`CHANGELOG.md`), `package.json` beider Workspaces + Root, `.github/workflows/ci.yml`; Fundstelle: D3 (Pack-Check nur lokal, kein Publish-Flow), M6 (JSON-Schema-Version braucht Versionspolitik), **Decision 16 (Lockstep-SemVer)**; Format-Vorgabe: **Keep a Changelog 1.1.0** (https://keepachangelog.com/en/1.1.0/), im Wesentlichen übernehmen.
+- **Problem:** Kein CHANGELOG, keine Versionierungs-Konvention, kein Smoke gegen das gepackte Artefakt — Distribution (Phase 7) endet am Pack-Inhalt, nicht am veröffentlichten Paket.
+- **Fix:** CHANGELOG.md nach KAC 1.1.0: `## [<version>] - <Datum>` mit Sektionen Added/Changed/Deprecated/Removed/Fixed/Security, neueste Version zuerst, `## [Unreleased]` oben, SemVer-Referenz; Abweichung erlaubt **nur beim Datums-/Zeitformat** (JJMMDD/HHMM gem. Decision 11 statt ISO — Entscheidung im Step dokumentieren); **Redundanz-Regel:** CHANGELOG = kuratierte, nutzerrelevante Aggregate je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index/BACKLOG_ARCHIVE (dort bleibt die Item-/Commit-Historie; Regel im README festhalten). Release-Mechanik gem. Decision 16: Lockstep-Bump in allen **drei** package.json + Git-Tag `v<version>` (Tags existieren noch nicht); CI-Job: npm pack beider Workspaces → Tarball installieren → stdio-Handshake-Smoke gegen das Artefakt; Publish-Checkliste im README (otp, dist-tag, nur `@method-docs/mcp` publizieren).
+- **Abnahme:** CHANGELOG seit Phase 1 im KAC-Format (Historie kuratiert aus dem Erledigt-Index abgeleitet, ohne Index-Duplikation); CI-Smoke grün gegen Tarball; README-Abschnitt „Releases" nennt Format, Lockstep-Regel + Redundanz-Regel.
+
+### [ ] L7 — docs_status um Next-Action-Empfehlung ergänzen — 🟢
+- **Ort:** `packages/core` (Status-Report) + `packages/mcp` (docs_status-Antwort); Fundstelle: Conductor-Status-Skill („Next Action Needed", „Current Phase and Task", „Blockers").
+- **Problem:** docs_status liefert Aggregate (offene Items je Prio, 🔄-Steps, ✅-Quote), aber keine Ableitung „was ist als Nächstes zu tun" — der Session-Kickoff braucht derzeit den zweiten Blick in progress_list/backlog_list.
+- **Fix:** Zwei abgeleitete Zeilen ergänzen: „nächster offener Step" (erste ⬜-Zeile der laufenden Phase in definierter Reihenfolge) und „nächste Priorität mit offenen Items" (erste nicht-leere Prioritäts-Sektion 🔴→🔵); rein ableitend aus geparsten Daten, keine neue Tool-Oberfläche.
+- **Abnahme:** Beide Felder deterministisch über Fixtures project-a/-b getestet; CLI `status` zeigt sie; `npm run typecheck && npm run test` grün.
+
+### [ ] L8 — Sync-Schlag: 🔵-Semantik + Session-Einstieg kanonisieren (PLAYBOOK-Kopien) — 🟢
+- **Ort:** PLAYBOOK-Kopien (§3 ID-/Serien-Konvention, §0/§2 Ablauf) in **beiden** Repos (method-docs + stadtpfad-pwa); Muster: D4-Sync-Schlag (textgleich, Commit je Repo).
+- **Problem:** „🔵 = Test-Lücke" existiert nur als BACKLOG-Legende, nicht kanonisch im PLAYBOOK; der Standard-Session-Einstieg (docs_status → progress_show → nächste ⬜ vor jeder Schreiboperation) ist Projekt-Konvention (AGENTS-Kickoff), aber nicht Methode — neue Projekte raten.
+- **Fix:** Sync-Schlag in beiden Kopien textgleich: §3 ergänzt „🔵 = Test-Lücken (explizite ID, keine Serie)"; kurzer Absatz „Session-Einstieg" (§0 oder §2); danach byte-identischer Abgleich beider Kopien (Hash-Vergleich als Beleg).
+- **Abnahme:** Beide PLAYBOOK-Kopien textgleich (Diff-/Hash-Beleg im Erledigt-Index); docs_validate method-docs clean.
+
 ---
 
 ## 🔵 TEST-LÜCKEN
+
+### [ ] T5 — BOM-Toleranz des Parsers (UTF-8-BOM in Datei-Köpfen) — 🔵
+- **Ort:** `packages/core` (Datei-Einlesen/Parser); Fundstelle: eigene Prüfung 09/2026 (`rg feff|bom packages` = leer) — Windows-Editoren/PowerShell (`Out-File`, Notepad) schreiben gern UTF-8-BOM.
+- **Problem:** Der zeilenbasierte Parser liest Heading/Kopfregeln ab Zeile 1; ein BOM vor `# BACKLOG.md` bzw. vor der ersten Sektion kann Kopfregel-/Sektionserkennung brechen oder als ungeklärte Drift durchrutschen — exakt die Zielklasse des fehlertoleranten Parsers, aber ungetestet.
+- **Fix:** BOM am Dateianfang (U+FEFF) deterministisch strippen — stille Toleranz, dokumentiert, keine Warnung; Test-first: Fixture mit BOM, Parser-Positivpfad + Validate-Lauf dagegen.
+- **Abnahme:** BOM-Datei parst identisch zur BOM-losen Variante (Assert auf Ergebnis-Gleichheit); Toleranz in README/Format-Doku erwähnt; `npm run typecheck && npm run test` grün.
 
 ---
 
@@ -88,5 +148,6 @@
 - G2 — RED-Phase beweisbar machen (test-first auditierbar) — erledigt (Fix `abb6dcf` — Commit-Konvention in PLAYBOOK §4 + §6 („ROT wird belegt, nicht behauptet") beider Kopien (stadtpfad-pwa@08d2613); Kette test-Commit → feat-Commit seit 8.1–8.3 im Log sichtbar (55773ae→9e9d334, 69fe002→3d224bf, 15d867e→14b9e3a))
 - A1 — PLAYBOOK ergänzen: Adoptions-Modell für Bestandsprojekte — erledigt (Fix `abb6dcf` — PLAYBOOK §3 „Adoption Bestandsprojekte" (Snapshot, Budget-Inventar, Verifikationsstufen 0–2 in der PROGRESS-Kopfzeile, Strangler) textgleich in beiden Kopien (stadtpfad-pwa@08d2613); bewusst ohne Tool-Teil (KISS))
 - G3 — PLAYBOOK ergänzen: Smell-Budget als optionales Qualitäts-Gate — erledigt (Fix `abb6dcf` — Smell-Budget als optionale dritte Säule in PLAYBOOK §5 beider Kopien (stadtpfad-pwa@08d2613): weiche Smells = Funde→Items, harte Smells = Delta-Budget in der PROGRESS-Kopfzeile, Delta-Report = Freigabe-Kontext; explizite Optionalität verankert (keine Deklaration → kein Budget))
+- T6 — Coverage-Schwellen in Vitest-Config + CI-Gate — erledigt (9.1: vitest.config.ts-Thresholds (core 90/85/95/90, mcp 85/78/90/85 per-glob), exclude types-only + barrels + stdio-Bootstrap; CI-Aktivierung via bestehendes --coverage in .github/workflows/ci.yml (Phase 7.1).)
 
 ---

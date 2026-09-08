@@ -230,3 +230,12 @@
 - **Abnahme:** Regel steht in PLAYBOOK §5 beider Kopien; explizite Optionalität verankert (wer nichts deklariert, hat kein Budget — Kanonen-auf-Spatzen-Schutz wie bei CI/D1).
 - **Bemerkung:** KISS — kein Ratchet-JSON, kein Budget-Tool; Enforcement über lokale Befehle bzw. optional CI. Tool-Unterstützung (Ratchet-Prüfung) ist Kandidat für ein separates W-Item, falls Bedarf entsteht.
 - **Erledigt:** Fix `abb6dcf` — Smell-Budget als optionale dritte Säule in PLAYBOOK §5 beider Kopien (stadtpfad-pwa@08d2613): weiche Smells = Funde→Items, harte Smells = Delta-Budget in der PROGRESS-Kopfzeile, Delta-Report = Freigabe-Kontext; explizite Optionalität verankert (keine Deklaration → kein Budget)
+
+---
+
+### [x] T6 — Coverage-Schwellen in Vitest-Config + CI-Gate — 🔵
+- **Ort:** Vitest-Konfiguration (Root/Workspaces) + `.github/workflows/ci.yml`; Fundstelle: D1 (Coverage-Artefakt vorhanden, kein Gate); Conductor-Workflow („>80 %"-Quality-Gate als Vorbild).
+- **Problem:** `@vitest/coverage-v8` erzeugt Artefakte, aber ohne `thresholds` kann die Abdeckung lautlos sinken — PLAYBOOK §6 erzwingt Test-First, misst aber nicht, dass die Suite vollständig bleibt.
+- **Fix:** `thresholds` in der Vitest-Config setzen (Zahlen im Step festlegen, Vorschlag: core statements/lines 90, branches 85 · mcp 85/80); CI scheitert bei Unterschreitung; Ausschlüsse nur für Boilerplate (types-only), dokumentiert.
+- **Abnahme:** Gate aktiv und belegt (künstlicher Coverage-Abfall → CI rot); Suite inkl. Thresholds grün.
+- **Erledigt:** 9.1: vitest.config.ts-Thresholds (core 90/85/95/90, mcp 85/78/90/85 per-glob), exclude types-only + barrels + stdio-Bootstrap; CI-Aktivierung via bestehendes --coverage in .github/workflows/ci.yml (Phase 7.1).

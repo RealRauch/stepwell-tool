@@ -38,6 +38,15 @@ Aktueller Stand und Step-Historie: [`PROGRESS.md`](PROGRESS.md).
 `docs/archive/PROGRESS_ARCHIVE.md`. Fehlt eine, lädt das Projekt nicht
 (harter Fehler mit klarer Meldung).
 
+**Format-Legende** (kanonisch: [PLAYBOOK](docs/PLAYBOOK.md) §3 + §7):
+
+| Symbol | Bedeutung | ID-Serie |
+|--------|-----------|----------|
+| 🔴 kritisch · 🟠 hoch · 🟡 mittel · 🟢 niedrig | Backlog-Priorität = Sektion | `K`/`H`/`M`/`L` (Auto-Nummerierung) |
+| 🔵 Test-Lücke | Backlog-Priorität = Sektion | keine Serie — explizite ID Pflicht |
+| ⬜ offen · 🔄 in Arbeit · ✅ fertig · ⛔ blockiert | Step-Status in `PROGRESS.md` | Steps `<Phase>.<x>` (z. B. `7.2`) |
+| weitere Serienbuchstaben (`R`, `T`, `D`, …) | thematische Serien, nicht prioritätsgebunden | fortlaufend, nie wiederverwendet |
+
 ---
 
 ## Anforderungen & Setup
