@@ -71,7 +71,7 @@
 | 8.3 | Step zu laufender Phase ergänzen (D5) | ✅ |
 | 8.4 | PLAYBOOK-Sync-Schlag (D4/G1/G2/A1/G3) | ✅ |
 | 9.1 | Coverage-Gate: Schwellen + CI (T6) | ✅ |
-| 9.2 | MCP-Tool-Annotations (M2) | ⬜ |
+| 9.2 | MCP-Tool-Annotations (M2) | ✅ |
 | 9.3 | Init-Fallback bei leerem Root (M5) | ⬜ |
 | 9.4 | Projekt-Init: Vorlagen-Auslieferung (M8) | ⬜ |
 | 9.5 | SKILL.md-Distributionsweg (M7) | ⬜ |

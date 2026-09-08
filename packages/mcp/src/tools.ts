@@ -53,6 +53,26 @@ const DRYRUN_FIELD = z.boolean().default(true)
   .describe("true (Default): nur Plan/Diff-Vorschau; false: Änderungen schreiben.");
 
 const ROOT_FIELD = z.string().describe("Absoluter Pfad zum Projekt-Root (mit BACKLOG.md/PROGRESS.md).");
+
+// MCP-Annotations je Tool-Klasse (Step 9.2/M2): explizit gesetzt, auch wo der
+// Spec-Default passen würde — Clients sollen nicht auf Defaults raten müssen.
+export const READ_ONLY_ANNOTATIONS = {
+  readOnlyHint: true,
+  destructiveHint: false,
+  idempotentHint: true,
+} as const;
+
+export const DESTRUCTIVE_ANNOTATIONS = {
+  readOnlyHint: false,
+  destructiveHint: true,
+  idempotentHint: false,
+} as const;
+
+export const MUTATING_ANNOTATIONS = {
+  readOnlyHint: false,
+  destructiveHint: false,
+  idempotentHint: false,
+} as const;
 const LOCALE_FIELD = z.enum(["de", "en"]).optional()
   .describe("Sprache für generierte Texte (Index-Zeile, Erledigt-/Verifikations-Marker). " +
     "Default: Auto-Erkennung aus dem Datei-Kontext.");
@@ -66,6 +86,7 @@ export function registerDocsTools(server: McpServer): void {
   server.registerTool(
     "backlog_list",
     {
+      annotations: { ...READ_ONLY_ANNOTATIONS },
       title: "Backlog-Liste",
       description:
         "Listet Items der BACKLOG.md eines STEPWELL-Projekts (ohne raw, schlanker Payload) " +
@@ -99,6 +120,7 @@ export function registerDocsTools(server: McpServer): void {
   server.registerTool(
     "backlog_show",
     {
+      annotations: { ...READ_ONLY_ANNOTATIONS },
       title: "Backlog-Item-Ansicht",
       description:
         "Merge-Sicht für eine Item-ID über offenes BACKLOG, Erledigt-Index und BACKLOG_ARCHIVE " +
@@ -123,6 +145,7 @@ export function registerDocsTools(server: McpServer): void {
   server.registerTool(
     "progress_list",
     {
+      annotations: { ...READ_ONLY_ANNOTATIONS },
       title: "Fortschrittsliste",
       description:
         "Listet die Zeilen der Fortschrittstabelle aus PROGRESS.md inkl. Parse-Warnungen; " +
@@ -151,6 +174,7 @@ export function registerDocsTools(server: McpServer): void {
   server.registerTool(
     "progress_show",
     {
+      annotations: { ...READ_ONLY_ANNOTATIONS },
       title: "Phasen-Detail",
       description:
         "Detail-Block einer Phase (inkl. raw) — Suche über laufende Phasen und Archiv; " +
@@ -176,6 +200,7 @@ export function registerDocsTools(server: McpServer): void {
   server.registerTool(
     "docs_status",
     {
+      annotations: { ...READ_ONLY_ANNOTATIONS },
       title: "Doku-Status",
       description:
         "Aggregat eines STEPWELL-Projekts: offene Items je Priorität, laufende Steps/Phasen, " +
@@ -188,6 +213,7 @@ export function registerDocsTools(server: McpServer): void {
   server.registerTool(
     "docs_validate",
     {
+      annotations: { ...READ_ONLY_ANNOTATIONS },
       title: "Doku-Validierung",
       description:
         "Prüft die Querkonsistenz der vier Doku-Dateien (Erledigt-Index ↔ Archiv, Checkbox ↔ " +
@@ -200,6 +226,7 @@ export function registerDocsTools(server: McpServer): void {
   server.registerTool(
     "archive_item",
     {
+      annotations: { ...DESTRUCTIVE_ANNOTATIONS },
       title: "Item archivieren (Dry-run)",
       description:
         "Plant die verbatim-Verschiebung eines erledigten Backlog-Items ins BACKLOG_ARCHIVE " +
@@ -230,6 +257,7 @@ export function registerDocsTools(server: McpServer): void {
   server.registerTool(
     "progress_update",
     {
+      annotations: { ...MUTATING_ANNOTATIONS },
       title: "Step-Status pflegen (Dry-run)",
       description:
         "Setzt den Status eines Steps in der Fortschrittstabelle (fehlende Zeilen werden ergänzt), " +
@@ -265,6 +293,7 @@ export function registerDocsTools(server: McpServer): void {
   server.registerTool(
     "backlog_add",
     {
+      annotations: { ...MUTATING_ANNOTATIONS },
       title: "Backlog-Item anlegen (Dry-run)",
       description:
         "Legt ein offenes Backlog-Item am Ende der Ziel-Sektion an: konforme ID (Serien-Konvention, " +
@@ -299,6 +328,7 @@ export function registerDocsTools(server: McpServer): void {
   server.registerTool(
     "backlog_update",
     {
+      annotations: { ...MUTATING_ANNOTATIONS },
       title: "Backlog-Item ändern (Dry-run)",
       description:
         "Ändert Titel, Priorität, Text oder Sektion eines offenen Items im Block-Format " +
@@ -332,6 +362,7 @@ export function registerDocsTools(server: McpServer): void {
   server.registerTool(
     "backlog_remove",
     {
+      annotations: { ...DESTRUCTIVE_ANNOTATIONS },
       title: "Backlog-Item entfernen (Dry-run)",
       description:
         "Entfernt ein offenes Item OHNE Hard-Delete: der Block wandert verbatim ins BACKLOG_ARCHIVE " +
@@ -361,6 +392,7 @@ export function registerDocsTools(server: McpServer): void {
   server.registerTool(
     "progress_plan_phase",
     {
+      annotations: { ...MUTATING_ANNOTATIONS },
       title: "Phase vorausplanen (Dry-run)",
       description:
         "Plant eine neue Phase: legt Tabellen-Zeilen für alle Steps (⬜, mit Namen) und ein " +
