@@ -208,6 +208,63 @@ describe("parseBacklog — inline edge cases", () => {
   });
 });
 
+describe("parseBacklog — Erledigt-Index als Tabelle (W1)", () => {
+  const tableIndex = [
+    "# BACKLOG.md — Offene Punkte (Stand: 260801/0900)",
+    "",
+    "---",
+    "",
+    "## ✅ ERLEDIGT-INDEX (Einzeiler — Details/Funde/Decisions: `docs/archive/BACKLOG_ARCHIVE.md`)",
+    "",
+    "| Serie | Item (kurz) | Commit/Phase |",
+    "|-------|-------------|--------------|",
+    "| K | K5 SQL-Injection Column-Whitelist | `d4e5f6a` |",
+    "| M | M8 Cache-Header für statische Assets | Phase 6.3 |",
+    "| L | L1–L3 (Cleanup-Batch) | Phase 5, siehe Archiv |",
+    "",
+  ].join("\n");
+
+  it("parses table rows after the separator into done entries, skipping the header", () => {
+    const r = parseBacklog(tableIndex);
+    expect(r.value.doneIndex).toEqual([
+      { id: "K5", summary: "SQL-Injection Column-Whitelist", sha: "d4e5f6a" },
+      { id: "M8", summary: "Cache-Header für statische Assets" },
+      { id: "L1–L3", summary: "(Cleanup-Batch)" },
+    ]);
+    expect(r.warnings).toEqual([]);
+  });
+
+  it("accepts bullets and table rows mixed (union matching)", () => {
+    const mixed = `${tableIndex}\n- S1 — Schema-Migration — erledigt in \`a1b2c3d\` (Details: Archiv)\n`;
+    const r = parseBacklog(mixed);
+    expect(r.value.doneIndex.map((d) => d.id)).toEqual(["K5", "M8", "L1–L3", "S1"]);
+  });
+
+  it("reads the id from the first column when the table has only two columns", () => {
+    const twoColumns = [
+      "## ✅ Erledigt-Index",
+      "",
+      "| Item (kurz) | Commit/Phase |",
+      "|-------------|--------------|",
+      "| K5 Rate-Limit | `d4e5f6a` |",
+      "",
+    ].join("\n");
+    const r = parseBacklog(twoColumns);
+    expect(r.value.doneIndex).toEqual([
+      { id: "K5", summary: "Rate-Limit", sha: "d4e5f6a" },
+    ]);
+  });
+
+  it("parses the project-e fixture table index without warnings", () => {
+    const r = parseFixture("project-e-tableindex", "BACKLOG.md");
+    expect(r.warnings).toEqual([]);
+    expect(r.value.doneIndex).toEqual([
+      { id: "K5", summary: "SQL-Injection Column-Whitelist", sha: "d4e5f6a" },
+      { id: "M8", summary: "Cache-Header für statische Assets" },
+    ]);
+  });
+});
+
 describe("readBacklog — file loading", () => {
   it("reads and parses a fixture project", () => {
     const r = readBacklog(join(fixtures, "project-b-drift"));

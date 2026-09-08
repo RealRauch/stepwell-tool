@@ -83,6 +83,16 @@ describe("docsValidate — project-b-drift (all validate rules)", () => {
   });
 });
 
+describe("docsValidate — project-e-tableindex (W1)", () => {
+  const result = docsValidate(join(fixtures, "project-e-tableindex"));
+
+  it("stays clean — the table done index fills doneIndex, no ARCHIVE_WITHOUT_INDEX", () => {
+    expect(result.findings).toEqual([]);
+    expect(result.warnings).toEqual([]);
+    expect(result.ok).toBe(true);
+  });
+});
+
 describe("docsValidate — STEP_DUPLICATE (R6)", () => {
   it("reports duplicated step numbers from the second occurrence on", () => {
     const dir = tempCopy("project-a");

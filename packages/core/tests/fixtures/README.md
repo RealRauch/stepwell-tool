@@ -27,9 +27,15 @@ fixtures/
 │   └── docs/archive/
 │       ├── BACKLOG_ARCHIVE.md
 │       └── PROGRESS_ARCHIVE.md
-└── project-d-tablefirst/ # wie project-a, aber PROGRESS.md mit Tabelle VOR den Detail-Blöcken
-    ├── BACKLOG.md        #   (Mutation-Regressionen R1: Row-Ergänzung + Phasen-Abschluss)
-    ├── PROGRESS.md
+├── project-d-tablefirst/ # wie project-a, aber PROGRESS.md mit Tabelle VOR den Detail-Blöcken
+│   ├── BACKLOG.md        #   (Mutation-Regressionen R1: Row-Ergänzung + Phasen-Abschluss)
+│   ├── PROGRESS.md
+│   └── docs/archive/
+│       ├── BACKLOG_ARCHIVE.md
+│       └── PROGRESS_ARCHIVE.md
+└── project-e-tableindex/ # wie project-a, aber Erledigt-Index als Tabelle (Realformat
+    ├── BACKLOG.md        #   stadtpfad-pwa; W1/8.1) — Parser-Positivpfad der tolerierten
+    ├── PROGRESS.md       #   Index-Tabellen-Variante
     └── docs/archive/
         ├── BACKLOG_ARCHIVE.md
         └── PROGRESS_ARCHIVE.md
@@ -70,6 +76,26 @@ Projekt-Root ist jeweils der Ordner mit `BACKLOG.md`/`PROGRESS.md` — genau wie
   `JJMMDD/HHMM`), gleiche Feldstruktur wie laufende Phasen.
 - **Konsistenz (Basis für `docs_validate`, 1.6):** project-a ist **fundi-frei** —
   Index ↔ Archiv deckungsgleich; jede 🔄-Zeile hat einen Detail-Block und umgekehrt.
+
+## Erwartete Parser-Ergebnisse (project-e-tableindex) — Index-Tabelle (W1/8.1)
+
+- **Erledigt-Index als Tabelle** (Realformat stadtpfad-pwa): Heading in Großbuchstaben mit
+  Klammer-Zusatz (`## ✅ ERLEDIGT-INDEX (Einzeiler — …)`), darunter GFM-Tabelle
+  `| Serie | Item (kurz) | Commit/Phase |`. Der Parser erkennt die Tabelle als **tolerierte
+  Index-Variante** (Union-Matching neben dem Bullet-Einzeiler):
+  - Kopfzeile(n) **vor** der Trennzeile (`|---|`) werden übersprungen; erst Datenzeilen
+    nach der Trennzeile werden erfasst.
+  - Spalte `Item` → `id` = erstes Token, `summary` = Rest; Spalte `Commit/Phase` →
+    `sha` = erstes Backtick-Token (Phase-Verweis ohne Backtick → **kein** `sha`).
+  - Bullet-Einzeiler und Tabellenzeilen dürfen gemischt vorkommen (beide Varianten zählen).
+- **Erwartetes `doneIndex`:** `K5` („SQL-Injection Column-Whitelist", `sha: d4e5f6a`),
+  `M8` („Cache-Header für statische Assets", **ohne** `sha`).
+- **Konsistenz:** project-e ist **fundi-frei** — `docsValidate(project-e-tableindex)`
+  meldet `ok: true`, insbesondere **kein** `ARCHIVE_WITHOUT_INDEX` (Index-Tabelle füllt
+  `doneIndex` deckungsgleich zum Archiv K5/M8).
+- **Randfälle (Inline-Tests, nicht Teil der Fixtures):** Range-Zeile (`L1–L3 …`) wird als
+  ein Eintrag mit `id: "L1–L3"` erfasst (Konventions-Prüfung schlägt dann ehrlich an);
+  Tabellen mit nur zwei Spalten lesen `id` aus der ersten Spalte.
 
 ## Erwartete Funde (project-b-drift) — Validate-Checkliste für 1.6
 
