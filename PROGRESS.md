@@ -11,8 +11,9 @@
 ## Laufende Phasen
 ### Phase 7 — Distribution & Feldtest
 
-**Ziel:** Das Tool verlässt das Rechenzentrum des Entwicklers — CI verriegelt die Suite (D1),
-ein echtes STEPWELL-Projekt (stadtpfad-pwa) validiert die Tools gegen Realformat (D2), und
+**Ziel:** Das Tool verlässt das Rechenzentrum des Entwicklers — CI verriegelt die Suite
+(D1 — optional als übernehmbares Template, kein Methoden-Pflichtteil), ein echtes
+STEPWELL-Projekt (stadtpfad-pwa) validiert die Tools gegen Realformat (D2), und
 das Package ist pack-/install-fähig (D3; README-Versprechen `npx method-docs`).
 Paketiert aus den Items D1–D3 gem. Decision 14 (Backlog-Wurzel); D4 (PLAYBOOK-Sync) und
 D5 (Step-Ergänzung als Tool) folgen im nächsten Packaging.

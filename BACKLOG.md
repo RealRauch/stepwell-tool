@@ -1,4 +1,4 @@
-# BACKLOG.md — Offene Punkte (Stand: 260908/2113
+# BACKLOG.md — Offene Punkte (Stand: 260908/2116
 
 > **Diese Datei enthält nur OFFENE Items.** Erledigte Items werden nach dem Abschluss
 > **unverändert** in `docs/archive/BACKLOG_ARCHIVE.md` verschoben; hier bleibt je Item nur ein Einzeiler
@@ -24,9 +24,9 @@
 
 ### [ ] D1 — CI-Workflow einrichten (typecheck + test + validate) — 🟡
 - **Ort:** `.github/workflows/` (fehlt bislang)
-- **Problem:** Suite und `docs_validate` laufen nur lokal — Regressionen und Drift-Funde landen erst beim nächsten lokalen Lauf; README nennt `validate` „CI-tauglich", nutzt es aber nicht selbst.
-- **Fix:** GitHub Actions-Workflow: `npm install` → `typecheck` → `test` → `validate --root .` (Exit 1 bei Funden). Konfig-Ausnahme gem. PLAYBOOK §6 (keine Unit-Tests auf YAML) im Commit vermerken.
-- **Abnahme:** Workflow läuft grün auf push/PR; Validate-Exit-Code-Verhalten ist im Workflow sichtbar.
+- **Problem:** Suite und `docs_validate` laufen nur lokal — Regressionen und Drift-Funde landen erst beim nächsten lokalen Lauf. **Einwand 09/2026: CI muss optional bleiben** — für kleinere Projekte ist eine Pipeline Kanonen auf Spatzen; PLAYBOOK §5 (lokale Verifikation) bleibt der Pflichtteil.
+- **Fix:** GitHub Actions-Workflow in **diesem** Repo als freiwillig übernehmbares Template (`npm install` → `typecheck` → `test` → `validate --root .`, Exit 1 bei Funden); README-Abschnitt „CI (optional)" mit Copy-Vorlage und Hinweis, dass der lokale Lauf für kleine Projekte genügt. Kein Methoden- und kein Tool-Zwang.
+- **Abnahme:** Workflow läuft grün auf push/PR; README kennzeichnet CI explizit als optional; weder PLAYBOOK noch Tools machen CI zur Pflicht.
 - **Paketierung:** Step 7.1 in Phase 7 (Distribution & Feldtest).
 
 ### [ ] D2 — Feldtest gegen stadtpfad-pwa (Realformat) — 🟡
