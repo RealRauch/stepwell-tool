@@ -692,11 +692,65 @@ describe("phase planning (T4, 6.10)", () => {
         { step: "7.1", name: "B" },
       ]),
     ).toThrow(/7\.1/);
-    expect(() => planPhase(dir, "Phase 2", [{ step: "2.9", name: "X" }])).toThrow(/Phase 2/);
+    expect(() => planPhase(dir, "Phase 0", [{ step: "0.9", name: "X" }])).toThrow(
+      /PROGRESS_ARCHIVE/,
+    );
     expect(() => planPhase(dir, "Siebte Phase", steps)).toThrow(/Phase/);
     expect(() =>
       planPhase(dir, "Phase 7 — Rundung", [{ step: "7.1", name: "A" }, ...steps]),
     ).toThrow(/7\.1/);
+  });
+});
+
+describe("phase extension — steps to a running phase (D5, 8.3)", () => {
+  it("appends table rows and scope bullets to an existing running phase", () => {
+    const dir = tempCopy("project-a");
+    const progressPath = join(dir, "PROGRESS.md");
+
+    const plan = planPhase(dir, "Phase 2", [{ step: "2.4", name: "Extra-Step" }], {
+      dryRun: false,
+    });
+    expect(plan.dryRun).toBe(false);
+    const change = plan.changes[0]!;
+    expect(change.after).toContain("| 2.4 | Extra-Step | ⬜ |");
+    expect(change.after).toContain("- **2.4 Extra-Step**");
+    expect(change.after.match(/### Phase 2 — UI-Polish/gu)).toHaveLength(1);
+    expect(change.diff.split("\n").some((l) => l.startsWith("-"))).toBe(false);
+
+    const result = applyPhasePlan(plan);
+    expect(result.verification.ok).toBe(true);
+
+    const progress = readFileSync(progressPath, "utf8");
+    const parsed = parseProgress(progress).value;
+    const block = parsed.phases.find((p) => p.name === "Phase 2");
+    expect(block?.scope).toHaveLength(5);
+    expect(block?.scope.at(-1)).toBe("- **2.4 Extra-Step**");
+    expect(progress).toContain("| 2.1 | Strings-Modul | 🔄 |");
+    expect(progress).toContain("**Abnahme:** typecheck + unit + e2e grün; U21/U22 abgeschlossen.");
+
+    const validation = docsValidate(dir);
+    expect(validation.findings).toEqual([]);
+    expect(validation.warnings).toEqual([]);
+  });
+
+  it("rejects steps already present in the table or in the block scope", () => {
+    const dir = tempCopy("project-a");
+    expect(() => planPhase(dir, "Phase 2", [{ step: "2.1", name: "X" }])).toThrow(
+      /existiert bereits in der Fortschrittstabelle/,
+    );
+
+    const progressPath = join(dir, "PROGRESS.md");
+    writeFileSync(
+      progressPath,
+      readFileSync(progressPath, "utf8").replace(
+        "- **2.3 U22 Lade-/Leerzustände**",
+        "- **2.3 U22 Lade-/Leerzustände**\n- **2.4 Schon im Scope**",
+      ),
+      "utf8",
+    );
+    expect(() => planPhase(dir, "Phase 2", [{ step: "2.4", name: "Nochmal" }])).toThrow(
+      /2\.4/,
+    );
   });
 });
 
