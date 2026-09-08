@@ -75,7 +75,9 @@ describe("docsStatus — project-b-drift", () => {
     ]);
   });
 
-  it("does not surface parse warnings from archive files (W2)", () => {
-    expect(status.warnings.every((w) => !w.file.includes("ARCHIVE"))).toBe(true);
+  it("does not surface parse warnings from archive files — only consistency findings (W2)", () => {
+    expect(
+      status.warnings.filter((w) => w.file.includes("ARCHIVE")).map((w) => w.code),
+    ).toEqual(["ARCHIVE_WITHOUT_INDEX"]);
   });
 });
