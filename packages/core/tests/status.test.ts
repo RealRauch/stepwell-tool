@@ -74,4 +74,8 @@ describe("docsStatus — project-b-drift", () => {
       ["ROW_INCOMPLETE", 19],
     ]);
   });
+
+  it("does not surface parse warnings from archive files (W2)", () => {
+    expect(status.warnings.every((w) => !w.file.includes("ARCHIVE"))).toBe(true);
+  });
 });
