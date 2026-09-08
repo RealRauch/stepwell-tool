@@ -28,6 +28,10 @@ const DONE_LINE = new RegExp(
 );
 const DONE_INDEX_HEADING = synonymPattern("doneIndexHeading");
 const SEPARATOR_RULE = /^-{3,}\s*$/u;
+const TABLE_ROW = /^\s*\|.*\|\s*$/u;
+const TABLE_SEPARATOR = /^\s*\|(\s*:?-+:?\s*\|)+\s*$/u;
+const BACKTICKED = /`([^`]+)`/u;
+const FIRST_TOKEN = /\S+/u;
 
 const isKnownPriority = (token: string): token is Exclude<Priority, "unknown"> =>
   PRIORITY_EMOJIS.includes(token);
@@ -48,6 +52,32 @@ interface TitleParts {
   known: Priority | undefined;
   duplicate: boolean;
   unknownEmoji: boolean;
+}
+
+/**
+ * Erledigt-Index als GFM-Tabelle (tolerierte Variante, Realformat stadtpfad-pwa):
+ * Spalten [Serie, Item, Commit/Phase] — `id` = erstes Token der Item-Spalte,
+ * `summary` = Rest; `sha` = erstes Backtick-Token der Commit/Phase-Spalte.
+ * Zwei Spalten ([Item, Commit/Phase]) lesen die ID aus der ersten Spalte.
+ */
+function parseDoneTableRow(line: string): DoneEntry | undefined {
+  const cells = line
+    .trim()
+    .replace(/^\|/, "")
+    .replace(/\|$/, "")
+    .split("|")
+    .map((cell) => cell.trim());
+  if (cells.length < 2) return undefined;
+  const itemCell = cells.length >= 3 ? cells[1]! : cells[0]!;
+  const commitCell = cells.length >= 3 ? cells[2]! : cells[1]!;
+  const token = FIRST_TOKEN.exec(itemCell)?.[0];
+  if (!token) return undefined;
+  const entry: DoneEntry = { id: token, summary: itemCell.slice(token.length).trim() };
+  const sha = BACKTICKED.exec(commitCell);
+  if (sha) {
+    entry.sha = sha[1]!;
+  }
+  return entry;
 }
 
 function extractTitleParts(rest: string): TitleParts {
@@ -200,6 +230,7 @@ export function parseBacklog(content: string, file = "BACKLOG.md"): ParseResult<
 
   let currentSection: BacklogSection | null = null;
   let inDoneIndex = false;
+  let doneTableData = false;
   let headerRuleOpen = false;
   let currentItem: RawItem | null = null;
 
@@ -226,9 +257,11 @@ export function parseBacklog(content: string, file = "BACKLOG.md"): ParseResult<
       const heading = sectionMatch[1]!.trim();
       if (DONE_INDEX_HEADING.test(heading)) {
         inDoneIndex = true;
+        doneTableData = false;
         continue;
       }
       inDoneIndex = false;
+      doneTableData = false;
       const { emoji, title } = splitEmoji(heading);
       currentSection = { title, emoji, headerRule: "" };
       headerRules.push([]);
@@ -255,6 +288,7 @@ export function parseBacklog(content: string, file = "BACKLOG.md"): ParseResult<
     if (SEPARATOR_RULE.test(line)) {
       endSection();
       inDoneIndex = false;
+      doneTableData = false;
       continue;
     }
 
@@ -271,6 +305,17 @@ export function parseBacklog(content: string, file = "BACKLOG.md"): ParseResult<
           entry.sha = done[3]!;
         }
         doneIndex.push(entry);
+        continue;
+      }
+      if (TABLE_ROW.test(line)) {
+        if (TABLE_SEPARATOR.test(line)) {
+          doneTableData = true;
+        } else if (doneTableData) {
+          const entry = parseDoneTableRow(line);
+          if (entry) {
+            doneIndex.push(entry);
+          }
+        }
       }
       continue;
     }
