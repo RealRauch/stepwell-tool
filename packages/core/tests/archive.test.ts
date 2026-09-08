@@ -41,12 +41,20 @@ describe("parseBacklogArchive — project-a", () => {
 describe("parseBacklogArchive — project-b-drift", () => {
   it("parses the Z9 orphan block tolerantly", () => {
     const result = parseItems("project-b-drift", "docs", "archive", "BACKLOG_ARCHIVE.md");
-    expect(result.warnings).toEqual([]);
-    expect(result.value).toHaveLength(1);
+    expect(result.value).toHaveLength(2);
     const z9 = result.value[0]!;
     expect(z9.id).toBe("Z9");
     expect(z9.open).toBe(false);
     expect(z9.doneLine).toBe("Commit `f6a7b8c` (09/2026).");
+  });
+
+  it("warns at parse level for the Z8 suffix-drift block — suppression is the aggregation's job (W2)", () => {
+    const result = parseItems("project-b-drift", "docs", "archive", "BACKLOG_ARCHIVE.md");
+    expect(result.warnings.map((w) => [w.code, w.line])).toEqual([["PRIO_MISSING", 16]]);
+    const z8 = result.value[1]!;
+    expect(z8.id).toBe("Z8");
+    expect(z8.priority).toBe("unknown");
+    expect(z8.doneLine).toBe("Commit `x9y8z7a` (09/2026).");
   });
 });
 

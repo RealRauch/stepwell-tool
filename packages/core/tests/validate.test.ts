@@ -61,7 +61,7 @@ describe("docsValidate — project-b-drift (all validate rules)", () => {
     expect(result.findings.some((f) => f.code === "DATE_LEGACY" && f.message.includes("09/2026"))).toBe(true);
   });
 
-  it("collects the parse warnings of all four files (D1, D3, D4, D6, D7, D9, D10)", () => {
+  it("collects the parse warnings of the open files only — archive warnings suppressed (W2)", () => {
     expect(result.warnings).toHaveLength(10);
     expect(result.warnings.map((w) => w.code)).toEqual([
       "PRIO_MISSING",
@@ -75,6 +75,7 @@ describe("docsValidate — project-b-drift (all validate rules)", () => {
       "STATUS_UNKNOWN",
       "ROW_INCOMPLETE",
     ]);
+    expect(result.warnings.every((w) => !w.file.includes("ARCHIVE"))).toBe(true);
   });
 
   it("never reports convention findings against the append-only archive", () => {

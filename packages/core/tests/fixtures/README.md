@@ -116,6 +116,7 @@ Projekt-Root ist jeweils der Ordner mit `BACKLOG.md`/`PROGRESS.md` — genau wie
 | D13 | Archiv-Block **ohne** Index-Eintrag (`Z9`) | BACKLOG_ARCHIVE | Validate: „fehlt im Erledigt-Index" |
 | D14 | ID verletzt Nomenklatur (`fix_me`) | BACKLOG | Warnung `ID_CONVENTION`, Item trotzdem listen |
 | D15 | Datum nur als `MM/JJJJ` (`Stand:`-Kopfzeile des Drift-BACKLOG) | BACKLOG | Warnung `DATE_LEGACY` — nur offene Dateien, Archive nie |
+| D16 | Archiv-Block ohne Prioritäts-Suffix (`Z8`) | BACKLOG_ARCHIVE | Parser warnt (`PRIO_MISSING`), aber `docs_validate`/`docs_status` reichen **keine** Parse-Warnungen aus Archiv-Dateien durch (W2/8.2 — „Archive werden nie beanstandet"); Konsistenz-Funde (z. B. `ARCHIVE_WITHOUT_INDEX`) bleiben |
 
 **Parser-Grundregel (AGENTS.md Nr. 2):** Drift → strukturierte Warnung, **niemals Abbruch**.
 Jedes Teil-Ergebnis (auch `unknown`) bleibt abfragbar.

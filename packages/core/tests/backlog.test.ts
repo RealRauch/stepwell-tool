@@ -106,6 +106,7 @@ describe("parseBacklog — project-b-drift (tolerance, parse warnings)", () => {
     expect(result.value.doneIndex).toEqual([
       { id: "S9", summary: "Im Index, aber NICHT im Archiv (Validate-Fall)", sha: "d4e5f6a" },
       { id: "M9", summary: "Auch im Index, fehlt im Archiv", sha: "e5f6a7b" },
+      { id: "Z8", summary: "Archiv-Block ohne Prioritäts-Suffix (W2-Fall)", sha: "x9y8z7a" },
     ]);
   });
 

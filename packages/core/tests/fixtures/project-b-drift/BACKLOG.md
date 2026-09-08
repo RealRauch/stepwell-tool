@@ -1,7 +1,7 @@
 # BACKLOG.md — Offene Punkte (Stand: 09/2026)
 
 > Diese Datei enthält absichtlich **Struktur-Drift** für Parser-/Validate-Tests.
-> Erwartete Reaktionen je Fall: siehe `../README.md` (Tabellen D1–D8, D14, D15 —
+> Erwartete Reaktionen je Fall: siehe `../README.md` (Tabellen D1–D8, D14–D16 —
 > die `Stand:`-Kopfzeile unten ist selbst der D15-Fall mit Legacy-Datum).
 
 ---
@@ -73,5 +73,6 @@ vollständig als `text` erfassen und das Item listen.
 
 - S9 — Im Index, aber NICHT im Archiv (Validate-Fall) — erledigt in `d4e5f6a`
 - M9 — Auch im Index, fehlt im Archiv — erledigt in `e5f6a7b`
+- Z8 — Archiv-Block ohne Prioritäts-Suffix (W2-Fall) — erledigt in `x9y8z7a`
 
 ---
