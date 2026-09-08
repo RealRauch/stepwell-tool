@@ -120,3 +120,13 @@
 - **Fix:** `progress_plan_phase` (oder `planPhase` in core): legt Tabelle-Zeilen für alle Steps mit Namen + ⬜ an und optional Detail-Block-Skelett mit vollständigem Scope; Integration in `progress_update` (erste 🔄-Step übernimmt bestehenden Scope statt neuem Skeleton); Validierung: Step-Nummern-Präfix passt zum Phasen-Namen.
 - **Abnahme:** Test-first: neue Phase mit 3 Steps planen → apply → Tabelle + Skeleton konsistent, `progress_update` auf Folgesteps ohne Workaround möglich; `npm run typecheck && npm run test` grün.
 - **Erledigt:** Fix `9fea4bc` — planPhase/applyPhasePlan + MCP progress_plan_phase: Tabellen-Zeilen ⬜, Skeleton mit vollem Scope, Prefix-Validierung; PLAN_WITHOUT_WIP bis zum ersten 🔄 definiert
+
+---
+
+### [x] D1 — CI-Workflow einrichten (typecheck + test + validate) — 🟡
+- **Ort:** `.github/workflows/` (fehlt bislang)
+- **Problem:** Suite und `docs_validate` laufen nur lokal — Regressionen und Drift-Funde landen erst beim nächsten lokalen Lauf. **Einwand 09/2026: CI muss optional bleiben** — für kleinere Projekte ist eine Pipeline Kanonen auf Spatzen; PLAYBOOK §5 (lokale Verifikation) bleibt der Pflichtteil.
+- **Fix:** GitHub Actions-Workflow in **diesem** Repo als freiwillig übernehmbares Template (`npm install` → `typecheck` → `test` → `validate --root .`, Exit 1 bei Funden); Test-Report maschinenlesbar (Vitest JUnit-Reporter) und Coverage-Report im Workflow-Artefakt; README-Abschnitt „CI (optional)" mit Copy-Vorlage und Hinweis, dass der lokale Lauf für kleine Projekte genügt. Kein Methoden- und kein Tool-Zwang.
+- **Abnahme:** Workflow läuft grün auf push/PR; JUnit-Report wird erzeugt; README kennzeichnet CI explizit als optional; weder PLAYBOOK noch Tools machen CI zur Pflicht.
+- **Paketierung:** Step 7.1 in Phase 7 (Distribution & Feldtest).
+- **Erledigt:** Fix `df55385` — ci.yml als optional Template (push/PR), JUnit + Coverage im Artefakt, validate-Schritt mit Exit 1; @vitest/coverage-v8 als devDep; README-Abschnitt „CI (optional)"
