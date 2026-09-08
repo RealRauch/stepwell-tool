@@ -64,6 +64,6 @@ Je Step gilt die Abnahme seines Wurzel-Items (D1–D3).
 | 6.8 | Titel-/Scope-Edits als Tool (T2) | ✅ |
 | 6.9 | Backlog-CRUD-Tools (T1) | ✅ |
 | 6.10 | Phasen-Planung als Tool (T4) | ✅ |
-| 7.1 | CI-Workflow (typecheck + test + validate) | ⬜ |
-| 7.2 | Feldtest stadtpfad-pwa | ⬜ |
+| 7.1 | CI-Workflow (typecheck + test + validate) | ✅ |
+| 7.2 | Feldtest stadtpfad-pwa | 🔄 |
 | 7.3 | Publishing-Pack-Check | ⬜ |
