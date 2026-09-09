@@ -81,3 +81,25 @@ describe("docsStatus — project-b-drift", () => {
     ).toEqual(["ARCHIVE_WITHOUT_INDEX"]);
   });
 });
+
+describe("docsStatus — project-empty (M5)", () => {
+  const status = docsStatus(join(fixtures, "project-empty"));
+
+  it("returns the zero aggregate with exactly one PROJECT_NOT_INITIALIZED warning", () => {
+    expect(status.openByPriority).toEqual({
+      "🔴": 0,
+      "🟠": 0,
+      "🟡": 0,
+      "🟢": 0,
+      "🔵": 0,
+      unknown: 0,
+    });
+    expect(status.openTotal).toBe(0);
+    expect(status.runningSteps).toEqual([]);
+    expect(status.runningPhases).toEqual([]);
+    expect(status.doneQuote).toEqual({ done: 0, total: 0, percent: 0 });
+    expect(status.warnings).toHaveLength(1);
+    expect(status.warnings[0]!.code).toBe("PROJECT_NOT_INITIALIZED");
+    expect(status.warnings[0]!.message).toMatch(/PLAYBOOK/);
+  });
+});

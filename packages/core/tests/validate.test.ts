@@ -94,6 +94,29 @@ describe("docsValidate — project-e-tableindex (W1)", () => {
   });
 });
 
+describe("docsValidate — project-empty (M5)", () => {
+  const result = docsValidate(join(fixtures, "project-empty"));
+
+  it("returns exactly one PROJECT_NOT_INITIALIZED finding with guidance", () => {
+    expect(result.findings).toHaveLength(1);
+    const finding = result.findings[0]!;
+    expect(finding.code).toBe("PROJECT_NOT_INITIALIZED");
+    expect(finding.file).toBe(join(fixtures, "project-empty"));
+    expect(finding.line).toBeUndefined();
+    expect(finding.message).toContain("BACKLOG.md");
+    expect(finding.message).toContain("PROGRESS_ARCHIVE.md");
+    expect(finding.message).toMatch(/PLAYBOOK/);
+    expect(result.warnings).toEqual([]);
+    expect(result.ok).toBe(false);
+  });
+
+  it("keeps the per-file hard error for partial inventory (Teilbestand)", () => {
+    const dir = tempCopy("project-a");
+    rmSync(join(dir, "PROGRESS.md"));
+    expect(() => docsValidate(dir)).toThrow(/missing required file\(s\)/);
+  });
+});
+
 describe("docsValidate — STEP_DUPLICATE (R6)", () => {
   it("reports duplicated step numbers from the second occurrence on", () => {
     const dir = tempCopy("project-a");
