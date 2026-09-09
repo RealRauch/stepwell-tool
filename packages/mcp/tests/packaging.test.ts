@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { spawnSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
@@ -59,4 +60,16 @@ describe("pack smoke wiring (L6, 9.8)", () => {
     expect(changelog).toContain("## [Unreleased]");
     expect(changelog).toContain("Keep a Changelog");
   });
+});
+
+describe("pack smoke with spaces in the temp path (R8, 10.2)", () => {
+  it("runs green when TMP/TEMP contain spaces (windows shell quoting)", () => {
+    const spacedTemp = join(repoRoot, "test-results", "tmp with spaces");
+    const result = spawnSync(process.execPath, [join(repoRoot, "scripts", "pack-smoke.mjs")], {
+      encoding: "utf8",
+      timeout: 120_000,
+      env: { ...process.env, TMP: spacedTemp, TEMP: spacedTemp, TMPDIR: spacedTemp },
+    });
+    expect(result.status, `stderr: ${result.stderr}`).toBe(0);
+  }, 150_000);
 });
