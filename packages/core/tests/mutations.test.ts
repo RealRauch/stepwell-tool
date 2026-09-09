@@ -797,3 +797,60 @@ describe("applyProgressPlan — apply + verification (3.3)", () => {
     expect(archive).toContain("**Verifikation:** Suite 132/132 grün");
   });
 });
+
+describe("progress_update checkpoint (L2, 9.10)", () => {
+  function tempPhaseReady(): string {
+    const dir = tempCopy("project-a");
+    const progressPath = join(dir, "PROGRESS.md");
+    writeFileSync(
+      progressPath,
+      readFileSync(progressPath, "utf8")
+        .replace("| 2.0 | Auth-Entscheidung | ⛔ |", "| 2.0 | Auth-Entscheidung | ✅ |")
+        .replace("| 2.2 | U21 Fehlertexte | ⬜ |", "| 2.2 | U21 Fehlertexte | ✅ |")
+        .replace("| 2.3 | U22 Ladezustände | ⬜ |", "| 2.3 | U22 Ladezustände | ✅ |"),
+      "utf8",
+    );
+    return dir;
+  }
+
+  it("phase completion with checkpoint-only writes it into the Verifikation line", () => {
+    const dir = tempPhaseReady();
+    const plan = planProgressUpdate(dir, "Phase 2", "2.1", "✅", { checkpoint: "abc1234" });
+
+    expect(plan.completedPhase).toBe(true);
+    expect(plan.checkpoint).toBe("abc1234");
+    const archiveChange = plan.changes.find((c) => c.file.endsWith("PROGRESS_ARCHIVE.md"))!;
+    expect(archiveChange.after).toContain("**Verifikation:** (checkpoint: abc1234)");
+  });
+
+  it("note and checkpoint combine into one Verifikation line", () => {
+    const dir = tempPhaseReady();
+    const plan = planProgressUpdate(dir, "Phase 2", "2.1", "✅", {
+      note: "Suite grün",
+      checkpoint: "0123456789abcdef",
+    });
+
+    const archiveChange = plan.changes.find((c) => c.file.endsWith("PROGRESS_ARCHIVE.md"))!;
+    expect(archiveChange.after).toContain("**Verifikation:** Suite grün (checkpoint: 0123456789abcdef)");
+  });
+
+  it("survives the apply roundtrip verbatim", () => {
+    const dir = tempPhaseReady();
+    const plan = planProgressUpdate(dir, "Phase 2", "2.1", "✅", {
+      dryRun: false,
+      checkpoint: "abc1234",
+    });
+    const result = applyProgressPlan(plan);
+
+    expect(result.verification.ok).toBe(true);
+    const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.md"), "utf8");
+    expect(archive).toContain("**Verifikation:** (checkpoint: abc1234)");
+  });
+
+  it("rejects malformed checkpoint SHAs", () => {
+    const dir = tempPhaseReady();
+    expect(() => planProgressUpdate(dir, "Phase 2", "2.1", "✅", { checkpoint: "xyz" })).toThrow(/checkpoint/);
+    expect(() => planProgressUpdate(dir, "Phase 2", "2.1", "✅", { checkpoint: "abc12" })).toThrow(/checkpoint/);
+    expect(() => planProgressUpdate(dir, "Phase 2", "2.1", "✅", { checkpoint: "g123456" })).toThrow(/checkpoint/);
+  });
+});
