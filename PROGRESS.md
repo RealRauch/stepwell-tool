@@ -82,6 +82,6 @@
 | 10.2 | pack-smoke: Pfad-Quoting bei shell:true (R8) | ✅ |
 | 10.3 | Build-Pipeline: tsc → dist in beiden Workspaces (H1/1) | ✅ |
 | 10.4 | Manifests auf dist umstellen: exports/bin/files (H1/2, Content-Gate Mittel) | ✅ |
-| 10.5 | Dynamischer Pack-Smoke + README-Install-Verifikation (H1/3) | ⬜ |
+| 10.5 | Dynamischer Pack-Smoke + README-Install-Verifikation (H1/3) | ✅ |
 | 10.6 | Surface-Guardrail als Decision verankern + README (M4) | ⬜ |
 | 10.7 | Coverage-Gate-Exit-Code robust stellen: Ursache klären + Gate Exit-unabhängig (R9, CI-Änderung = Gate Hoch) | ⬜ |
