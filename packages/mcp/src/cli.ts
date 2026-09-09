@@ -24,6 +24,16 @@ export interface CliIo {
   stderr: NodeJS.WritableStream;
 }
 
+/**
+ * Version des JSON-Output-Kontrakts aller `--json`-Ausgaben (M6/9.6). Regel:
+ * Breaking-Änderung an Feldern je Command ⇒ diese Zahl hochzählen (Decision 16).
+ */
+export const JSON_SCHEMA_VERSION = 1;
+
+function jsonOut(payload: Record<string, unknown>): string {
+  return `${JSON.stringify({ schema: JSON_SCHEMA_VERSION, ...payload }, null, 2)}\n`;
+}
+
 interface CliOptions {
   root: string | undefined;
   json: boolean;
@@ -281,7 +291,7 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
     switch (command) {
       case "status": {
         const s = docsStatus(requireRoot(options));
-        io.stdout.write(options.json ? `${JSON.stringify(s, null, 2)}\n` : statusText(s));
+        io.stdout.write(options.json ? jsonOut(s as unknown as Record<string, unknown>) : statusText(s));
         return 0;
       }
       case "backlog": {
@@ -300,7 +310,7 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
           items = items.filter((i) => i.section === options.section);
         }
         if (options.json) {
-          io.stdout.write(`${JSON.stringify({ count: items.length, items: items.map(({ raw: _raw, ...rest }) => rest), warnings: parsed.warnings }, null, 2)}\n`);
+          io.stdout.write(jsonOut({ count: items.length, items: items.map(({ raw: _raw, ...rest }) => rest), warnings: parsed.warnings }));
         } else {
           io.stdout.write(backlogText(items));
         }
@@ -314,12 +324,12 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
           const wanted = requireStatusFilter(options);
           rows = rows.filter((r) => r.status === wanted);
         }
-        io.stdout.write(options.json ? `${JSON.stringify({ count: rows.length, rows, warnings: parsed.warnings }, null, 2)}\n` : progressText(rows));
+        io.stdout.write(options.json ? jsonOut({ count: rows.length, rows, warnings: parsed.warnings }) : progressText(rows));
         return 0;
       }
       case "validate": {
         const result = docsValidate(requireRoot(options));
-        io.stdout.write(options.json ? `${JSON.stringify(result, null, 2)}\n` : validateText(result));
+        io.stdout.write(options.json ? jsonOut(result) : validateText(result));
         return result.ok ? 0 : 1;
       }
       case "archive": {
@@ -334,12 +344,12 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
           ...(locale !== undefined ? { locale } : {}),
         });
         if (plan.dryRun) {
-          io.stdout.write(options.json ? `${JSON.stringify(plan, null, 2)}\n` : planText(plan));
+          io.stdout.write(options.json ? jsonOut(plan as unknown as Record<string, unknown>) : planText(plan));
           return 0;
         }
         const result = applyArchivePlan(plan);
         if (options.json) {
-          io.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+          io.stdout.write(jsonOut(result as unknown as Record<string, unknown>));
         } else {
           io.stdout.write(applyResultText(result));
         }
@@ -364,12 +374,12 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
           ...(requireLocale(options) !== undefined ? { locale: requireLocale(options)! } : {}),
         });
         if (plan.dryRun) {
-          io.stdout.write(options.json ? `${JSON.stringify(plan, null, 2)}\n` : planText(plan));
+          io.stdout.write(options.json ? jsonOut(plan as unknown as Record<string, unknown>) : planText(plan));
           return 0;
         }
         const result = applyProgressPlan(plan);
         if (options.json) {
-          io.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+          io.stdout.write(jsonOut(result as unknown as Record<string, unknown>));
         } else {
           io.stdout.write(applyResultText(result));
         }

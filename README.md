@@ -181,7 +181,21 @@ verweist auf diesen Weg.
 (`node packages/mcp/src/cli.ts …`); aus dem installierten Package
 (`npm i -g @method-docs/mcp` bzw. `npx @method-docs/mcp`) unter dem Bin-Namen
 `method-docs`.
-Menschliche Ausgabe auf stdout; `--json` liefert die unveränderten core-Payloads.
+Menschliche Ausgabe auf stdout; `--json` liefert die core-Payloads mit vorangestelltem
+Versionsfeld `schema` (aktuell **1**). Feldkontrakt je Command:
+
+| Command | Felder (neben `schema`) |
+|---------|--------------------------|
+| `status` | `openByPriority`, `openTotal`, `runningSteps`, `runningPhases`, `doneQuote`, `warnings` |
+| `backlog` | `count`, `items[]` (ohne `raw`), `warnings` |
+| `progress` | `count`, `rows[]`, `warnings` |
+| `validate` | `findings[]`, `warnings[]`, `ok` |
+| `archive` (Dry-run) | `root`, `id`, `dryRun`, `note`, `changes[]` |
+| `archive --apply` | `written[]`, `verification{ok, messages[]}` |
+| `progress-update` | wie `archive` plus `phase`, `step`, `status`, `title`, `completedPhase` |
+
+**Kontrakt-Regel (M6/Decision 16):** Breaking-Änderung an diesem Feldbestand ⇒
+`schema` hochzählen (in Lockstep mit dem npm-MAJOR).
 
 ```bash
 # Status-Aggregat

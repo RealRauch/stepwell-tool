@@ -66,5 +66,6 @@ backlog-archive | progress-archive), danach `docs_validate` — muss fund-frei s
 ## Werkzeug-Alternativen
 
 Ohne MCP-Server steht dieselbe Oberfläche als CLI bereit (`npx @method-docs/mcp`):
-`status`/`backlog`/`progress`/`validate`/`archive`/`progress-update`. Die Methode selbst
-lebt in PLAYBOOK.md — dieses Skill ist nur der Wegweiser zu den Tools.
+`status`/`backlog`/`progress`/`validate`/`archive`/`progress-update` — `--json`-Ausgaben
+tragen das versionierte Schema-Feld (`schema: 1`; Breaking ⇒ Nummer hoch). Die Methode
+selbst lebt in PLAYBOOK.md — dieses Skill ist nur der Wegweiser zu den Tools.
