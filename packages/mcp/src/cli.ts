@@ -416,7 +416,9 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
   }
 }
 
-const isDirectRun = process.argv[1] !== undefined && /cli\.ts$/u.test(process.argv[1]);
+// Direktausführung aus src (cli.ts, native TS) wie aus dist (cli.js, H1/10.5) —
+// die Heuristik muss beide Endungen erkennen, sonst startet das installierte Bin nicht.
+const isDirectRun = process.argv[1] !== undefined && /cli\.(ts|js)$/u.test(process.argv[1]);
 if (isDirectRun) {
   process.exitCode = await runCli(process.argv.slice(2), { stdout: process.stdout, stderr: process.stderr });
 }
