@@ -40,12 +40,6 @@
 - **Fix:** JSON-Output um Versionsfeld ergänzen (z. B. `{ schema: 1, ...payload }`); Schema (Felder je Command) im README dokumentieren; Regel: Breaking-Änderung am Schema ⇒ Versionsnummer hoch.
 - **Abnahme:** Alle `--json`-Ausgaben tragen das Versionsfeld; Contract-/Snapshot-Test je Command; README-Doku; `npm run typecheck && npm run test` grün.
 
-### [ ] M7 — SKILL.md als ergänzender Distributionsweg (stepwell-Skill) — 🟡
-- **Ort:** Repo-Root/`packages/mcp` (neues Asset `skills/stepwell/SKILL.md`); Fundstelle: Google Conductor — verteilt die Methode als portable Markdown-Skills (Gemini CLI, Antigravity, Claude Code, Codex-Port), agent-übergreifend; passt zu Phase 7 „Distribution & Feldtest".
-- **Problem:** Unser Vertriebsweg ist nur MCP (Server-Setup nötig); Agenten in Skill-Ökosystemen (SKILL.md-Format) bekommen keine Anleitung, WANN sie welches stepwell-Tool aufrufen — die Methoden-Disziplin lebt sonst nur in AGENTS.md-Kopien.
-- **Fix:** Schlankes SKILL.md („wann rufe ich welches Tool auf": Statuspflege nur via Tools, Freigabe-Gate, Test-First) als zweiter Distributionskanal neben MCP; verweist auf die MCP-Tools, ersetzt sie nicht; Decisions 13/15 einpreisen.
-- **Abnahme:** Skill-Datei liegt im npm-Pack (files-Check), Inhalt konsistent mit PLAYBOOK; README-Distributionsabschnitt nennt beide Kanäle.
-
 ---
 
 ## 🟢 NIEDRIG
@@ -134,5 +128,6 @@
 - M2 — MCP-Tool-Annotations ergänzen (readOnly/destructive/idempotent) — erledigt (Commit f6fe0f1)
 - M5 — Init-Fallback: klare Anleitung bei Root ohne STEPWELL-Projekt — erledigt (Fix `a07f759` (Test-Commit `ebcfc44`, ROT belegt) — PROJECT_NOT_INITIALIZED: loadProject/readBacklog/readProgress werfen bei allen vier fehlenden Dateien den Fehler mit Anleitung; docsValidate → genau ein Finding (ok: false), docsStatus → Zero-Aggregate + Fund, MCP asResult → strukturierte { code, message, missing }-Fehlerantwort für alle Tools; Teilbestand bleibt harter Fehler pro Datei; Fixture project-empty, README + Fixture-Spec nachgezogen)
 - M8 — Projekt-Init: Vorlagen-Auslieferung klären (Resources vs. init_project) — erledigt (Fix `fdf6907` (Test-Commit `f17573e`, ROT belegt) — Entscheidung Variante A (Templates als Read-Only-Resources, Begründung M4-Guardrail, im README dokumentiert): projectTemplates (4 Skeletons) kanonisch in core, Resource `methoddocs://templates/{kind}` mit Kind-Validierung; Skeleton-Projekt docs_validate-fund-frei; M5-Anleitung verweist auf Templates)
+- M7 — SKILL.md als ergänzender Distributionsweg (stepwell-Skill) — erledigt (Fix `57ffc54` (2× ROT belegt) — packages/mcp/skills/stepwell/SKILL.md (Session-Einstieg, Tool-Zuordnung, Freigabe-/Content-Gates, Inline-Fix-Lane, Test-First, Abschlüsse; konsistent mit PLAYBOOK, ohne nicht existierende Parameter); files-Feld um "skills" erweitert (Pack-Check im packaging-Test); README-Abschnitt "Distribution (zwei Kanäle)")
 
 ---
