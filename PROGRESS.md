@@ -78,7 +78,7 @@
 | 9.6 | JSON-Output-Schema versionieren (M6) | ✅ |
 | 9.7 | structuredContent-Entscheidung (M3) | ✅ |
 | 9.8 | Release-Prozess: CHANGELOG + Pack-Smoke (L6) | ✅ |
-| 9.9 | Sync-Schlag PLAYBOOK: Verifikations-Format, 🔵-Legende, Session-Einstieg (L3+L8) | ⬜ |
+| 9.9 | Sync-Schlag PLAYBOOK: Verifikations-Format, 🔵-Legende, Session-Einstieg (L3+L8) | ✅ |
 | 9.10 | Checkpoint-SHA je Phase (L2) | ⬜ |
 | 9.11 | Doc-Sync-Reminder bei Phasen-Abschluss (L4) | ⬜ |
 | 9.12 | Next-Action in docs_status (L7) | ⬜ |
