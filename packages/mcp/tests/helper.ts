@@ -49,6 +49,7 @@ export async function connect(): Promise<TestClient> {
 export interface ToolResultLike {
   isError?: boolean;
   content: Array<{ type: string; text: string }>;
+  structuredContent?: unknown;
 }
 
 export async function callTool(
