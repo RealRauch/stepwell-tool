@@ -117,6 +117,7 @@ export interface ProgressUpdatePlan {
   title: string | undefined;
   dryRun: boolean;
   note: string | undefined;
+  checkpoint?: string;
   completedPhase: boolean;
   changes: PlanChange[];
 }

@@ -195,7 +195,7 @@ Versionsfeld `schema` (aktuell **1**). Feldkontrakt je Command:
 | `validate` | `findings[]`, `warnings[]`, `ok` |
 | `archive` (Dry-run) | `root`, `id`, `dryRun`, `note`, `changes[]` |
 | `archive --apply` | `written[]`, `verification{ok, messages[]}` |
-| `progress-update` | wie `archive` plus `phase`, `step`, `status`, `title`, `completedPhase` |
+| `progress-update` | wie `archive` plus `phase`, `step`, `status`, `title`, `completedPhase`, `checkpoint?` |
 
 **Kontrakt-Regel (M6/Decision 16):** Breaking-Änderung an diesem Feldbestand ⇒
 `schema` hochzählen (in Lockstep mit dem npm-MAJOR).
@@ -235,7 +235,7 @@ node packages/mcp/src/cli.ts validate --root <projekt> [--json]
 node packages/mcp/src/cli.ts archive --root <projekt> --id H1 [--note "Commit abc1234"] [--locale en] [--apply]
 
 # Step-Status pflegen (Dry-run-Vorschau, dann --apply) — --title benennt den Block-Heading um
-node packages/mcp/src/cli.ts progress-update --root <projekt> --phase "Phase 2" --step 2.2 --status running [--title "Neuer Titel"] [--note "…"] [--locale en] [--apply]
+node packages/mcp/src/cli.ts progress-update --root <projekt> --phase "Phase 2" --step 2.2 --status running [--title "Neuer Titel"] [--note "…"] [--checkpoint <sha>] [--locale en] [--apply]
 ```
 
 Ungültige Werte liefern Exit 2 mit der Liste der erlaubten Aliase (z. B.
