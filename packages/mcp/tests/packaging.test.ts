@@ -6,24 +6,44 @@ import { describe, expect, it } from "vitest";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 
-function manifest(pkg: string): { name: string; files?: string[]; bin?: Record<string, string> } {
+interface Manifest {
+  name: string;
+  files?: string[];
+  bin?: Record<string, string>;
+  exports?: Record<string, unknown>;
+  scripts?: Record<string, string>;
+}
+
+function manifest(pkg: string): Manifest {
   return JSON.parse(readFileSync(join(repoRoot, "packages", pkg, "package.json"), "utf8"));
 }
 
-describe("packaging manifests (D3, 7.3)", () => {
-  it("ships source only — both workspaces declare a files field without tests", () => {
+describe("packaging manifests (D3, 7.3; dist since 10.4/H1)", () => {
+  it("ships compiled dist only — no src in the published files", () => {
     for (const pkg of ["core", "mcp"]) {
       const m = manifest(pkg);
-      expect(m.files, `${m.name} files field`).toContain("src");
+      expect(m.files, `${m.name} files field`).toContain("dist");
       const joined = (m.files ?? []).join(",");
-      expect(joined).not.toContain("tests");
-      expect(joined).not.toContain("fixtures");
+      expect(joined, `${m.name} must not ship src`).not.toContain("src");
+      expect(joined, `${m.name} must not ship tests`).not.toContain("tests");
+      expect(joined, `${m.name} must not ship fixtures`).not.toContain("fixtures");
     }
+    expect(manifest("mcp").files).toContain("skills");
   });
 
-  it("exposes the method-docs bin from the mcp workspace", () => {
-    const m = manifest("mcp");
-    expect(m.bin?.["method-docs"]).toBeTruthy();
+  it("points exports and bin at dist and builds via prepublishOnly (H1)", () => {
+    const core = manifest("core");
+    const coreExports = core.exports?.["."] as Record<string, string>;
+    expect(coreExports.import).toBe("./dist/index.js");
+    expect(coreExports.types).toBe("./dist/index.d.ts");
+    expect(core.scripts?.prepublishOnly).toContain("build");
+
+    const mcp = manifest("mcp");
+    const mcpExports = mcp.exports?.["."] as Record<string, string>;
+    expect(mcpExports.import).toBe("./dist/index.js");
+    expect(mcpExports.types).toBe("./dist/index.d.ts");
+    expect(mcp.bin?.["method-docs"]).toBe("./dist/cli.js");
+    expect(mcp.scripts?.prepublishOnly).toContain("build");
   });
 });
 
