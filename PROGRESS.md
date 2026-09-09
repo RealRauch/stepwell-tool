@@ -9,24 +9,6 @@
 > wandern nach Abschluss **unverändert** in `docs/archive/PROGRESS_ARCHIVE.md`.
 
 ## Laufende Phasen
-### Phase 9 — Distribution, Release & Runden
-
-**Umfang (Steps):**
-
-- **9.1 Coverage-Gate: Schwellen + CI (T6)**
-- **9.2 MCP-Tool-Annotations (M2)**
-- **9.3 Init-Fallback bei leerem Root (M5)**
-- **9.4 Projekt-Init: Vorlagen-Auslieferung (M8)**
-- **9.5 SKILL.md-Distributionsweg (M7)**
-- **9.6 JSON-Output-Schema versionieren (M6)**
-- **9.7 structuredContent-Entscheidung (M3)**
-- **9.8 Release-Prozess: CHANGELOG + Pack-Smoke (L6)**
-- **9.9 Sync-Schlag PLAYBOOK: Verifikations-Format, 🔵-Legende, Session-Einstieg (L3+L8)**
-- **9.10 Checkpoint-SHA je Phase (L2)**
-- **9.11 Doc-Sync-Reminder bei Phasen-Abschluss (L4)**
-- **9.12 Next-Action in docs_status (L7)**
-- **9.13 BOM-Toleranz des Parsers (T5)**
-- **9.14 docs_review-Alternativprüfung (L5)**
 
 
 ---
@@ -83,4 +65,4 @@
 | 9.11 | Doc-Sync-Reminder bei Phasen-Abschluss (L4) | ✅ |
 | 9.12 | Next-Action in docs_status (L7) | ✅ |
 | 9.13 | BOM-Toleranz des Parsers (T5) | ✅ |
-| 9.14 | docs_review-Alternativprüfung (L5) | ⬜ |
+| 9.14 | docs_review-Alternativprüfung (L5) | ✅ |

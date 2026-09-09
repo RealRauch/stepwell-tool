@@ -270,3 +270,25 @@ AGENTS Decisions 13/14, `docs_validate` beider Projekte clean).
 - **8.3 Step zu laufender Phase ergänzen (D5)**
 - **8.4 PLAYBOOK-Sync-Schlag (D4/G1/G2/A1/G3)**
 **Verifikation:** 8.1 Index-Tabelle toleriert (54→13 ehrliche Funde) · 8.2 Archiv-Warnungen 55→0 · 8.3 planPhase-Erweiterungs-Modus · 8.4 Sync-Schlag textgleich in beide Kopien (method-docs@abb6dcf, stadtpfad-pwa@08d2613) mit Klärung Erledigt-Index-Formate; typecheck + 199/199 Tests grün; docs_validate method-docs clean
+
+---
+
+### Phase 9 — Distribution, Release & Runden
+
+**Umfang (Steps):**
+
+- **9.1 Coverage-Gate: Schwellen + CI (T6)**
+- **9.2 MCP-Tool-Annotations (M2)**
+- **9.3 Init-Fallback bei leerem Root (M5)**
+- **9.4 Projekt-Init: Vorlagen-Auslieferung (M8)**
+- **9.5 SKILL.md-Distributionsweg (M7)**
+- **9.6 JSON-Output-Schema versionieren (M6)**
+- **9.7 structuredContent-Entscheidung (M3)**
+- **9.8 Release-Prozess: CHANGELOG + Pack-Smoke (L6)**
+- **9.9 Sync-Schlag PLAYBOOK: Verifikations-Format, 🔵-Legende, Session-Einstieg (L3+L8)**
+- **9.10 Checkpoint-SHA je Phase (L2)**
+- **9.11 Doc-Sync-Reminder bei Phasen-Abschluss (L4)**
+- **9.12 Next-Action in docs_status (L7)**
+- **9.13 BOM-Toleranz des Parsers (T5)**
+- **9.14 docs_review-Alternativprüfung (L5)**
+**Verifikation:** `npm run typecheck` — fehlerfrei · `npm run test` — 255/255 Tests grün · `node scripts/pack-smoke.mjs` — OK (statisch, dynamischer Teil an H1 gekoppelt) · `docs_validate` — fund-frei
