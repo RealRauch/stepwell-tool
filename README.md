@@ -95,6 +95,8 @@ Die Test-Suite deckt denselben Protokoll-Pfad automatisiert ab
 ### Distribution (zwei Kanäle)
 
 1. **MCP-Server:** `npx @method-docs/mcp` (bzw. `serve.ts`) — operativ, Tools wie unten.
+   Das veröffentlichte Package shippt **kompiliertes `dist`** (seit 10.4/H1) und ist damit
+   direkt aus `node_modules` lauffähig — `prepublishOnly` baut vor dem Publish.
 2. **SKILL.md:** `packages/mcp/skills/stepwell/SKILL.md` (liegt im npm-Pack) —
    portabler Wegweiser für Skill-Ökosysteme (Claude Skills, Gemini CLI, …): wann
    welches Tool, Gates (Freigabe/Content), Test-First, Statuspflege nur via Tools.

@@ -1,17 +1,11 @@
 #!/usr/bin/env node
 /**
- * Pack-Smoke (L6/9.8): npm pack beider Workspaces → Tarballs in ein temporäres
- * Prefix installieren → Artefakt-Inhalt prüfen (src, bin/exports, SKILL.md).
- *
- * Bekannte Lücke (Fund dieses Smokes, BACKLOG-Item): Node strippt TS grundsätzlich
- * NICHT unter node_modules (ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING) — das
- * Artefakt enthält reine .ts-Source und ist aus node_modules daher nicht direkt
- * ausführbar. Der stdio-Handshake gegen das installierte Artefakt ist damit bis zu
- * einem Build-/dist-Schritt nicht möglich; der Smoke prüft statisch und beendet
- * sich mit einem deutlichen Log-Hinweis. Node >= 23.6 lokal (Repo-Läufe) umgeht
- * das nur außerhalb von node_modules.
+ * Pack-Smoke (L6/9.8 + H1/10.5): npm pack beider Workspaces → Tarballs in ein
+ * temporäres Prefix installieren → Artefakt-Inhalt prüfen (dist, skills, Manifest)
+ * → stdio-Handshake gegen den INSTALLIERTEN Server → CLI-Bin-Smoke gegen dist.
+ * Seit dem Build-/dist-Schritt (H1) ist das Artefakt aus node_modules lauffähig.
  */
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -68,13 +62,63 @@ if (mcpManifest.dependencies?.["@method-docs/core"] === undefined) {
   fail("installed mcp artifact lost its @method-docs/core dependency");
 }
 
-// 4) Runtime-Lücke dokumentieren (dynamic handshake blocked — siehe Dateikopf)
-console.log(
-  "pack-smoke: static artifact checks OK (tarballs installieren, src/skills/manifest vorhanden)",
-);
-console.log(
-  "pack-smoke: NOTE stdio handshake against the artifact skipped - node refuses TS stripping under node_modules (dist/build item open)",
-);
+// 4) stdio-Handshake gegen den installierten Server (H1: dist läuft aus node_modules)
+const handshake = {
+  jsonrpc: "2.0",
+  id: 1,
+  method: "initialize",
+  params: {
+    protocolVersion: "2025-06-18",
+    capabilities: {},
+    clientInfo: { name: "pack-smoke", version: "0.0.0" },
+  },
+};
+const handshakeResult = await new Promise((resolve) => {
+  const child = spawn(process.execPath, [join(mcpRoot, "dist", "serve.js")], {
+    stdio: ["pipe", "pipe", "pipe"],
+  });
+  let buffer = "";
+  let errBuffer = "";
+  const timer = setTimeout(() => {
+    child.kill();
+    resolve({ ok: false, detail: `timeout waiting for initialize response, got: ${buffer} stderr: ${errBuffer}` });
+  }, 20_000);
+  child.stderr.on("data", (chunk) => {
+    errBuffer += chunk.toString();
+  });
+  child.stdout.on("data", (chunk) => {
+    buffer += chunk.toString();
+    const line = buffer.split("\n").find((l) => l.includes('"id":1'));
+    if (line === undefined) return;
+    clearTimeout(timer);
+    child.kill();
+    try {
+      const parsed = JSON.parse(line);
+      if (parsed.result?.serverInfo?.name !== "stepwell") {
+        resolve({ ok: false, detail: `unexpected serverInfo: ${line}` });
+      } else {
+        resolve({ ok: true, detail: parsed.result.serverInfo.name });
+      }
+    } catch (err) {
+      resolve({ ok: false, detail: `unparseable response: ${line} (${err})` });
+    }
+  });
+  child.stdin.write(JSON.stringify(handshake) + "\n");
+  child.on("exit", () => {
+    if (timer.hasRef()) {
+      clearTimeout(timer);
+      resolve({ ok: false, detail: `server exited early, got: ${buffer} stderr: ${errBuffer}` });
+    }
+  });
+});
+if (!handshakeResult.ok) fail(`stdio handshake: ${handshakeResult.detail}`);
+console.log(`pack-smoke: handshake OK (server ${handshakeResult.detail})`);
+
+// 5) CLI-Bin-Smoke gegen das installierte Artefakt (Usage → Exit 2)
+const cli = spawnSync(process.execPath, [join(mcpRoot, "dist", "cli.js")], { encoding: "utf8" });
+if (cli.status !== 2 || !`${cli.stderr}`.includes("usage: method-docs")) {
+  fail(`cli smoke unexpected: exit ${cli.status}, stderr: ${cli.stderr}`);
+}
 
 rmSync(work, { recursive: true, force: true });
-console.log("pack-smoke: OK");
+console.log("pack-smoke: OK (pack, install, dist artifacts, stdio handshake, cli bin)");

@@ -37,6 +37,11 @@ Feldtest (Decision 16); bis dahin 0.x mit Lockstep über alle drei `package.json
   (statisch, dynamischer Teil blockiert durch Dist-Blocker H1).
 
 ### Fixed
+- **npm-Artefakt lauffähig aus `node_modules` (H1):** beide Workspaces shippen kompiliertes
+  `dist` (js + d.ts) statt `.ts`-Source, `exports`/`bin` entsprechend umgestellt,
+  `prepublishOnly` baut; Pack-Smoke beweist stdio-Handshake + CLI-Bin gegen das installierte
+  Artefakt. Zuvor verweigerte Node das TS-Stripping unter `node_modules` — das Paket war
+  für Verbraucher nicht startbar.
 - Phasen-Paketierung/Abschluss: Stale-Span bei Row-Ergänzung und Phasen-Abschluss,
   frische-Check vor jedem Apply, CRLF-Roundtrip bei Archiv-Anhängen.
 - Validierung: doppelte Step-Nummern (`STEP_DUPLICATE`), tolerierter Tabellen-Index
