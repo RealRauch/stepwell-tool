@@ -24,12 +24,6 @@
 
 > Keine offenen Items.
 
-### [ ] H1 — Dist-Blocker: npm-Artefakt enthält TS-Source und läuft nicht aus node_modules (Build/dist-Schritt nötig) — 🟠
-- **Ort:** `packages/*/package.json` (files/exports/bin), Build-Konfiguration; Fundstelle: Pack-Smoke 9.8/L6 (`scripts/pack-smoke.mjs`) — installiertes Artefakt startet nicht: Node verweigert TS-Stripping unter `node_modules` (`ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING`, Node 22.23 lokal; by design auch in neueren Versionen).
-- **Problem:** `@method-docs/mcp` shippt reine `.ts`-Source (`files: ["src"]`); Verbraucher (`npm i -g`, `npx @method-docs/mcp`, README-Install-Abschnitt) bekommen ein nicht lauffähiges Paket — die dynamischen Smoke-Anteile (stdio-Handshake, CLI-Bin gegen das Artefakt) mussten deshalb auf statische Checks reduziert werden.
-- **Fix:** Build-/dist-Schritt ergänzen (tsc → `dist/` in beiden Workspaces), `exports`/`bin` auf `dist` umstellen, `files` entsprechend, CI-Job auf den dynamischen Smoke (Handshake + Bin gegen `dist`-Artefakt) erweitern; Variante diskutieren: `tsc` in prepublishOnly oder committed dist. Achtung Content-Gate: Dependency-/Manifest-Änderungen = Mittel (Freigabe je Vorkommnis).
-- **Abnahme:** `node node_modules/@method-docs/mcp/src/…`-Äquivalent (dist-Einstieg) startet aus Installation; pack-smoke mit dynamischem Handshake grün; README-Install verifiziert (`npx @method-docs/mcp`); `npm run typecheck && npm run test` grün.
-
 ---
 
 ## 🟡 MITTEL
@@ -95,5 +89,6 @@
 - L10 — nextStep-Kaskade: Fallback auf rein vorausgeplante Phasen — erledigt (Fix `14093de` (Test-Commit `b40be1f`, 3× ROT belegt) — nextStep-Kaskade: (1) erste ⬜-Zeile einer Phase mit 🔄 (Vorrang laufender Arbeit), (2) sonst erste ⬜-Zeile rein vorausgeplanter Phasen (Tabellen-Ordnung), (3) sonst undefined; per Test belegt: Fallback bei reiner Plan-Phase (2.1), Vorrang der laufenden gegen spätere Plan-Phase (2.2 vor 3.1), Durchfall bei erledigter früherer Phase (3.1); project-a/-b-Ergebnisse unverändert; 259/259 grün)
 - R7 — Coverage-Gate-Test rekurriert: Nested-Run startet sich selbst, Gate-Akzeptanz nicht beweisbar — erledigt (Fix `4c03eb8` — Nested-Config schließt die Gate-Datei selbst aus (`configDefaults.exclude` + Glob) → genau eine Nested-Ebene; Assertion auf die Ursache geschärft (Threshold-Meldung `does not meet "<glob>" threshold`, Format empirisch verifiziert); Gate-Test 128 s → 7 s, Gesamtsuite ~2 min → ~9 s; Beiwerk: neuer Fund R9 (Exit-Code umgebungsabhängig) als 🔴-Item, Step 10.7 folgt)
 - R8 — pack-smoke: unquoted Argumente bei shell:true brechen bei Leerzeichen im Windows-Temp-Pfad — erledigt (Fix `9976d3b` (Test-Commit `7f532e6`, ROT belegt) — pack-smoke quotet Shell-Argumente bei win32 (`quoteForShell`: doppelte Anführungszeichen + internes `\"`-Escaping); Abnahme per Test: Smoke mit `TMP/TEMP/TMPDIR` auf Leerzeichen-Verzeichnis läuft grün (npm pack + install gegen spaced paths))
+- H1 — Dist-Blocker: npm-Artefakt enthält TS-Source und läuft nicht aus node_modules (Build/dist-Schritt nötig) — erledigt (Fix in drei Teilen: 10.3 `028e7c5` (tsconfig.build je Workspace, rewriteRelativeImportExtensions, mcp gegen core-dist-Declarations) · 10.4 `2187585` (Manifests: files dist(+skills), exports/bin → dist, prepublishOnly build; vitest-Alias + typecheck-Paths als Konsequenz) · 10.5 `cb10583` (dynamischer Pack-Smoke: stdio-Handshake + CLI-Bin gegen das installierte Artefakt; dabei Fund: Direct-Run-Guard matchte nur cli.ts — installiertes Bin startete nicht, gefixt `cli\.(ts|js)$`); Abnahme erfüllt: installiertes dist-Artefakt startet (handshake OK, server stepwell), README-Install verifiziert, CHANGELOG-Eintrag)
 
 ---
