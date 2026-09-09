@@ -1,7 +1,8 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { allSynonyms, escapeRegExp } from "./profile.ts";
-import { loadProject } from "./project.ts";
+import { loadProject, type ProjectDocs } from "./project.ts";
+import { ProjectNotInitializedError } from "./project-files.ts";
 import { scopeSteps } from "./progress.ts";
 import type { Warning } from "./types.ts";
 
@@ -39,7 +40,19 @@ export function docsValidate(root: string): {
   warnings: Warning[];
   ok: boolean;
 } {
-  const docs = loadProject(root);
+  let docs: ProjectDocs;
+  try {
+    docs = loadProject(root);
+  } catch (err) {
+    if (err instanceof ProjectNotInitializedError) {
+      return {
+        findings: [{ code: "PROJECT_NOT_INITIALIZED", file: root, message: err.message }],
+        warnings: [],
+        ok: false,
+      };
+    }
+    throw err;
+  }
   const backlogPath = join(root, "BACKLOG.md");
   const progressPath = join(root, "PROGRESS.md");
   const backlogArchivePath = join(root, "docs", "archive", "BACKLOG_ARCHIVE.md");

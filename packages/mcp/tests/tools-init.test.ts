@@ -1,6 +1,7 @@
+import { rmSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { callTool, connect, fixtures, payload, projectA } from "./helper.ts";
+import { callTool, connect, fixtures, payload, tempProject } from "./helper.ts";
 
 const emptyRoot = join(fixtures, "project-empty");
 
@@ -9,13 +10,27 @@ describe("init fallback — root without STEPWELL project (9.3/M5)", () => {
     const c = await connect();
     try {
       const result = await callTool(c, "docs_validate", { root: emptyRoot });
-      expect(result.isError).toBe(false);
+      expect(result.isError).toBeFalsy();
       const data = payload(result);
       expect(data.findings).toHaveLength(1);
       expect(data.findings[0]!.code).toBe("PROJECT_NOT_INITIALIZED");
       expect(data.findings[0]!.message).toMatch(/PLAYBOOK/);
       expect(data.warnings).toEqual([]);
       expect(data.ok).toBe(false);
+    } finally {
+      await c.close();
+    }
+  });
+
+  it("docs_status returns the zero aggregate with the init finding", async () => {
+    const c = await connect();
+    try {
+      const data = payload(await callTool(c, "docs_status", { root: emptyRoot }));
+      expect(data.openTotal).toBe(0);
+      expect(data.runningSteps).toEqual([]);
+      expect(data.doneQuote).toEqual({ done: 0, total: 0, percent: 0 });
+      expect(data.warnings).toHaveLength(1);
+      expect(data.warnings[0]!.code).toBe("PROJECT_NOT_INITIALIZED");
     } finally {
       await c.close();
     }
@@ -46,9 +61,11 @@ describe("init fallback — root without STEPWELL project (9.3/M5)", () => {
   });
 
   it("keeps the generic per-file error for partial inventory", async () => {
+    const dir = tempProject("project-a");
+    rmSync(join(dir, "PROGRESS.md"));
     const c = await connect();
     try {
-      const result = await callTool(c, "docs_status", { root: join(projectA, "docs") });
+      const result = await callTool(c, "docs_status", { root: dir });
       expect(result.isError).toBe(true);
       expect(result.content[0]?.text).toContain("missing required file");
       expect(result.content[0]?.text).not.toContain("PROJECT_NOT_INITIALIZED");

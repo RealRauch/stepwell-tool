@@ -236,6 +236,7 @@ sind append-only und werden nie beanstandet.
 | `PLAN_WITHOUT_WIP` (D12) | Validate | Detail-Block ohne 🔄-Step (verwaist oder via `progress_plan_phase` vorausgeplant) |
 | `STEP_DUPLICATE` (R6) | Validate | Step-Nummer kommt doppelt in der Fortschrittstabelle vor — `progress_update` pflegt nur die erste Zeile |
 | `DATE_LEGACY` (D15) | Validate | `MM/JJJJ`-Datum in offenen Dateien — kanonisch ist `JJMMDD/HHMM` (z. B. `260907/1523`) |
+| `PROJECT_NOT_INITIALIZED` (M5) | Validate | Root ohne STEPWELL-Projekt (alle vier Dateien fehlen) — genau ein Fund mit Anleitung statt Fehler-Wüste; `docs_status` liefert den Zero-Aggregate + diesen Fund, Read-/Mutation-Tools eine strukturierte Fehlerantwort (`code`/`message`/`missing`). Teilbestand (einzelne Datei fehlt) bleibt harter Fehler pro Datei |
 
 ---
 

@@ -1,6 +1,7 @@
+import { rmSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { callTool, connect, payload, projectA, projectDrift } from "./helper.ts";
+import { callTool, connect, payload, projectA, projectDrift, tempProject } from "./helper.ts";
 
 describe("tool backlog_list (2.2)", () => {
   it("lists all open items without raw payload", async () => {
@@ -50,12 +51,12 @@ describe("tool backlog_list (2.2)", () => {
     }
   });
 
-  it("returns isError for projects with missing files", async () => {
+  it("returns isError for projects with missing files (partial inventory)", async () => {
+    const dir = tempProject("project-a");
+    rmSync(join(dir, "BACKLOG.md"));
     const c = await connect();
     try {
-      const result = await callTool(c, "backlog_list", {
-        root: join(projectA, "docs"),
-      });
+      const result = await callTool(c, "backlog_list", { root: dir });
       expect(result.isError).toBe(true);
       expect(result.content[0]?.text).toContain("missing required file");
     } finally {

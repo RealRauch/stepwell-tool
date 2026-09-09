@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, rmSync } from "node:fs";
 import { Writable } from "node:stream";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -291,9 +291,11 @@ describe("runCli — usage and errors", () => {
     expect(io.stderr).toContain("--root");
   });
 
-  it("fails with the loader message for missing files", async () => {
+  it("fails with the loader message for missing files (partial inventory)", async () => {
+    const dir = tempProject("project-a");
+    rmSync(join(dir, "PROGRESS.md"));
     const io = makeIo();
-    const code = await runCli(["status", "--root", join(projectA, "docs")], io.io);
+    const code = await runCli(["status", "--root", dir], io.io);
     expect(code).toBe(1);
     expect(io.stderr).toContain("missing required file");
   });

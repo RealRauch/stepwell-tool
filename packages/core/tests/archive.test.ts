@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { parseBacklogArchive, parseProgressArchive } from "../src/archive.ts";
 import { backlogShow, loadProject } from "../src/project.ts";
+import { ProjectNotInitializedError } from "../src/project-files.ts";
 import type { ArchiveItem, ParseResult, PhaseBlock } from "../src/types.ts";
 
 const fixtures = join(import.meta.dirname, "fixtures");
@@ -114,9 +115,9 @@ describe("backlogShow — merge view open ↔ index ↔ archive", () => {
     expect(backlogShow(join(fixtures, "project-a"), "NOPE")).toBeUndefined();
   });
 
-  it("hard-fails on projects with missing files", () => {
+  it("hard-fails on uninitialized roots (all four files missing, M5)", () => {
     expect(() => backlogShow(join(fixtures, "does-not-exist"), "H1")).toThrow(
-      /missing required file/,
+      ProjectNotInitializedError,
     );
   });
 });

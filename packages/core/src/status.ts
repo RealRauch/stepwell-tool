@@ -1,10 +1,26 @@
-import { loadProject } from "./project.ts";
+import { loadProject, type ProjectDocs } from "./project.ts";
+import { ProjectNotInitializedError } from "./project-files.ts";
 import { scopeSteps } from "./progress.ts";
 import { docsValidate } from "./validate.ts";
 import type { DocsStatus, Priority, ProgressRow } from "./types.ts";
 
 export function docsStatus(root: string): DocsStatus {
-  const docs = loadProject(root);
+  let docs: ProjectDocs;
+  try {
+    docs = loadProject(root);
+  } catch (err) {
+    if (err instanceof ProjectNotInitializedError) {
+      return {
+        openByPriority: { "🔴": 0, "🟠": 0, "🟡": 0, "🟢": 0, "🔵": 0, unknown: 0 },
+        openTotal: 0,
+        runningSteps: [],
+        runningPhases: [],
+        doneQuote: { done: 0, total: 0, percent: 0 },
+        warnings: [{ code: "PROJECT_NOT_INITIALIZED", file: root, message: err.message }],
+      };
+    }
+    throw err;
+  }
   const backlog = docs.backlog();
   const progress = docs.progress();
 

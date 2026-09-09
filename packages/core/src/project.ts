@@ -1,8 +1,17 @@
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { parseBacklog } from "./backlog.ts";
 import { parseBacklogArchive, parseProgressArchive } from "./archive.ts";
 import { parseProgress } from "./progress.ts";
+import {
+  BACKLOG_ARCHIVE_PATH,
+  BACKLOG_PATH,
+  PROGRESS_ARCHIVE_PATH,
+  PROGRESS_PATH,
+  REQUIRED_FILES,
+  missingProjectFiles,
+  ProjectNotInitializedError,
+} from "./project-files.ts";
 import type {
   ArchiveItem,
   Backlog,
@@ -11,13 +20,6 @@ import type {
   Progress,
   ParseResult,
 } from "./types.ts";
-
-const BACKLOG_PATH = "BACKLOG.md";
-const PROGRESS_PATH = "PROGRESS.md";
-const BACKLOG_ARCHIVE_PATH = join("docs", "archive", "BACKLOG_ARCHIVE.md");
-const PROGRESS_ARCHIVE_PATH = join("docs", "archive", "PROGRESS_ARCHIVE.md");
-
-const REQUIRED_FILES = [BACKLOG_PATH, PROGRESS_PATH, BACKLOG_ARCHIVE_PATH, PROGRESS_ARCHIVE_PATH];
 
 function memo<T>(fn: () => T): () => T {
   let value: T | undefined;
@@ -49,7 +51,10 @@ export interface ProjectDocs {
 }
 
 export function loadProject(root: string): ProjectDocs {
-  const missing = REQUIRED_FILES.filter((rel) => !existsSync(join(root, rel)));
+  const missing = missingProjectFiles(root);
+  if (missing.length === REQUIRED_FILES.length) {
+    throw new ProjectNotInitializedError(root, missing);
+  }
   if (missing.length > 0) {
     throw new Error(`missing required file(s) under ${root}: ${missing.join(", ")}`);
   }

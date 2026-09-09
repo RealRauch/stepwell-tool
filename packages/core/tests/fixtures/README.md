@@ -39,6 +39,9 @@ fixtures/
     └── docs/archive/
         ├── BACKLOG_ARCHIVE.md
         └── PROGRESS_ARCHIVE.md
+
+project-empty/            # leerer Ordner (nur .gitkeep; M5/9.3) — Root OHNE STEPWELL-Projekt:
+                          #   docs_validate/docs_status → genau ein Fund PROJECT_NOT_INITIALIZED
 ```
 
 Projekt-Root ist jeweils der Ordner mit `BACKLOG.md`/`PROGRESS.md` — genau wie in Realprojekten.
@@ -185,6 +188,7 @@ Sektions-Emoji als Fallback (+ Warnung `PRIO_MISSING`) → nur wenn beides fehlt
 | `DATE_LEGACY` | Validate | D15 |
 | `WIP_WITHOUT_PLAN` | Validate | D11 · `PLAN_WITHOUT_WIP` D12 |
 | `STEP_DUPLICATE` | Validate | doppelte Step-Nummer in der Fortschrittstabelle (R6, ab 6.6; Test per Temp-Kopie) |
+| `PROJECT_NOT_INITIALIZED` | Validate | Root ohne STEPWELL-Projekt (alle vier Dateien fehlen) → genau ein Fund mit Anleitung (M5, ab 9.3; Fixture `project-empty`); Teilbestand bleibt harter Fehler pro Datei |
 
 ### Tool-Parameter (MCP / CLI-Flags `--root`, `--priority`, `--status`, `--json`)
 
@@ -206,5 +210,9 @@ Sektions-Emoji als Fallback (+ Warnung `PRIO_MISSING`) → nur wenn beides fehlt
 ### Datei-Pflicht (Beschluss 09/2026: strikt)
 
 `BACKLOG.md`, `PROGRESS.md`, `docs/archive/BACKLOG_ARCHIVE.md`, `docs/archive/PROGRESS_ARCHIVE.md`
-sind **alle Pflicht** — fehlt eine, lädt das Projekt nicht (harter Fehler mit klarer Meldung,
-keine Toleranz-Warnung). Gilt für Realprojekte und Fixtures gleichermaßen.
+sind **alle Pflicht** — fehlt eine einzelne, lädt das Projekt nicht (harter Fehler mit klarer
+Meldung, keine Toleranz-Warnung). **Fehlen alle vier** (leerer/fremder Root, M5/9.3): kein
+Fehler pro Datei, sondern genau ein Fund `PROJECT_NOT_INITIALIZED` mit Anleitung —
+`docs_validate` als Finding (`ok: false`), `docs_status` als Zero-Aggregate + Fund,
+übrige Tools als strukturierte Fehlerantwort (`{ code, message, missing }`, `isError`).
+Gilt für Realprojekte und Fixtures gleichermaßen.
