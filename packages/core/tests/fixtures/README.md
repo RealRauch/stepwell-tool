@@ -42,6 +42,13 @@ fixtures/
 
 project-empty/            # leerer Ordner (nur .gitkeep; M5/9.3) — Root OHNE STEPWELL-Projekt:
                           #   docs_validate/docs_status → genau ein Fund PROJECT_NOT_INITIALIZED
+
+project-f-bom/            # bytegleich zu project-a, aber alle vier Dateien mit UTF-8-BOM
+    ├── BACKLOG.md        #   (U+FEFF) am Anfang (T5/9.13) — Parser strippt deterministisch,
+    ├── PROGRESS.md       #   Ergebnis identisch zur BOM-losen Variante, Validate fund-frei
+    └── docs/archive/
+        ├── BACKLOG_ARCHIVE.md
+        └── PROGRESS_ARCHIVE.md
 ```
 
 Projekt-Root ist jeweils der Ordner mit `BACKLOG.md`/`PROGRESS.md` — genau wie in Realprojekten.

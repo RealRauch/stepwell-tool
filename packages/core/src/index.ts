@@ -36,6 +36,7 @@ export {
   canonical,
   detectLocale,
   getFieldByRole,
+  stripBom,
   synonymPattern,
   LOCALES,
   SYNONYMS,
