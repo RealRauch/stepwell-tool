@@ -44,12 +44,6 @@
 - **Fix:** progress_update bei Phase-Abschluss optionalen `checkpoint`-Parameter (SHA) spendieren, der in die **Verifikation:**-Zeile des Archiv-Blocks bzw. den Index-Einzeiler übernommen wird; Format grob validieren (7–40 Hex), keine Pflicht. Test-first: Plan-/Apply-Tests für die SHA-Durchreichung.
 - **Abnahme:** Phase-Abschluss mit checkpoint-SHA erscheint verbatim in Archiv + Index; ohne Parameter unverändertes Verhalten; `npm run typecheck && npm run test` grün.
 
-### [ ] L3 — Verifikation als ausführbarer Plan formatieren — 🟢
-- **Ort:** PLAYBOOK-Kopien (§6 Verifikation) + Konvention für die Verifikations-Zeile bei progress_update; Fundstelle: Google Conductor — „Manual Verification Steps" (Command, Ausführung, erwartetes Ergebnis) mit Pause bis expliziter menschlicher Bestätigung.
-- **Problem:** Unsere Verifikation reduziert sich auf „typecheck + test grün" — die Zeile dokumentiert, DASS geprüft wurde, aber nicht WIE ein Mensch nachprüft; Reproduzierbarkeit für Dritte (Review, Feldtest, neue Session) leidet.
-- **Fix:** Konvention ergänzen (Prosa-Edit, keine Code-Änderung): Verifikations-Zeile/-Liste nennt mindestens einen nachlaufbaren Befehl + erwartetes Ergebnis; Vorlage in PLAYBOOK §6; bewusst ohne docs_validate-Warnung (zu weich, reine Konvention).
-- **Abnahme:** PLAYBOOK-Änderung in beiden Kopien textgleich; ein Beispiel-Verifikationsblock im Archiv zeigt das Format.
-
 ### [ ] L4 — Doc-Sync-Reminder bei Phasen-Abschluss — 🟢
 - **Ort:** `packages/mcp` (progress_update-Antwort bei Phasen-Abschluss); Fundstelle: Google Conductor — „Synchronize Project Documentation": nach Track-Abschluss werden product.md/tech-stack.md-Updates vorgeschlagen (Diff + Approval).
 - **Problem:** Nach Phasen-Abschluss erinnert nichts daran, dass Projekt-Doku sync-bedürftig sein kann (AGENTS-Kickoff, README, PLAYBOOK-Abweichungen) — der Sync-Schlag hängt aktuell an Erinnerung.
@@ -67,12 +61,6 @@
 - **Problem:** docs_status liefert Aggregate (offene Items je Prio, 🔄-Steps, ✅-Quote), aber keine Ableitung „was ist als Nächstes zu tun" — der Session-Kickoff braucht derzeit den zweiten Blick in progress_list/backlog_list.
 - **Fix:** Zwei abgeleitete Zeilen ergänzen: „nächster offener Step" (erste ⬜-Zeile der laufenden Phase in definierter Reihenfolge) und „nächste Priorität mit offenen Items" (erste nicht-leere Prioritäts-Sektion 🔴→🔵); rein ableitend aus geparsten Daten, keine neue Tool-Oberfläche.
 - **Abnahme:** Beide Felder deterministisch über Fixtures project-a/-b getestet; CLI `status` zeigt sie; `npm run typecheck && npm run test` grün.
-
-### [ ] L8 — Sync-Schlag: 🔵-Semantik + Session-Einstieg kanonisieren (PLAYBOOK-Kopien) — 🟢
-- **Ort:** PLAYBOOK-Kopien (§3 ID-/Serien-Konvention, §0/§2 Ablauf) in **beiden** Repos (method-docs + stadtpfad-pwa); Muster: D4-Sync-Schlag (textgleich, Commit je Repo).
-- **Problem:** „🔵 = Test-Lücke" existiert nur als BACKLOG-Legende, nicht kanonisch im PLAYBOOK; der Standard-Session-Einstieg (docs_status → progress_show → nächste ⬜ vor jeder Schreiboperation) ist Projekt-Konvention (AGENTS-Kickoff), aber nicht Methode — neue Projekte raten.
-- **Fix:** Sync-Schlag in beiden Kopien textgleich: §3 ergänzt „🔵 = Test-Lücken (explizite ID, keine Serie)"; kurzer Absatz „Session-Einstieg" (§0 oder §2); danach byte-identischer Abgleich beider Kopien (Hash-Vergleich als Beleg).
-- **Abnahme:** Beide PLAYBOOK-Kopien textgleich (Diff-/Hash-Beleg im Erledigt-Index); docs_validate method-docs clean.
 
 ---
 
@@ -120,5 +108,7 @@
 - M6 — JSON-Output-Kontrakt der CLI versionieren (schema-Feld + Doku) — erledigt (Fix `5224662` (Test-Commit `596cb8b`, 3× ROT belegt) — JSON_SCHEMA_VERSION=1 als erstes Feld jeder --json-Ausgabe (status/backlog/progress/validate/archive/progress-update, Dry-run + Apply); Contract-Tests je Command inkl. Top-Level-Key-Snapshot; README-Feldkontrakt-Tabelle + Kontrakt-Regel (Breaking ⇒ schema hoch, Lockstep Decision 16); SKILL.md-Erwähnung)
 - M3 — structuredContent für Tool-Antworten prüfen (MCP-Spec-Compliance) — erledigt (Fix `e7847cc` (Test-Commit `1565238`, 3× ROT belegt) — Entscheidung JA (Feldtest 7.2: CI/Script-Weiterverarbeitung; Warning-Modell liegt strukturiert vor): docs_validate/progress_update/archive_item liefern Payload zusätzlich als structuredContent (Text unverändert, Fehler ohne structuredContent, Read-Tools bleiben plain — per Test abgesichert); Client-Verträglichkeit via InMemory-Client geprüft; README dokumentiert)
 - L6 — Release-Prozess: CHANGELOG, Versionspolitik, Pack-Smoke in CI — erledigt (Fix `8ec8aef` (Test-Commit `1d0817c`, 2× ROT belegt) — CHANGELOG.md (KAC 1.1.0, [Unreleased], kuratiert seit Phase 1, Redundanz-Regel + Datumsformat-Abweichung JJMMDD/HHMM dokumentiert); README-Abschnitt "Releases" (Format, Lockstep-SemVer Decision 16, Publish-Checkliste); scripts/pack-smoke.mjs + CI-Job `pack-smoke` (CI-Edit durch Sammel-Freigabe 9.x gedeckt): pack → install → statische Artefakt-Checks. Fund: Node verweigert TS-Stripping unter node_modules → dynamischer Handshake blockiert → neuer Blocker-Item H1 (Build/dist))
+- L3 — Verifikation als ausführbarer Plan formatieren — erledigt (Sync-Schlag 09/2026 — PLAYBOOK §6 „Verifikation als ausführbarer Plan (Konvention)" (nachlaufbarer Befehl + erwartetes Ergebnis) in beiden Kopien textgleich (method-docs@ee00f9c, stadtpfad-pwa@eed7ae9, SHA256 4BAEBA88…AE0D); Beispiel-Verifikationsblock entsteht mit dem Phase-9-Abschluss im Archiv)
+- L8 — Sync-Schlag: 🔵-Semantik + Session-Einstieg kanonisieren (PLAYBOOK-Kopien) — erledigt (Sync-Schlag 09/2026 — PLAYBOOK §3 „🔵 = Test-Lücken" (thematische Serien-ID, nie Auto-Nummer aus Prioritäts-Serie) + §0.8 „Session-Einstieg (bindend)" (PLAYBOOK/LESSONS → PROGRESS nächster Step 🔄 → BACKLOG) in beiden Kopien textgleich (method-docs@ee00f9c, stadtpfad-pwa@eed7ae9, SHA256 4BAEBA88…AE0D); docs_validate method-docs clean)
 
 ---
