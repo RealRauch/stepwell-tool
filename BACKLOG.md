@@ -38,12 +38,6 @@
 
 ## 🟢 NIEDRIG
 
-### [ ] L5 — docs_review-Tool-Idee: Phasen-Review gegen Plan/Spec — 🟢
-- **Ort:** `packages/core` + `packages/mcp` (neues Tool — Surface-Gewinn muss die M4-Guardrail bestehen); Fundstelle: Google Conductor — review-Skill (Plan-Compliance-Check, strukturierter Report mit Severity-Findings + Diff-Vorschlägen; Review-Fixes werden als Tasks getrackt — entspricht unserer Inline-Fix-Lane, Decision 14).
-- **Problem:** Review läuft heute manuell (LESSONS-Checkliste + docs_validate); ein diff-basiertes Review „Phase X gegen ihre Steps/Items" (Plan-Compliance, Tests gelaufen?, Findings mit Datei/Zeile) ist nicht tool-gestützt.
-- **Fix:** Erst Alternativprüfung nach M4 (Parameter an docs_status/progress_show? Resource?), dann Minimal-Entwurf: Review-Report als Read-Only-Tool; Findings-Format ans Warning-Modell (Decision 6) anlehnen.
-- **Abnahme:** Entwurfsentscheidung dokumentiert (neues Tool vs. Erweiterung Bestand); falls Tool: Annotations, Tests und M4-Begründung im README.
-
 ---
 
 ## 🔵 TEST-LÜCKEN
@@ -90,5 +84,6 @@
 - L4 — Doc-Sync-Reminder bei Phasen-Abschluss — erledigt (Fix `a093a1e` (Test-Commit `830def8`, 2× ROT belegt) — statischer Reminder „Doku-Sync prüfen: AGENTS-Kickoff, README, PLAYBOOK-Kopien" bei Phasen-Abschluss: ProgressUpdatePlan.docSyncReminder (nur bei completedPhase, sonst undefined) + Apply-Verifikations-Messages; übrige Antworten unverändert (per Test); README-Tool-Zeile nachgezogen)
 - L7 — docs_status um Next-Action-Empfehlung ergänzen — erledigt (Fix `ab2af81` (Test-Commit `f7b8233`, 4× ROT belegt) — DocsStatus.nextStep (erste ⬜-Zeile einer laufenden Phase in Tabellen-Ordnung) + nextPriority (erste nicht-leere Sektion 🔴→🔵), deterministisch über project-a/-b getestet; CLI `status` zeigt beide Zeilen; JSON-Contract additiv erweitert (schema bleibt 1, Snapshot-Test aktualisiert); ohne laufende Phase/offene Items → undefined (auch im M5-Zero-State))
 - T5 — BOM-Toleranz des Parsers (UTF-8-BOM in Datei-Köpfen) — erledigt (Fix `f6921f1` (Test-Commit `9b96c4f`, ROT belegt) — stripBom (U+FEFF am Dateianfang) in parseBacklog/parseProgress (Archive delegieren) — stille Toleranz, keine Warnung; Fixture project-f-bom (project-a-Zwilling mit BOM in allen vier Dateien): Parsing + docsValidate ergebnisgleich zum BOM-losen Original; ROT-Befund: BOM vor der ersten Sektion brach die Sektionserkennung (Layout-abhängige Zufalls-Toleranz beseitigt); README + Fixtures-Spec dokumentiert)
+- L5 — docs_review-Tool-Idee: Phasen-Review gegen Plan/Spec — erledigt (Entscheidung (Alternativprüfung nach M4, 09/2026): KEIN docs_review-Tool. (1) Plan-Compliance ist bereits abgedeckt: docs_validate prüft 🔄↔Detail-Block (WIP_WITHOUT_PLAN/PLAN_WITHOUT_WIP), progress_show liefert Ziel/Abnahme/Scope verbatim, docs_status aggregiert Findings + Next-Action; ein Review-Tool würde diese Funde doppelt ausgeben. (2) „Tests gelaufen?" ist aus den vier Doku-Dateien nicht ableitbar — das Tool müsste CI-/Log-Quellen lesen und bräche die Architektur-Grenze (core liest nur die vier Dateien). (3) M4-Guardrail: kein bekannter Fund des Feldtests/ Betriebs, der den Surface-Zuwachs rechtfertigt; Review läuft über LESSONS-Checkliste + docs_validate. Reaktivierungs-Kriterium: zeigen Feldtests, dass Plan-Compliance-Reviews wiederholt manuell nachgebaut werden, dann Minimal-Entwurf als Read-Only-Tool neu bewerten (Findings im Warning-Modell gem. Decision 6, Annotations + M4-Begründung im README))
 
 ---
