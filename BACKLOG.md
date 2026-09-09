@@ -1,4 +1,4 @@
-# BACKLOG.md — Offene Punkte (Stand: 260909/2123
+# BACKLOG.md — Offene Punkte (Stand: 260909/2206
 
 > **Diese Datei enthält nur OFFENE Items.** Erledigte Items werden nach dem Abschluss
 > **unverändert** in `docs/archive/BACKLOG_ARCHIVE.md` verschoben; hier bleibt je Item nur ein Einzeiler
@@ -11,6 +11,12 @@
 ## 🔴 KRITISCH
 
 > Keine offenen Items.
+
+### [ ] R9 — Coverage-Gate: Exit-Code bei Threshold-Verletzung umgebungsabhängig (isolated CLI exit 0) — CI-Gate potenziell wirkungslos — 🔴
+- **Ort:** Coverage-Gate (vitest `coverage.thresholds`) + CI-Job (`npx vitest run --coverage` in `.github/workflows/ci.yml`); Fundstelle: Diagnose im Step 10.1/R7 (09/2026) — isolierte CLI-Läufe mit 99%-Schwellen (Glob- wie Global-Form, `npx` wie direkter `node node_modules/vitest/vitest.mjs`-Aufruf, Vitest 3.2.7) endeten mit **exit 0**, obwohl `ERROR: Coverage for lines (36.73%) does not meet global threshold (99%)` geloggt wurde; im vitest-verschachtelten Spawn (geerbte Process-Env) lief derselbe Lauf korrekt mit exit 1 + Meldung. Kandidat aus der Vitest-Quelle: der `exit(force)`-Watchdog ruft bei hängendem Shutdown `process.exit()` ohne Argument (= 0) und überschreibt das gesetzte `process.exitCode`.
+- **Problem:** Das Coverage-Gate (T6/9.1) stützt sich auf den vitest-Exit-Code — ist der umgebungsabhängig unzuverlässig, ist das Gate in CI (ubuntu, kein äußeres vitest) potenziell wirkungslos und Coverage-Degradation würde lautlos durchgehen.
+- **Fix:** Ursache klären (Watchdog-/Shutdown-Pfad in Vitest 3.2.7 bzw. Verhalten unter Ubuntu-CI verifizieren) und das Gate robust stellen: entweder Versions-Upgrade (Dep-Änderung = Content-Gate Mittel) oder Exit-Code-unabhängige Auswertung (Threshold-Meldung im Output bzw. `coverage-summary.json`-Prüfung als Gate) — Entscheidung im Step dokumentieren; CI-Job entsprechend anpassen (CI-Workflows = Content-Gate Hoch, Freigabe je Vorkommnis).
+- **Abnahme:** Threshold-Verletzung führt deterministisch (lokal Windows UND ubuntu-CI) zum Scheitern des Runs; Abnahme-Test bleibt grün (Exit + Meldung); `npm run typecheck && npm run test` grün.
 
 ---
 

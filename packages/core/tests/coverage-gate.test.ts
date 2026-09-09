@@ -14,11 +14,14 @@ const TMP_DIR = "test-results/tmp-coverage-gate";
 const TMP_CONFIG = join(TMP_DIR, "vitest.high.config.ts");
 
 const HIGH_THRESHOLD_CONFIG = `
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     environment: "node",
     include: ["packages/*/tests/**/*.test.ts"],
+    // R7: Gate-Datei ausschließen — sonst startet der Nested-Run diesen Test
+    // erneut (Rekursion), bis ein Worker crasht; genau eine Nested-Ebene läuft.
+    exclude: [...configDefaults.exclude, "**/coverage-gate.test.ts"],
     coverage: {
       provider: "v8",
       include: ["packages/*/src/**/*.ts"],
@@ -43,18 +46,33 @@ afterAll(() => {
 });
 
 describe("coverage gate enforcement (T6 Abnahme)", () => {
+  // R9: Das Exit-Code-Verhalten bei Threshold-Verletzung ist umgebungsabhängig
+  // (im vitest-verschachtelten Spawn exit 1 + Meldung; in isolierten CLI-Läufen
+  // wurde 0 gemessen — CI muss das verifizieren, siehe R9). Der Test prüft
+  // deshalb BEIDES: Exit-Code und Threshold-Meldung im Output.
   it("fails vitest when thresholds are raised above current coverage", async () => {
     // Async spawn (nicht spawnSync): lässt den Vitest-Worker weiter atmen,
     // sonst timeout't der RPC-Layer ("onTaskUpdate") während wir warten.
-    const exitCode = await new Promise<number | null>((resolve) => {
+    const { exitCode, output } = await new Promise<{ exitCode: number | null; output: string }>((resolve) => {
       const child = spawn(
         "npx",
         ["vitest", "run", "--config", TMP_CONFIG, "--coverage", "--reporter=basic"],
-        { cwd: process.cwd(), stdio: "ignore", shell: true, windowsHide: true },
+        { cwd: process.cwd(), stdio: ["ignore", "pipe", "pipe"], shell: true, windowsHide: true },
       );
-      child.on("close", (code) => resolve(code));
-      child.on("error", () => resolve(null));
+      let output = "";
+      child.stdout?.on("data", (chunk: Buffer) => {
+        output += chunk.toString();
+      });
+      child.stderr?.on("data", (chunk: Buffer) => {
+        output += chunk.toString();
+      });
+      child.on("close", (code) => resolve({ exitCode: code, output }));
+      child.on("error", () => resolve({ exitCode: null, output }));
     });
+    // Ursachen-Assert (R7): Nicht-Null genügt nicht — ein gecrashter Nested-Run
+    // würde ihn ebenfalls erfüllen. Das Gate muss die Threshold-Meldung zeigen
+    // (Format: `Coverage for lines (96.23%) does not meet "<glob>" threshold (99%)`).
     expect(exitCode).not.toBe(0);
+    expect(output).toMatch(/does not meet .+ threshold/iu);
   }, 180_000);
 });
