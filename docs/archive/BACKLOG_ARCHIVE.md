@@ -374,3 +374,12 @@
 - **Fix:** (1) Vertrag dokumentieren: `file` = Datei **oder** Root bei Root-level-Funden (types.ts-Kommentar + Fixture-Spec + README-Warnungs-Codes). (2) Statischen List-Callback ergänzen, der die vier Template-URIs liefert.
 - **Abnahme:** `listResources` liefert die vier Template-URIs (Test-first); Doku-Stellen nachgezogen; `npm run typecheck && npm run test` grün.
 - **Erledigt:** Fix `9a369c9` (Test-Commit `be7b5f0`, ROT belegt) — Templates-Resource mit statischem List-Callback (`listResources` liefert die vier URIs, mimeType text/markdown); Warning.file-Kontrakt dokumentiert (Datei oder Root bei Root-level-Funden) in types.ts-Kommentar + Fixture-Spec + README; 256/256 grün
+
+---
+
+### [x] L10 — nextStep-Kaskade: Fallback auf rein vorausgeplante Phasen — 🟢
+- **Ort:** `packages/core/src/status.ts` (nextStep-Ableitung, L7); Fundstelle: Code-Review Phase 9 (Low-Fund) + Dialog-Entscheidung 09/2026 (Option C).
+- **Problem:** `nextStep` betrachtet nur Phasen mit mindestens einem 🔄 — eine rein vorausgeplante Phase (alle Zeilen ⬜, frisch per `progress_plan_phase`) liefert `nextStep: undefined`, obwohl „starte den ersten Step" die offensichtliche nächste Aktion ist; der Session-Einstieg braucht dann den zweiten Blick über `PLAN_WITHOUT_WIP`.
+- **Fix:** Kaskade: (1) erste ⬜-Zeile in einer Phase **mit** 🔄 (heutiges Verhalten, Vorrang laufender Arbeit), (2) sonst erste ⬜-Zeile in rein vorausgeplanten Phasen (Tabellen-Ordnung), (3) sonst `undefined`. Deterministisch, bestehende Fixture-Ergebnisse unverändert.
+- **Abnahme:** Kaskade per Test belegt (reine Plan-Phase → Fallback greift; laufende Phase gewinnt gegen spätere Plan-Phase); project-a/-b-Ergebnisse identisch; `npm run typecheck && npm run test` grün.
+- **Erledigt:** Fix `14093de` (Test-Commit `b40be1f`, 3× ROT belegt) — nextStep-Kaskade: (1) erste ⬜-Zeile einer Phase mit 🔄 (Vorrang laufender Arbeit), (2) sonst erste ⬜-Zeile rein vorausgeplanter Phasen (Tabellen-Ordnung), (3) sonst undefined; per Test belegt: Fallback bei reiner Plan-Phase (2.1), Vorrang der laufenden gegen spätere Plan-Phase (2.2 vor 3.1), Durchfall bei erledigter früherer Phase (3.1); project-a/-b-Ergebnisse unverändert; 259/259 grün
