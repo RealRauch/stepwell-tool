@@ -45,8 +45,9 @@ alles andere (Prosa) editiert der Agent direkt in den Dateien.
 1. `docs/PLAYBOOK.md` (Methode) + `docs/LESSONS.md` (Checkliste) lesen — beide bindend.
 2. `PROGRESS.md` → „Laufende Phasen": nächster offener Step in definierter Reihenfolge
    (Phasen 1–9 sind abgeschlossen und archiviert; Phase 10 „Review-Fixes, Distribution &
-   Surface-Guardrail" ist aus den Items R7/R8/H1/M4 paketiert — R7/R8 zuerst, dann H1 in
-   drei Teilen, davon **10.4 Manifest-Umstellung = Content-Gate Mittel** (Freigabe je
+   Surface-Guardrail" ist aus den Items R7/R8/H1/M4/R9 paketiert — R7 erledigt; 10.2 R8,
+   10.3–10.5 H1 in drei Teilen, davon **10.4 Manifest-Umstellung = Content-Gate Mittel**,
+   **10.7 Coverage-Gate-Exit-Code (R9) mit CI-Änderung = Content-Gate Hoch** (Freigabe je
    Vorkommnis, Decision 15); Freigabe-Gate gem. Decision 13 — Code-Steps erst nach
    expliziter menschlicher Freigabe; Backlog-Wurzel-Pflicht gem. Decision 14).
 3. **Testdaten:** `packages/core/tests/fixtures/` — die `README.md` dort ist die arbeitende
