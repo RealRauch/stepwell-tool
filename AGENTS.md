@@ -44,12 +44,10 @@ alles andere (Prosa) editiert der Agent direkt in den Dateien.
 
 1. `docs/PLAYBOOK.md` (Methode) + `docs/LESSONS.md` (Checkliste) lesen — beide bindend.
 2. `PROGRESS.md` → „Laufende Phasen": nächster offener Step in definierter Reihenfolge
-   (Phasen 1–9 sind abgeschlossen und archiviert; Phase 10 „Review-Fixes, Distribution &
-   Surface-Guardrail" ist aus den Items R7/R8/H1/M4/R9 paketiert — R7 erledigt; 10.2 R8,
-   10.3–10.5 H1 in drei Teilen, davon **10.4 Manifest-Umstellung = Content-Gate Mittel**,
-   **10.7 Coverage-Gate-Exit-Code (R9) mit CI-Änderung = Content-Gate Hoch** (Freigabe je
-   Vorkommnis, Decision 15); Freigabe-Gate gem. Decision 13 — Code-Steps erst nach
-   expliziter menschlicher Freigabe; Backlog-Wurzel-Pflicht gem. Decision 14).
+   (Phasen 1–10 sind abgeschlossen und archiviert; Phase 11 „Methoden-Sync: Mess-Lesson"
+   ist aus dem Item G4 paketiert — Sync-Schlag nach D4-Muster, Commit je Repo, Hash-Beleg;
+   Freigabe-Gate gem. Decision 13 — Code-Steps erst nach expliziter menschlicher Freigabe;
+   Backlog-Wurzel-Pflicht gem. Decision 14).
 3. **Testdaten:** `packages/core/tests/fixtures/` — die `README.md` dort ist die arbeitende
    Spezifikation für 1.2–1.6 (erwartete Parser-Ergebnisse + Validate-Funde D1–D15).
    `project-a` = sauberes Musterprojekt (Parser-Positivpfad) · `project-b-drift` = absichtliche Drift-Fälle (Toleranz + Validate).

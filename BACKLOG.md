@@ -1,4 +1,4 @@
-# BACKLOG.md — Offene Punkte (Stand: 260909/2309
+# BACKLOG.md — Offene Punkte (Stand: 260909/2319
 
 > **Diese Datei enthält nur OFFENE Items.** Erledigte Items werden nach dem Abschluss
 > **unverändert** in `docs/archive/BACKLOG_ARCHIVE.md` verschoben; hier bleibt je Item nur ein Einzeiler
@@ -25,6 +25,12 @@
 ---
 
 ## 🟢 NIEDRIG
+
+### [ ] G4 — Sync-Schlag: Lesson „Exit-Codes mit der Host-Sprache messen“ in LESSONS-Kopien (aus R9/Messartefakt) — 🟢
+- **Ort:** `docs/LESSONS.md` (Abschnitt D. Build & Prozess) in **beiden** Repos (method-docs + stadtpfad-pwa); Fundstelle: R9-Klärung in 10.7 (09/2026) — der vermeintliche Coverage-Gate-Defekt war ein Messartefakt: `cmd /c "... & echo %ERRORLEVEL%"` expandiert `%ERRORLEVEL%` zur Parse-Zeit (Wert vor dem Lauf), sodass Exit-Codes nach `&` immer den alten Wert zeigen.
+- **Problem:** Falsch gemessene Exit-Codes erzeugen Phantom-Bugs (hier: 🔴-Item, Diagnose-Aufwand, verworfener Wrapper-Bau) — die Falle ist in Script- und CI-Umgebungen (cmd-Verkettungen) allgegenwärtig und hatte als Fundstelle noch keine Checklisten-Zeile.
+- **Fix:** Lesson #18 in LESSONS.md ergänzen (Abschnitt D): „Exit-Codes mit der Host-Sprache messen — PowerShell `$LASTEXITCODE`, POSIX `$?`/`$status` — nie mit cmd-`%ERRORLEVEL%`-Expansion nach `&`; in cmd selbst nur mit `!ERRORLEVEL!` bei `/v:on`." Beweis: R9 (method-docs 09/2026 — Fehlalarm 🔴 → Messartefakt).
+- **Abnahme:** Lesson #18 in beiden LESSONS-Kopien textgleich (Hash-Vergleich als Beleg im Erledigt-Index); docs_validate method-docs clean; Commit je Repo.
 
 ---
 
