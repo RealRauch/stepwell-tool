@@ -1,4 +1,4 @@
-# BACKLOG.md — Offene Punkte (Stand: 260909/2206
+# BACKLOG.md — Offene Punkte (Stand: 260909/2309
 
 > **Diese Datei enthält nur OFFENE Items.** Erledigte Items werden nach dem Abschluss
 > **unverändert** in `docs/archive/BACKLOG_ARCHIVE.md` verschoben; hier bleibt je Item nur ein Einzeiler
@@ -11,12 +11,6 @@
 ## 🔴 KRITISCH
 
 > Keine offenen Items.
-
-### [ ] R9 — Coverage-Gate: Exit-Code bei Threshold-Verletzung umgebungsabhängig (isolated CLI exit 0) — CI-Gate potenziell wirkungslos — 🔴
-- **Ort:** Coverage-Gate (vitest `coverage.thresholds`) + CI-Job (`npx vitest run --coverage` in `.github/workflows/ci.yml`); Fundstelle: Diagnose im Step 10.1/R7 (09/2026) — isolierte CLI-Läufe mit 99%-Schwellen (Glob- wie Global-Form, `npx` wie direkter `node node_modules/vitest/vitest.mjs`-Aufruf, Vitest 3.2.7) endeten mit **exit 0**, obwohl `ERROR: Coverage for lines (36.73%) does not meet global threshold (99%)` geloggt wurde; im vitest-verschachtelten Spawn (geerbte Process-Env) lief derselbe Lauf korrekt mit exit 1 + Meldung. Kandidat aus der Vitest-Quelle: der `exit(force)`-Watchdog ruft bei hängendem Shutdown `process.exit()` ohne Argument (= 0) und überschreibt das gesetzte `process.exitCode`.
-- **Problem:** Das Coverage-Gate (T6/9.1) stützt sich auf den vitest-Exit-Code — ist der umgebungsabhängig unzuverlässig, ist das Gate in CI (ubuntu, kein äußeres vitest) potenziell wirkungslos und Coverage-Degradation würde lautlos durchgehen.
-- **Fix:** Ursache klären (Watchdog-/Shutdown-Pfad in Vitest 3.2.7 bzw. Verhalten unter Ubuntu-CI verifizieren) und das Gate robust stellen: entweder Versions-Upgrade (Dep-Änderung = Content-Gate Mittel) oder Exit-Code-unabhängige Auswertung (Threshold-Meldung im Output bzw. `coverage-summary.json`-Prüfung als Gate) — Entscheidung im Step dokumentieren; CI-Job entsprechend anpassen (CI-Workflows = Content-Gate Hoch, Freigabe je Vorkommnis).
-- **Abnahme:** Threshold-Verletzung führt deterministisch (lokal Windows UND ubuntu-CI) zum Scheitern des Runs; Abnahme-Test bleibt grün (Exit + Meldung); `npm run typecheck && npm run test` grün.
 
 ---
 
@@ -85,5 +79,6 @@
 - R8 — pack-smoke: unquoted Argumente bei shell:true brechen bei Leerzeichen im Windows-Temp-Pfad — erledigt (Fix `9976d3b` (Test-Commit `7f532e6`, ROT belegt) — pack-smoke quotet Shell-Argumente bei win32 (`quoteForShell`: doppelte Anführungszeichen + internes `\"`-Escaping); Abnahme per Test: Smoke mit `TMP/TEMP/TMPDIR` auf Leerzeichen-Verzeichnis läuft grün (npm pack + install gegen spaced paths))
 - H1 — Dist-Blocker: npm-Artefakt enthält TS-Source und läuft nicht aus node_modules (Build/dist-Schritt nötig) — erledigt (Fix in drei Teilen: 10.3 `028e7c5` (tsconfig.build je Workspace, rewriteRelativeImportExtensions, mcp gegen core-dist-Declarations) · 10.4 `2187585` (Manifests: files dist(+skills), exports/bin → dist, prepublishOnly build; vitest-Alias + typecheck-Paths als Konsequenz) · 10.5 `cb10583` (dynamischer Pack-Smoke: stdio-Handshake + CLI-Bin gegen das installierte Artefakt; dabei Fund: Direct-Run-Guard matchte nur cli.ts — installiertes Bin startete nicht, gefixt `cli\.(ts|js)$`); Abnahme erfüllt: installiertes dist-Artefakt startet (handshake OK, server stepwell), README-Install verifiziert, CHANGELOG-Eintrag)
 - M4 — Tool-Surface-Guardrail: keine Guide-/Meta-Tools, Surface klein halten — erledigt (Fix `e73ba2f` — Decision 17 in AGENTS.md verankert (nur Struktur-/Lese-Tools, keine Guide-/Meta-Tools, Alternativprüfung als Beweis-Format); README-Architektur-Abschnitt nennt die Begründungspflicht; Tool-Liste enthält kein reines Doku-/Guide-Tool (docs_review-Präzedenz L5: Entscheidung dokumentiert statt Tool))
+- R9 — Coverage-Gate-Exit-Code: Fehlalarm durch cmd-%ERRORLEVEL%-Messartefakt — Gate funktioniert korrekt — erledigt (Ergebnis 10.7: Fehlalarm — Messartefakt. Ursprung: `cmd /c "... & echo %ERRORLEVEL%"` expandiert die Variable zur Parse-Zeit (immer 0); mit korrekter Messung (PowerShell `$LASTEXITCODE`) exitet vitest bei Threshold-Verletzung deterministisch mit 1 — isoliert (node vitest.mjs, Glob- wie Global-Schwellen) wie verschachtelt. Gate funktioniert wie gebaut: kein CI-Edit, kein Vitest-Upgrade, Wrapper-Versuch verworfen (KISS/M4 — nie committed). Bleibender Wert: Ursachen-Assert im Gate-Test (Threshold-Meldung, wrap-/ANSI-tolerant, R7-Fix) + Messmethoden-Falle als Lesson-Kandidat. Beweis: VITEST_PS_EXIT:1 / WRAPPER_PS_EXIT:1 (wrapper-Prototyp, verworfen))
 
 ---
