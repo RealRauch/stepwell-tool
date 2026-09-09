@@ -151,9 +151,19 @@ enthalten `:` und `\`); der Read-Callback dekodiert ihn. Inhalt jeweils verbatim
 methoddocs://{root}/backlog          → BACKLOG.md
 methoddocs://{root}/progress         → PROGRESS.md
 methoddocs://{root}/archive/{kind}   → kind = "backlog" | "progress"
+methoddocs://templates/{kind}        → Skeletons der vier Pflichtdateien
+                                       (kind = "backlog" | "progress" |
+                                        "backlog-archive" | "progress-archive")
 ```
 
 Beispiel: `methoddocs://D%3A%5Cproj%5Cdemo/backlog`
+
+**Projekt-Init (M8, Variante A):** Bei neu angelegten Projekten liest der Agent die vier
+Skeletons aus `methoddocs://templates/{kind}` und legt die Dateien damit selbst an —
+bewusst **kein** `init_project`-Schreib-Tool (M4-Guardrail: Write-Surface klein halten);
+die Skeletons liegen kanonisch in `@method-docs/core` (`projectTemplates`) und sind an
+`docs_validate` fund-frei. Die Init-Fallback-Anleitung (`PROJECT_NOT_INITIALIZED`)
+verweist auf diesen Weg.
 
 ---
 

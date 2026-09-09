@@ -44,6 +44,7 @@ export {
 } from "./profile.ts";
 export { docsStatus } from "./status.ts";
 export { docsValidate } from "./validate.ts";
+export { TEMPLATE_KINDS, projectTemplates, type TemplateKind } from "./templates.ts";
 export {
   PRIORITY_ALIASES,
   STATUS_ALIASES,

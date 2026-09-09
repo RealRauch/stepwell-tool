@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ResourceTemplate, type McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { TEMPLATE_KINDS, projectTemplates, type TemplateKind } from "@method-docs/core";
 
 const MARKDOWN = "text/markdown";
 
@@ -21,6 +22,30 @@ function readOrThrow(path: string): string {
 }
 
 export function registerDocsResources(server: McpServer): void {
+  server.registerResource(
+    "templates",
+    new ResourceTemplate("methoddocs://templates/{kind}", { list: undefined }),
+    {
+      title: "Projekt-Vorlagen",
+      description:
+        "Kanonische Skeletons der vier Pflichtdateien (M8): kind = \"backlog\" | \"progress\" | " +
+        "\"backlog-archive\" | \"progress-archive\" — Agent legt daraus die Dateien an " +
+        "(Variante A: Read-Only, kein init_project).",
+      mimeType: MARKDOWN,
+    },
+    (uri, { kind }) => {
+      const k = String(kind) as TemplateKind;
+      if (!TEMPLATE_KINDS.includes(k)) {
+        throw new Error(`unknown template kind: ${String(kind)} (erlaubt: ${TEMPLATE_KINDS.join(" | ")})`);
+      }
+      return {
+        contents: [
+          { uri: uri.href, text: projectTemplates[k], mimeType: MARKDOWN },
+        ],
+      };
+    },
+  );
+
   server.registerResource(
     "backlog",
     new ResourceTemplate("methoddocs://{root}/backlog", { list: undefined }),
