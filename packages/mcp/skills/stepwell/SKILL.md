@@ -31,7 +31,7 @@ backlog-archive | progress-archive), danach `docs_validate` — muss fund-frei s
 - `progress_update` — Step-Status in Tabelle + Detail-Block (🔄 vor Beginn, ✅ nach
   verifiziertem Abschluss; vollständige Phase wandert automatisch ins Archiv).
   Optionale Parameter: `title` (Phasen-Titel umbenennen), `note` (Verifikations-Zeile
-  im Archiv-Block).
+  im Archiv-Block), `checkpoint` (Commit-SHA der Phase, 7–40 Hex).
 - `archive_item` — erledigtes Backlog-Item verbatim ins Archiv + Einzeiler im
   Erledigt-Index (`note` = Commit-Hash).
 - `backlog_add` / `backlog_update` / `backlog_remove` — Items format-sicher anlegen,

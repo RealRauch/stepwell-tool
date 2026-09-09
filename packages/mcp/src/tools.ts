@@ -307,17 +307,20 @@ export function registerDocsTools(server: McpServer): void {
           .describe("Neuer Phasen-Titel — benennt das Detail-Block-Heading konsistent um (Tabelle bleibt unverändert); bei Phasen-Abschluss im selben Call wandert der Block unter dem neuen Titel ins Archiv."),
         note: z.string().optional()
           .describe("Optionale Notiz — bei Phasen-Abschluss als **Verifikation:**-Zeile am Archiv-Block."),
+        checkpoint: z.string().optional()
+          .describe("Optionaler Commit-SHA der Phase (7–40 Hex) — bei Phasen-Abschluss in der Verifikations-Zeile des Archiv-Blocks."),
         locale: LOCALE_FIELD,
         dryRun: z.boolean().default(true)
           .describe("true (Default): nur Plan/Diff-Vorschau; false: Änderungen schreiben."),
       },
     },
-    ({ root, phase, step, status, title, note, locale, dryRun }) =>
+    ({ root, phase, step, status, title, note, checkpoint, locale, dryRun }) =>
       asStructuredResult(() => {
         const plan = planProgressUpdate(root, phase, step, status as Status, {
           dryRun,
           ...(title !== undefined ? { title } : {}),
           ...(note !== undefined ? { note } : {}),
+          ...(checkpoint !== undefined ? { checkpoint } : {}),
           ...(locale !== undefined ? { locale: locale as Locale } : {}),
         });
         return plan.dryRun ? plan : applyProgressPlan(plan);

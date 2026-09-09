@@ -201,7 +201,7 @@ Sektions-Emoji als Fallback (+ Warnung `PRIO_MISSING`) → nur wenn beides fehlt
 | `progress_show` | `root`, `phase` | — | Detail-Block inkl. `raw` |
 | `docs_validate` | `root` | — | Validate-Funde + eingesammelte Parse-Warnungen |
 | `archive_item` (3.x) | `root`, `id` | `dryRun` (**Default `true`**), `note?`, `locale?` *(Erweiterungen 09/2026, Phase 3/4: Erledigt-Zeile am Archiv-Block + Index-Tail; Sprache generierter Texte, Default Auto-Erkennung de/en)* | Diff-Vorschau vor Apply |
-| `progress_update` (3.3) | `root`, `phase`, `step`, `status` | `title?` *(6.8: Phasen-Titel umbenennen, Block-Heading konsistent)*, `note?`, `locale?`, `dryRun` (**Default `true`**) | Tabelle + Detail-Block |
+| `progress_update` (3.3) | `root`, `phase`, `step`, `status` | `title?` *(6.8: Phasen-Titel umbenennen, Block-Heading konsistent)*, `note?`, `checkpoint?` *(9.10/L2: Commit-SHA 7–40 Hex, landet in der Verifikations-Zeile des Archiv-Blocks)*, `locale?`, `dryRun` (**Default `true`**) | Tabelle + Detail-Block |
 | `backlog_add` (6.9) | `root`, `section`, `title`, `priority` | `id?` *(Auto-Vergabe K/H/M/L je Prio; Konventionsprüfung)*, `text?`, `dryRun` | Item am Ende der Sektion, `Stand:`-Refresh |
 | `backlog_update` (6.9) | `root`, `id` | `title?`, `priority?`, `section?`, `text?`, `dryRun` | Prio-Wechsel verschiebt in die passende Sektion |
 | `backlog_remove` (6.9) | `root`, `id` | `note?`, `locale?`, `dryRun` | verbatim ins Archiv, Checkbox bleibt `[ ]`, Index-Tail mit `entfernt|removed` statt `erledigt|done` |

@@ -30,6 +30,8 @@ export interface ProgressUpdateOptions {
   note?: string;
   title?: string;
   locale?: Locale;
+  /** Optionaler Commit-SHA der Phase (7–40 Hex, L2) — landet in der Verifikations-Zeile. */
+  checkpoint?: string;
 }
 
 interface FileEdit {
@@ -46,6 +48,17 @@ function readText(path: string): { content: string; eol: string } {
 function normalizeNote(note: string | undefined): string | undefined {
   const trimmed = note?.trim();
   return trimmed === "" ? undefined : trimmed;
+}
+
+const CHECKPOINT_RE = /^[0-9a-f]{7,40}$/iu;
+
+function normalizeCheckpoint(checkpoint: string | undefined): string | undefined {
+  const trimmed = normalizeNote(checkpoint);
+  if (trimmed === undefined) return undefined;
+  if (!CHECKPOINT_RE.test(trimmed)) {
+    throw new Error(`invalid checkpoint: "${trimmed}" — erwartet ist ein Commit-SHA mit 7–40 Hex-Zeichen`);
+  }
+  return trimmed.toLowerCase();
 }
 
 function buildChanges(root: string, edits: FileEdit[]): PlanChange[] {
@@ -319,6 +332,7 @@ export function planProgressUpdate(
   const dryRun = options.dryRun ?? true;
   const note = normalizeNote(options.note);
   const newTitle = normalizeNote(options.title);
+  const checkpoint = normalizeCheckpoint(options.checkpoint);
   const docs = loadProject(root);
   const progress = docs.progress().value;
   const progressText = readText(join(root, "PROGRESS.md")).content;
@@ -413,14 +427,18 @@ export function planProgressUpdate(
   if (completedPhase && block !== undefined) {
     edits.push({
       relPath: archiveRel,
-      description: `Detail-Block "${block.name}" verbatim ans PROGRESS_ARCHIVE anhängen${note !== undefined ? " (mit Verifikations-Zeile)" : ""}`,
+      description: `Detail-Block "${block.name}" verbatim ans PROGRESS_ARCHIVE anhängen${note !== undefined || checkpoint !== undefined ? " (mit Verifikations-Zeile)" : ""}`,
       transform: (content, eol) => {
         const blockLines = block.raw.split(/\r?\n/);
         if (newTitle !== undefined) {
           blockLines[0] = `### ${block.name} — ${newTitle}`;
         }
-        if (note !== undefined) {
-          blockLines.push(`**${verificationLabel}:** ${note}`);
+        if (note !== undefined || checkpoint !== undefined) {
+          const parts = [
+            ...(note !== undefined ? [note] : []),
+            ...(checkpoint !== undefined ? [`(checkpoint: ${checkpoint})`] : []),
+          ].join(" ");
+          blockLines.push(`**${verificationLabel}:** ${parts}`);
         }
         const trimmed = content.replace(/\s+$/u, "");
         return `${trimmed}${eol}${eol}---${eol}${eol}${blockLines.join(eol)}${eol}`;
@@ -429,7 +447,18 @@ export function planProgressUpdate(
   }
 
   const changes = buildChanges(root, edits);
-  return { root, phase, step, status, title: newTitle, dryRun, note, completedPhase, changes };
+  return {
+    root,
+    phase,
+    step,
+    status,
+    title: newTitle,
+    dryRun,
+    note,
+    ...(checkpoint !== undefined ? { checkpoint } : {}),
+    completedPhase,
+    changes,
+  };
 }
 
 export function applyProgressPlan(plan: ProgressUpdatePlan): ApplyResult {

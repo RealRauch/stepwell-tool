@@ -44,6 +44,7 @@ interface CliOptions {
   id: string | undefined;
   note: string | undefined;
   title: string | undefined;
+  checkpoint: string | undefined;
   phase: string | undefined;
   step: string | undefined;
   locale: string | undefined;
@@ -71,6 +72,8 @@ options:
   --id <id>          Item-ID (nur archive)
   --note <text>      Erledigt-/Verifikations-Notiz (archive, progress-update)
   --title <text>     Neuer Phasen-Titel (progress-update) — benennt Block-Heading um
+  --checkpoint <sha> Commit-SHA der Phase, 7–40 Hex (progress-update) — landet in der
+                     Verifikations-Zeile des Archiv-Blocks
   --locale <de|en>   Sprache generierter Texte (archive, progress-update; Default: Auto-Erkennung)
   --apply            Änderungen schreiben (archive, progress-update; Default: Dry-run-Vorschau)
   --json             Roh-Payloads statt Lesbarkeit
@@ -87,6 +90,7 @@ function parseArgs(argv: string[]): { command: string | undefined; options: CliO
     id: undefined,
     note: undefined,
     title: undefined,
+    checkpoint: undefined,
     phase: undefined,
     step: undefined,
     locale: undefined,
@@ -126,6 +130,9 @@ function parseArgs(argv: string[]): { command: string | undefined; options: CliO
         break;
       case "--title":
         options.title = next();
+        break;
+      case "--checkpoint":
+        options.checkpoint = next();
         break;
       case "--apply":
         options.apply = true;
@@ -371,6 +378,9 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
           dryRun: !options.apply,
           ...(options.title !== undefined && options.title !== "" ? { title: options.title } : {}),
           ...(options.note !== undefined ? { note: options.note } : {}),
+          ...(options.checkpoint !== undefined && options.checkpoint !== ""
+            ? { checkpoint: options.checkpoint }
+            : {}),
           ...(requireLocale(options) !== undefined ? { locale: requireLocale(options)! } : {}),
         });
         if (plan.dryRun) {
