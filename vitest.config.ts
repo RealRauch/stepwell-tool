@@ -19,6 +19,10 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["packages/*/tests/**/*.test.ts"],
+    // 10.3/H1: packaging.test.ts (npm run build → dist) und der Nested-Run des
+    // coverage-gate-Tests (der dieselbe Suite inkl. packaging ausführt) kollidieren
+    // sonst auf dist-Writes und npm-Prozessen — Spawn-lastige Tests serialisieren.
+    fileParallelism: false,
     coverage: {
       provider: "v8",
       include: ["packages/*/src/**/*.ts"],

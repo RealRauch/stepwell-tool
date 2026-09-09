@@ -92,5 +92,8 @@ describe("build pipeline (H1/1, 10.3)", () => {
     // relative .ts imports must be rewritten to .js in the emitted output
     const projectFilesJs = readFileSync(join(repoRoot, "packages", "core", "dist", "project-files.js"), "utf8");
     expect(projectFilesJs).not.toMatch(/from "[^"]+\.ts"/u);
+    const projectJs = readFileSync(join(repoRoot, "packages", "core", "dist", "project.js"), "utf8");
+    expect(projectJs).toContain('from "./backlog.js"');
+    expect(projectJs).not.toContain('from "./backlog.ts"');
   }, 150_000);
 });
