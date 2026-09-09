@@ -28,12 +28,6 @@
 
 ## 🟡 MITTEL
 
-### [ ] M4 — Tool-Surface-Guardrail: keine Guide-/Meta-Tools, Surface klein halten — 🟡
-- **Ort:** AGENTS.md (Architektur-Entscheidungen); Fundstelle: MrLesk/Backlog.md BACK-408 (vier Workflow-Guide-Tools zu einem Enum-Selector konsolidiert — „simpler for agents to discover"); Sync-Kandidat für den D4-Schlag.
-- **Problem:** Ohne Guardrail wachsen Meta-/Guide-/How-to-Tools in die Tool-Liste; Agenten entdecken die operative Oberfläche dann schlechter. Methoden-Wissen lebt bei uns bereits in PLAYBOOK.md + Resources — das soll so bleiben.
-- **Fix:** Entscheidung ergänzen: Tools nur für konkrete Struktur-/Lese-Operationen; Methoden-Anleitung bleibt in Dateien/Resources; jedes neue Tool begründet den Surface-Zuwachs (Alternativprüfung: Parameter an existierendes Tool oder Resource statt neues Tool).
-- **Abnahme:** Regel als Decision verankert; Tool-Liste enthält kein reines Doku-/Guide-Tool; Begründungspflicht im README (Contribution/Entwurfs-Abschnitt) erwähnt.
-
 ---
 
 ## 🟢 NIEDRIG
@@ -90,5 +84,6 @@
 - R7 — Coverage-Gate-Test rekurriert: Nested-Run startet sich selbst, Gate-Akzeptanz nicht beweisbar — erledigt (Fix `4c03eb8` — Nested-Config schließt die Gate-Datei selbst aus (`configDefaults.exclude` + Glob) → genau eine Nested-Ebene; Assertion auf die Ursache geschärft (Threshold-Meldung `does not meet "<glob>" threshold`, Format empirisch verifiziert); Gate-Test 128 s → 7 s, Gesamtsuite ~2 min → ~9 s; Beiwerk: neuer Fund R9 (Exit-Code umgebungsabhängig) als 🔴-Item, Step 10.7 folgt)
 - R8 — pack-smoke: unquoted Argumente bei shell:true brechen bei Leerzeichen im Windows-Temp-Pfad — erledigt (Fix `9976d3b` (Test-Commit `7f532e6`, ROT belegt) — pack-smoke quotet Shell-Argumente bei win32 (`quoteForShell`: doppelte Anführungszeichen + internes `\"`-Escaping); Abnahme per Test: Smoke mit `TMP/TEMP/TMPDIR` auf Leerzeichen-Verzeichnis läuft grün (npm pack + install gegen spaced paths))
 - H1 — Dist-Blocker: npm-Artefakt enthält TS-Source und läuft nicht aus node_modules (Build/dist-Schritt nötig) — erledigt (Fix in drei Teilen: 10.3 `028e7c5` (tsconfig.build je Workspace, rewriteRelativeImportExtensions, mcp gegen core-dist-Declarations) · 10.4 `2187585` (Manifests: files dist(+skills), exports/bin → dist, prepublishOnly build; vitest-Alias + typecheck-Paths als Konsequenz) · 10.5 `cb10583` (dynamischer Pack-Smoke: stdio-Handshake + CLI-Bin gegen das installierte Artefakt; dabei Fund: Direct-Run-Guard matchte nur cli.ts — installiertes Bin startete nicht, gefixt `cli\.(ts|js)$`); Abnahme erfüllt: installiertes dist-Artefakt startet (handshake OK, server stepwell), README-Install verifiziert, CHANGELOG-Eintrag)
+- M4 — Tool-Surface-Guardrail: keine Guide-/Meta-Tools, Surface klein halten — erledigt (Fix `e73ba2f` — Decision 17 in AGENTS.md verankert (nur Struktur-/Lese-Tools, keine Guide-/Meta-Tools, Alternativprüfung als Beweis-Format); README-Architektur-Abschnitt nennt die Begründungspflicht; Tool-Liste enthält kein reines Doku-/Guide-Tool (docs_review-Präzedenz L5: Entscheidung dokumentiert statt Tool))
 
 ---

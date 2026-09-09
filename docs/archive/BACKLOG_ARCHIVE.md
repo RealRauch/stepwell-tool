@@ -410,3 +410,12 @@
 - **Fix:** Build-/dist-Schritt ergänzen (tsc → `dist/` in beiden Workspaces), `exports`/`bin` auf `dist` umstellen, `files` entsprechend, CI-Job auf den dynamischen Smoke (Handshake + Bin gegen `dist`-Artefakt) erweitern; Variante diskutieren: `tsc` in prepublishOnly oder committed dist. Achtung Content-Gate: Dependency-/Manifest-Änderungen = Mittel (Freigabe je Vorkommnis).
 - **Abnahme:** `node node_modules/@method-docs/mcp/src/…`-Äquivalent (dist-Einstieg) startet aus Installation; pack-smoke mit dynamischem Handshake grün; README-Install verifiziert (`npx @method-docs/mcp`); `npm run typecheck && npm run test` grün.
 - **Erledigt:** Fix in drei Teilen: 10.3 `028e7c5` (tsconfig.build je Workspace, rewriteRelativeImportExtensions, mcp gegen core-dist-Declarations) · 10.4 `2187585` (Manifests: files dist(+skills), exports/bin → dist, prepublishOnly build; vitest-Alias + typecheck-Paths als Konsequenz) · 10.5 `cb10583` (dynamischer Pack-Smoke: stdio-Handshake + CLI-Bin gegen das installierte Artefakt; dabei Fund: Direct-Run-Guard matchte nur cli.ts — installiertes Bin startete nicht, gefixt `cli\.(ts|js)$`); Abnahme erfüllt: installiertes dist-Artefakt startet (handshake OK, server stepwell), README-Install verifiziert, CHANGELOG-Eintrag
+
+---
+
+### [x] M4 — Tool-Surface-Guardrail: keine Guide-/Meta-Tools, Surface klein halten — 🟡
+- **Ort:** AGENTS.md (Architektur-Entscheidungen); Fundstelle: MrLesk/Backlog.md BACK-408 (vier Workflow-Guide-Tools zu einem Enum-Selector konsolidiert — „simpler for agents to discover"); Sync-Kandidat für den D4-Schlag.
+- **Problem:** Ohne Guardrail wachsen Meta-/Guide-/How-to-Tools in die Tool-Liste; Agenten entdecken die operative Oberfläche dann schlechter. Methoden-Wissen lebt bei uns bereits in PLAYBOOK.md + Resources — das soll so bleiben.
+- **Fix:** Entscheidung ergänzen: Tools nur für konkrete Struktur-/Lese-Operationen; Methoden-Anleitung bleibt in Dateien/Resources; jedes neue Tool begründet den Surface-Zuwachs (Alternativprüfung: Parameter an existierendes Tool oder Resource statt neues Tool).
+- **Abnahme:** Regel als Decision verankert; Tool-Liste enthält kein reines Doku-/Guide-Tool; Begründungspflicht im README (Contribution/Entwurfs-Abschnitt) erwähnt.
+- **Erledigt:** Fix `e73ba2f` — Decision 17 in AGENTS.md verankert (nur Struktur-/Lese-Tools, keine Guide-/Meta-Tools, Alternativprüfung als Beweis-Format); README-Architektur-Abschnitt nennt die Begründungspflicht; Tool-Liste enthält kein reines Doku-/Guide-Tool (docs_review-Präzedenz L5: Entscheidung dokumentiert statt Tool)
