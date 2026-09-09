@@ -200,6 +200,24 @@ Versionsfeld `schema` (aktuell **1**). Feldkontrakt je Command:
 **Kontrakt-Regel (M6/Decision 16):** Breaking-Änderung an diesem Feldbestand ⇒
 `schema` hochzählen (in Lockstep mit dem npm-MAJOR).
 
+### Releases (Versionspolitik, L6)
+
+- **Format:** [`CHANGELOG.md`](CHANGELOG.md) nach Keep a Changelog 1.1.0, `[Unreleased]`
+  oben, kuratierte nutzerrelevante Aggregate. **Redundanz-Regel:** kein Git-Log-Dump,
+  keine Duplikation von Erledigt-Index/BACKLOG_ARCHIVE — Item-/Commit-Historie bleibt
+  in den STEPWELL-Dateien. Datumsformat `JJMMDD/HHMM` (Decision 11) statt ISO —
+  dokumentierte Abweichung.
+- **Lockstep-SemVer (Decision 16):** Root, `@method-docs/core` und `@method-docs/mcp`
+  tragen immer dieselbe Version. MAJOR = Breaking im Tool-/JSON-/Resource-Kontrakt
+  (immer zusammen mit dem `schema`-Feld), MINOR = neue Tools/Features, PATCH = Fixes.
+  0.x bis zum bestandenen Feldtest; `1.0.0` = Freigabe-Moment.
+- **Publish-Checkliste:** (1) `Unreleased` im CHANGELOG kuratieren, (2) Version in
+  allen **drei** `package.json` bumpen (Lockstep), (3) CHANGELOG-Sektion `[<version>] - <JJMMDD/HHMM>`,
+  (4) Git-Tag `v<version>`, (5) **nur** `@method-docs/mcp` publizieren
+  (`npm publish --otp`, dist-tag `latest`; core wird als Abhängigkeit mit verteilt),
+  (6) CI-Job `pack-smoke` muss grün sein — aktueller Stand: statische Checks, der
+  dynamische Teil ist an den Dist-Blocker H1 (Build/dist-Schritt) gekoppelt.
+
 ```bash
 # Status-Aggregat
 node packages/mcp/src/cli.ts status --root <projekt> [--json]
