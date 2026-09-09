@@ -303,17 +303,17 @@ describe("runCli — usage and errors", () => {
 
 describe("runCli — --json schema contract (M6, 9.6)", () => {
   it("stamps schema: 1 on every JSON payload", async () => {
-    const cases: string[][] = [
-      ["status", "--root", projectA, "--json"],
-      ["backlog", "--root", projectA, "--json"],
-      ["progress", "--root", projectA, "--json"],
-      ["validate", "--root", projectA, "--json"],
-      ["validate", "--root", projectDrift, "--json"],
+    const cases: Array<{ argv: string[]; exitCode: number }> = [
+      { argv: ["status", "--root", projectA, "--json"], exitCode: 0 },
+      { argv: ["backlog", "--root", projectA, "--json"], exitCode: 0 },
+      { argv: ["progress", "--root", projectA, "--json"], exitCode: 0 },
+      { argv: ["validate", "--root", projectA, "--json"], exitCode: 0 },
+      { argv: ["validate", "--root", projectDrift, "--json"], exitCode: 1 },
     ];
-    for (const argv of cases) {
+    for (const { argv, exitCode } of cases) {
       const io = makeIo();
       const code = await runCli(argv, io.io);
-      expect(code, argv.join(" ")).toBe(0);
+      expect(code, argv.join(" ")).toBe(exitCode);
       const parsed = JSON.parse(io.stdout) as { schema?: number };
       expect(parsed.schema, argv.join(" ")).toBe(1);
     }
