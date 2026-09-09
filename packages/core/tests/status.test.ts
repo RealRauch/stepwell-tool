@@ -145,7 +145,7 @@ describe("nextStep cascade (L10, option C)", () => {
 
     const status = docsStatus(dir);
 
-    expect(status.nextStep).toEqual({ step: "2.2", name: "U21 Fehlertexte", status: "⬜" });
+    expect(status.nextStep).toEqual({ step: "2.1", name: "Strings-Modul", status: "⬜" });
   });
 
   it("prefers the running phase over a later purely planned phase", () => {
@@ -153,7 +153,7 @@ describe("nextStep cascade (L10, option C)", () => {
     applyPhasePlan(planPhase(dir, "Phase 3 — Next", [
       { step: "3.1", name: "Erster Schritt" },
       { step: "3.2", name: "Zweiter Schritt" },
-    ]));
+    ], { dryRun: false }));
 
     const status = docsStatus(dir);
 
@@ -168,7 +168,7 @@ describe("nextStep cascade (L10, option C)", () => {
         .replace("| 2.2 | U21 Fehlertexte | ⬜ |", "| 2.2 | U21 Fehlertexte | ✅ |")
         .replace("| 2.3 | U22 Ladezustände | ⬜ |", "| 2.3 | U22 Ladezustände | ✅ |"),
     );
-    applyPhasePlan(planPhase(dir, "Phase 3 — Next", [{ step: "3.1", name: "Erster Schritt" }]));
+    applyPhasePlan(planPhase(dir, "Phase 3 — Next", [{ step: "3.1", name: "Erster Schritt" }], { dryRun: false }));
 
     const status = docsStatus(dir);
 
