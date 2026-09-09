@@ -48,12 +48,6 @@
 
 ## 🔵 TEST-LÜCKEN
 
-### [ ] T5 — BOM-Toleranz des Parsers (UTF-8-BOM in Datei-Köpfen) — 🔵
-- **Ort:** `packages/core` (Datei-Einlesen/Parser); Fundstelle: eigene Prüfung 09/2026 (`rg feff|bom packages` = leer) — Windows-Editoren/PowerShell (`Out-File`, Notepad) schreiben gern UTF-8-BOM.
-- **Problem:** Der zeilenbasierte Parser liest Heading/Kopfregeln ab Zeile 1; ein BOM vor `# BACKLOG.md` bzw. vor der ersten Sektion kann Kopfregel-/Sektionserkennung brechen oder als ungeklärte Drift durchrutschen — exakt die Zielklasse des fehlertoleranten Parsers, aber ungetestet.
-- **Fix:** BOM am Dateianfang (U+FEFF) deterministisch strippen — stille Toleranz, dokumentiert, keine Warnung; Test-first: Fixture mit BOM, Parser-Positivpfad + Validate-Lauf dagegen.
-- **Abnahme:** BOM-Datei parst identisch zur BOM-losen Variante (Assert auf Ergebnis-Gleichheit); Toleranz in README/Format-Doku erwähnt; `npm run typecheck && npm run test` grün.
-
 ---
 
 ## ✅ Erledigt-Index
@@ -95,5 +89,6 @@
 - L2 — Checkpoint-SHA je Phase in PROGRESS verankern — erledigt (Fix `e3ff79f` (Test-Commit `af48a97`, 4× ROT belegt) — progress_update checkpoint-Parameter (7–40 Hex validiert, lowercase) erscheint bei Phasen-Abschluss verbatim in der **Verifikation:**-Zeile des Archiv-Blocks — allein (`(checkpoint: <sha>)`) oder kombiniert mit note; ohne Parameter unverändertes Verhalten; MCP-Schema + CLI `--checkpoint`; README/Fixtures-Spec/SKILL.md nachgezogen; Apply-Roundtrip per Test)
 - L4 — Doc-Sync-Reminder bei Phasen-Abschluss — erledigt (Fix `a093a1e` (Test-Commit `830def8`, 2× ROT belegt) — statischer Reminder „Doku-Sync prüfen: AGENTS-Kickoff, README, PLAYBOOK-Kopien" bei Phasen-Abschluss: ProgressUpdatePlan.docSyncReminder (nur bei completedPhase, sonst undefined) + Apply-Verifikations-Messages; übrige Antworten unverändert (per Test); README-Tool-Zeile nachgezogen)
 - L7 — docs_status um Next-Action-Empfehlung ergänzen — erledigt (Fix `ab2af81` (Test-Commit `f7b8233`, 4× ROT belegt) — DocsStatus.nextStep (erste ⬜-Zeile einer laufenden Phase in Tabellen-Ordnung) + nextPriority (erste nicht-leere Sektion 🔴→🔵), deterministisch über project-a/-b getestet; CLI `status` zeigt beide Zeilen; JSON-Contract additiv erweitert (schema bleibt 1, Snapshot-Test aktualisiert); ohne laufende Phase/offene Items → undefined (auch im M5-Zero-State))
+- T5 — BOM-Toleranz des Parsers (UTF-8-BOM in Datei-Köpfen) — erledigt (Fix `f6921f1` (Test-Commit `9b96c4f`, ROT belegt) — stripBom (U+FEFF am Dateianfang) in parseBacklog/parseProgress (Archive delegieren) — stille Toleranz, keine Warnung; Fixture project-f-bom (project-a-Zwilling mit BOM in allen vier Dateien): Parsing + docsValidate ergebnisgleich zum BOM-losen Original; ROT-Befund: BOM vor der ersten Sektion brach die Sektionserkennung (Layout-abhängige Zufalls-Toleranz beseitigt); README + Fixtures-Spec dokumentiert)
 
 ---

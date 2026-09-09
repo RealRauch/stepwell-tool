@@ -82,5 +82,5 @@
 | 9.10 | Checkpoint-SHA je Phase (L2) | ✅ |
 | 9.11 | Doc-Sync-Reminder bei Phasen-Abschluss (L4) | ✅ |
 | 9.12 | Next-Action in docs_status (L7) | ✅ |
-| 9.13 | BOM-Toleranz des Parsers (T5) | ⬜ |
+| 9.13 | BOM-Toleranz des Parsers (T5) | ✅ |
 | 9.14 | docs_review-Alternativprüfung (L5) | ⬜ |
