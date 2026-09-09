@@ -1,8 +1,18 @@
+import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
+import { applyPhasePlan, planPhase } from "../src/mutations.ts";
 import { docsStatus } from "../src/status.ts";
 
 const fixtures = join(import.meta.dirname, "fixtures");
+
+const tempDirs: string[] = [];
+afterEach(() => {
+  for (const dir of tempDirs.splice(0)) {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
 
 describe("docsStatus — project-a (clean)", () => {
   const status = docsStatus(join(fixtures, "project-a"));
@@ -113,5 +123,55 @@ describe("docsStatus — project-empty (M5)", () => {
     expect(status.warnings).toHaveLength(1);
     expect(status.warnings[0]!.code).toBe("PROJECT_NOT_INITIALIZED");
     expect(status.warnings[0]!.message).toMatch(/PLAYBOOK/);
+  });
+});
+
+describe("nextStep cascade (L10, option C)", () => {
+  function tempProject(): string {
+    const dir = mkdtempSync(join(tmpdir(), "method-docs-status-"));
+    tempDirs.push(dir);
+    cpSync(join(fixtures, "project-a"), dir, { recursive: true });
+    return dir;
+  }
+
+  function editTable(dir: string, modify: (content: string) => string): void {
+    const progressPath = join(dir, "PROGRESS.md");
+    writeFileSync(progressPath, modify(readFileSync(progressPath, "utf8")), "utf8");
+  }
+
+  it("falls back to the first open row of a purely planned phase", () => {
+    const dir = tempProject();
+    editTable(dir, (c) => c.replace("| 2.1 | Strings-Modul | 🔄 |", "| 2.1 | Strings-Modul | ⬜ |"));
+
+    const status = docsStatus(dir);
+
+    expect(status.nextStep).toEqual({ step: "2.2", name: "U21 Fehlertexte", status: "⬜" });
+  });
+
+  it("prefers the running phase over a later purely planned phase", () => {
+    const dir = tempProject();
+    applyPhasePlan(planPhase(dir, "Phase 3 — Next", [
+      { step: "3.1", name: "Erster Schritt" },
+      { step: "3.2", name: "Zweiter Schritt" },
+    ]));
+
+    const status = docsStatus(dir);
+
+    expect(status.nextStep).toEqual({ step: "2.2", name: "U21 Fehlertexte", status: "⬜" });
+  });
+
+  it("falls through to a later planned phase when the earlier one has no open rows", () => {
+    const dir = tempProject();
+    editTable(dir, (c) =>
+      c
+        .replace("| 2.1 | Strings-Modul | 🔄 |", "| 2.1 | Strings-Modul | ✅ |")
+        .replace("| 2.2 | U21 Fehlertexte | ⬜ |", "| 2.2 | U21 Fehlertexte | ✅ |")
+        .replace("| 2.3 | U22 Ladezustände | ⬜ |", "| 2.3 | U22 Ladezustände | ✅ |"),
+    );
+    applyPhasePlan(planPhase(dir, "Phase 3 — Next", [{ step: "3.1", name: "Erster Schritt" }]));
+
+    const status = docsStatus(dir);
+
+    expect(status.nextStep).toEqual({ step: "3.1", name: "Erster Schritt", status: "⬜" });
   });
 });
