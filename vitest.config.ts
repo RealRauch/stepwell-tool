@@ -1,4 +1,8 @@
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
+
+const repoRoot = dirname(fileURLToPath(import.meta.url));
 
 /**
  * Coverage-Gate (T6 — Phase 9.1).
@@ -16,6 +20,13 @@ import { defineConfig } from "vitest/config";
  * Gate wird nur aktiv, wenn Vitest mit `--coverage` läuft — das tut die CI bereits.
  */
 export default defineConfig({
+  resolve: {
+    // 10.4/H1: Die Workspace-Exports zeigen auf dist — Tests müssen aber immer
+    // gegen die AKTUELLE Quelle laufen (dist könnte stale sein), daher Alias.
+    alias: {
+      "@method-docs/core": resolve(repoRoot, "packages/core/src/index.ts"),
+    },
+  },
   test: {
     environment: "node",
     include: ["packages/*/tests/**/*.test.ts"],
