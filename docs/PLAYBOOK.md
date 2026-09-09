@@ -20,6 +20,7 @@ Die Reihenfolge ist immer: **Planen → Paketieren → Implementieren.**
 5. **Content-Gates (Risiko-Matrix, bindend):** Die Freigabe wirkt zeitlich (vor Phasenstart) **und** inhaltlich je Dateiklasse: **Niedrig** — Source-/Test-Edits im Step-Scope → autonom; **Mittel** — Dependency-Manifeste, Dockerfiles → anhalten, Freigabe je Vorkommnis; **Hoch** — `.env`, CI-Workflows, Löschen existierender Tests, Schema-Migrationen → explizites menschliches Gate. Jeder Fall ist in einem Satz entscheidbar: welche Dateiklasse, welche Stufe.
 6. **Inline-Fix-Lane (einzige Ausnahme von der Step-Grenze, bindend):** Ein während eines freigegebenen, laufenden Steps entdeckter Bug darf sofort gefixt werden, wenn er (a) im Code-Scope des Steps liegt, (b) klein ist (Faustregel ≤ ~10 Zeilen; keine API-/Schema-/Design-Entscheidung, keine neue Abhängigkeit) und (c) ausschließlich die Dateiklasse „Niedrig" berührt. **Pflicht danach:** retro als Item (Serie `F`) ins `BACKLOG.md` und sofortige Archivierung mit Commit-Hash — die Kette Fund → Item → Erledigt-Index bleibt lückenlos. Alles andere bleibt reguläres offenes Item.
 7. **Implementieren:** Erst danach wird implementiert — Step für Step nach den Regeln unten (Test-First, Verifikation, Commit).
+8. **Session-Einstieg (bindend):** Jede Session startet in dieser Reihenfolge: (1) Diese Datei und `LESSONS.md` lesen; (2) `PROGRESS.md` — den nächsten offenen Step der laufenden Phase identifizieren und als 🔄 markieren; (3) `BACKLOG.md` für offene Items und Blocker sichten. Erst danach folgen Schreiboperationen an Code oder Doku.
 
 ## 1. Sequenzielles Vorgehen
 
@@ -50,6 +51,7 @@ Die Reihenfolge ist immer: **Planen → Paketieren → Implementieren.**
 Item-IDs folgen dem Muster `<Serienbuchstabe><Nummer>` (z. B. `H1`, `R4`, `U21`):
 
 - **Serienbuchstabe:** `K`/`H`/`M`/`L` = Prioritäts-Serien (🔴/🟠/🟡/🟢); weitere Buchstaben = thematische Serien (z. B. `T` = Test-Lücken, `R`/`U` = Review-/Themen-Reihen).
+- **🔵 = Test-Lücken:** Die Priorität 🔵 kennzeichnet Test-Lücken als Item-Klasse; solche Items tragen thematische Serien-IDs (z. B. `T5`) und erhalten **keine** Auto-Nummer aus einer Prioritäts-Serie — die ID wird explizit vergeben.
 - **Nummer:** innerhalb der Serie fortlaufend, aufsteigend, **nie wiederverwendet** — auch nicht nach Archivierung (Append-only-Historie verträgt keine ID-Kollisionen).
 - **Eindeutigkeit:** IDs sind projektweit eindeutig über offene Items, Erledigt-Index und Archive — case-sensitiv, exakter Vergleich.
 - **Getrennte Namespaces:** Item-IDs (`BACKLOG.md`) und Step-Nummern in der Fortschrittstabelle (`<Phase>.<Nr.>`, z. B. `2.1`) haben nichts miteinander zu tun.
@@ -103,6 +105,7 @@ Die Einführung von STEPWELL in einem Projekt **ohne** die vier Dateien (Gray-/B
 - Damit steht am Ende jedes Steps eine reproduzierbare Test-Suite, die die Umsetzung belegt.
 - Ausnahmen nur, wenn Tests objektiv nicht sinnvoll sind (z. B. reine Konfigurations-/Strukturdateien); der Grund wird im Commit vermerkt.
 - Neue Tests gehören ins zentrale Testverzeichnis und werden von der Standard-Suite erfasst.
+- **Verifikation als ausführbarer Plan (Konvention):** Die Verifikations-Zeile/-Liste eines Steps (Step-Notiz, Commit-Message bzw. `**Verifikation:**`-Zeile am Archiv-Block) nennt mindestens **einen nachlaufbaren Befehl** und das **erwartete Ergebnis** (z. B. `npm run typecheck && npm run test` — beide grün). Bewusst ohne Validate-Warnung — reine Konvention, kein Gate.
 
 ## 7. Status-Legende
 
