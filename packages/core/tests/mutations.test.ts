@@ -854,3 +854,46 @@ describe("progress_update checkpoint (L2, 9.10)", () => {
     expect(() => planProgressUpdate(dir, "Phase 2", "2.1", "✅", { checkpoint: "g123456" })).toThrow(/checkpoint/);
   });
 });
+
+describe("doc-sync reminder on phase completion (L4, 9.11)", () => {
+  function tempPhaseReady(): string {
+    const dir = tempCopy("project-a");
+    const progressPath = join(dir, "PROGRESS.md");
+    writeFileSync(
+      progressPath,
+      readFileSync(progressPath, "utf8")
+        .replace("| 2.0 | Auth-Entscheidung | ⛔ |", "| 2.0 | Auth-Entscheidung | ✅ |")
+        .replace("| 2.2 | U21 Fehlertexte | ⬜ |", "| 2.2 | U21 Fehlertexte | ✅ |")
+        .replace("| 2.3 | U22 Ladezustände | ⬜ |", "| 2.3 | U22 Ladezustände | ✅ |"),
+      "utf8",
+    );
+    return dir;
+  }
+
+  it("phase completion plan carries the static reminder", () => {
+    const dir = tempPhaseReady();
+    const plan = planProgressUpdate(dir, "Phase 2", "2.1", "✅", { checkpoint: "abc1234" });
+
+    expect(plan.completedPhase).toBe(true);
+    expect(plan.docSyncReminder).toContain("Doku-Sync prüfen");
+    expect(plan.docSyncReminder).toContain("AGENTS-Kickoff");
+    expect(plan.docSyncReminder).toContain("README");
+    expect(plan.docSyncReminder).toContain("PLAYBOOK-Kopien");
+  });
+
+  it("non-completion answers stay unchanged", () => {
+    const dir = tempCopy("project-a");
+    const plan = planProgressUpdate(dir, "Phase 2", "2.2", "🔄");
+    expect(plan.completedPhase).toBe(false);
+    expect(plan.docSyncReminder).toBeUndefined();
+  });
+
+  it("apply verification messages include the reminder", () => {
+    const dir = tempPhaseReady();
+    const plan = planProgressUpdate(dir, "Phase 2", "2.1", "✅", { dryRun: false });
+    const result = applyProgressPlan(plan);
+
+    expect(result.verification.ok).toBe(true);
+    expect(result.verification.messages.some((m) => m.includes("Doku-Sync prüfen"))).toBe(true);
+  });
+});
