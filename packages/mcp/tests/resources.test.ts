@@ -25,6 +25,23 @@ describe("resource templates (2.4)", () => {
     }
   });
 
+  it("lists the four concrete template resources for discovery (L9)", async () => {
+    const c = await connect();
+    try {
+      const { resources } = await c.client.listResources();
+      const templates = resources.filter((r) => r.uri.startsWith("methoddocs://templates/"));
+      expect(templates.map((r) => r.uri).sort()).toEqual([
+        "methoddocs://templates/backlog",
+        "methoddocs://templates/backlog-archive",
+        "methoddocs://templates/progress",
+        "methoddocs://templates/progress-archive",
+      ]);
+      expect(templates.every((r) => r.mimeType === "text/markdown")).toBe(true);
+    } finally {
+      await c.close();
+    }
+  });
+
   it("reads BACKLOG.md verbatim through the template", async () => {
     const c = await connect();
     try {
