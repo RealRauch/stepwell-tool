@@ -1,6 +1,12 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { allSynonyms, escapeRegExp, getFieldByRole } from "./profile.ts";
+import {
+  PROGRESS_PATH,
+  REQUIRED_FILES,
+  missingProjectFiles,
+  ProjectNotInitializedError,
+} from "./project-files.ts";
 import type {
   ParseResult,
   PhaseBlock,
@@ -183,11 +189,15 @@ export function parseProgress(content: string, file = "PROGRESS.md"): ParseResul
 }
 
 export function readProgress(root: string): ParseResult<Progress> {
-  const path = join(root, "PROGRESS.md");
+  const path = join(root, PROGRESS_PATH);
   let content: string;
   try {
     content = readFileSync(path, "utf8");
   } catch {
+    const missing = missingProjectFiles(root);
+    if (missing.length === REQUIRED_FILES.length) {
+      throw new ProjectNotInitializedError(root, missing);
+    }
     throw new Error(`missing required file: ${path}`);
   }
   return parseProgress(content, path);

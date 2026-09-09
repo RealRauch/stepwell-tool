@@ -1,6 +1,7 @@
+import { rmSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { callTool, connect, payload, projectA, projectDrift } from "./helper.ts";
+import { callTool, connect, payload, projectA, projectDrift, tempProject } from "./helper.ts";
 
 describe("tool progress_list (2.3)", () => {
   it("lists all table rows", async () => {
@@ -134,10 +135,12 @@ describe("tool docs_validate (2.3)", () => {
     }
   });
 
-  it("returns isError for missing files", async () => {
+  it("returns isError for missing files (partial inventory)", async () => {
+    const dir = tempProject("project-a");
+    rmSync(join(dir, "PROGRESS.md"));
     const c = await connect();
     try {
-      const result = await callTool(c, "docs_validate", { root: join(projectA, "docs") });
+      const result = await callTool(c, "docs_validate", { root: dir });
       expect(result.isError).toBe(true);
       expect(result.content[0]?.text).toContain("missing required file");
     } finally {

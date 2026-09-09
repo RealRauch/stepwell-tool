@@ -3,6 +3,11 @@ export { parseProgress, readProgress, scopeSteps } from "./progress.ts";
 export { parseBacklogArchive, parseProgressArchive } from "./archive.ts";
 export { backlogShow, loadProject } from "./project.ts";
 export type { ProjectDocs } from "./project.ts";
+export {
+  ProjectNotInitializedError,
+  REQUIRED_FILES,
+  missingProjectFiles,
+} from "./project-files.ts";
 export { lineDiff } from "./diff.ts";
 export {
   applyArchivePlan,

@@ -1,6 +1,12 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { allSynonyms, escapeRegExp, synonymPattern } from "./profile.ts";
+import {
+  BACKLOG_PATH,
+  REQUIRED_FILES,
+  missingProjectFiles,
+  ProjectNotInitializedError,
+} from "./project-files.ts";
 import type {
   Backlog,
   BacklogItem,
@@ -339,11 +345,15 @@ export function parseBacklog(content: string, file = "BACKLOG.md"): ParseResult<
 }
 
 export function readBacklog(root: string): ParseResult<Backlog> {
-  const path = join(root, "BACKLOG.md");
+  const path = join(root, BACKLOG_PATH);
   let content: string;
   try {
     content = readFileSync(path, "utf8");
   } catch {
+    const missing = missingProjectFiles(root);
+    if (missing.length === REQUIRED_FILES.length) {
+      throw new ProjectNotInitializedError(root, missing);
+    }
     throw new Error(`missing required file: ${path}`);
   }
   return parseBacklog(content, path);

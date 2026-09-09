@@ -18,6 +18,7 @@ import {
   planBacklogUpdate,
   planPhase,
   planProgressUpdate,
+  ProjectNotInitializedError,
   readBacklog,
   readProgress,
   type BacklogItem,
@@ -40,6 +41,19 @@ async function asResult(fn: () => unknown): Promise<ToolResult> {
   try {
     return textResult(fn());
   } catch (err) {
+    if (err instanceof ProjectNotInitializedError) {
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify(
+            { code: err.code, message: err.message, missing: err.missing },
+            null,
+            2,
+          ),
+        }],
+        isError: true,
+      };
+    }
     return errorResult(err);
   }
 }
