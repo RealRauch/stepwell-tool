@@ -26,8 +26,11 @@ const fail = (message) => {
   process.exit(1);
 };
 const shell = process.platform === "win32";
+// R8: bei shell:true (win32) verkettet node die Argumente unquoted — Pfade mit
+// Leerzeichen brechen. Explizit doppelte Anführungszeichen setzen (cmd.exe).
+const quoteForShell = (arg) => (shell && /[\s"]/u.test(arg) ? `"${arg.replaceAll('"', '\\"')}"` : arg);
 const run = (cmd, args, opts = {}) => {
-  const r = spawnSync(cmd, args, { stdio: "pipe", encoding: "utf8", shell, ...opts });
+  const r = spawnSync(cmd, args.map(quoteForShell), { stdio: "pipe", encoding: "utf8", shell, ...opts });
   if (r.error) fail(`${cmd} ${args.join(" ")} spawn error: ${r.error}`);
   if (r.status !== 0) fail(`${cmd} ${args.join(" ")} exited ${r.status}\n${r.stderr}`);
   return r.stdout;
