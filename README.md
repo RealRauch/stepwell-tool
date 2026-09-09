@@ -319,6 +319,12 @@ in [`docs/PLAYBOOK.md`](docs/PLAYBOOK.md); die Review-Checkliste in
 
 ## Architektur
 
+**Entwurfs-Regel (M4/Decision 17):** Die Tool-Oberfläche bleibt klein — Tools nur für
+konkrete Struktur-/Lese-Operationen, keine Guide-/Meta-Tools; Methoden-Wissen lebt in
+PLAYBOOK.md, SKILL.md und den Resources. Jedes neue Tool (oder neue Parameter-Fläche)
+begründet den Surface-Zuwachs per **Alternativprüfung** (Parameter an ein existierendes
+Tool/Resource statt neues Tool) — dokumentiert wie bei der docs_review-Entscheidung (L5).
+
 ```
 packages/
 ├── core/                 @method-docs/core — Zero-Dependencies, keine MCP-Abhängigkeit
