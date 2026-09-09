@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { parseBacklog, readBacklog } from "../src/backlog.ts";
+import { ProjectNotInitializedError } from "../src/project-files.ts";
 import type { Backlog, BacklogItem, ParseResult } from "../src/types.ts";
 
 const fixtures = join(import.meta.dirname, "fixtures");
@@ -275,5 +276,18 @@ describe("readBacklog — file loading", () => {
 
   it("hard-fails when BACKLOG.md is missing", () => {
     expect(() => readBacklog(join(fixtures, "does-not-exist"))).toThrow(/BACKLOG\.md/);
+  });
+
+  it("throws ProjectNotInitializedError when all four files are missing (M5)", () => {
+    try {
+      readBacklog(join(fixtures, "project-empty"));
+      expect.unreachable("readBacklog must throw for an uninitialized root");
+    } catch (err) {
+      expect(err).toBeInstanceOf(ProjectNotInitializedError);
+      const e = err as InstanceType<typeof ProjectNotInitializedError>;
+      expect(e.code).toBe("PROJECT_NOT_INITIALIZED");
+      expect(e.missing).toHaveLength(4);
+      expect(e.message).toMatch(/PLAYBOOK/);
+    }
   });
 });

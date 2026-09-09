@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { parseProgress, readProgress, scopeSteps } from "../src/progress.ts";
+import { ProjectNotInitializedError } from "../src/project-files.ts";
 import type { ParseResult, Progress } from "../src/types.ts";
 
 const fixtures = join(import.meta.dirname, "fixtures");
@@ -111,6 +112,18 @@ describe("readProgress — file loading", () => {
 
   it("hard-fails when PROGRESS.md is missing", () => {
     expect(() => readProgress(join(fixtures, "does-not-exist"))).toThrow(/PROGRESS\.md/);
+  });
+
+  it("throws ProjectNotInitializedError when all four files are missing (M5)", () => {
+    try {
+      readProgress(join(fixtures, "project-empty"));
+      expect.unreachable("readProgress must throw for an uninitialized root");
+    } catch (err) {
+      expect(err).toBeInstanceOf(ProjectNotInitializedError);
+      const e = err as InstanceType<typeof ProjectNotInitializedError>;
+      expect(e.code).toBe("PROJECT_NOT_INITIALIZED");
+      expect(e.missing).toHaveLength(4);
+    }
   });
 });
 
