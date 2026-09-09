@@ -15,6 +15,7 @@ describe("resource templates (2.4)", () => {
     try {
       const { resourceTemplates } = await c.client.listResourceTemplates();
       expect(resourceTemplates.map((t) => t.uriTemplate).sort()).toEqual([
+        "methoddocs://templates/{kind}",
         "methoddocs://{root}/archive/{kind}",
         "methoddocs://{root}/backlog",
         "methoddocs://{root}/progress",
