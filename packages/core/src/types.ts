@@ -119,6 +119,8 @@ export interface ProgressUpdatePlan {
   note: string | undefined;
   checkpoint?: string;
   completedPhase: boolean;
+  /** Statischer Erinnerungs-Baustein bei Phasen-Abschluss (L4) — reiner Text. */
+  docSyncReminder?: string;
   changes: PlanChange[];
 }
 

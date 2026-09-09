@@ -52,6 +52,9 @@ function normalizeNote(note: string | undefined): string | undefined {
 
 const CHECKPOINT_RE = /^[0-9a-f]{7,40}$/iu;
 
+/** Statischer Textbaustein (L4): Erinnerung an den Doku-Sync nach Phasen-Abschluss. */
+export const DOC_SYNC_REMINDER = "Doku-Sync prüfen: AGENTS-Kickoff, README, PLAYBOOK-Kopien";
+
 function normalizeCheckpoint(checkpoint: string | undefined): string | undefined {
   const trimmed = normalizeNote(checkpoint);
   if (trimmed === undefined) return undefined;
@@ -457,6 +460,7 @@ export function planProgressUpdate(
     note,
     ...(checkpoint !== undefined ? { checkpoint } : {}),
     completedPhase,
+    ...(completedPhase ? { docSyncReminder: DOC_SYNC_REMINDER } : {}),
     changes,
   };
 }
@@ -495,6 +499,7 @@ export function applyProgressPlan(plan: ProgressUpdatePlan): ApplyResult {
         ? "phase block moved to PROGRESS_ARCHIVE"
         : "phase block move FAILED (missing in archive or still in PROGRESS)",
     );
+    messages.push(DOC_SYNC_REMINDER);
   }
 
   const findings = docsValidate(plan.root)
