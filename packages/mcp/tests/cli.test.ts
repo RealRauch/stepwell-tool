@@ -300,3 +300,46 @@ describe("runCli — usage and errors", () => {
     expect(io.stderr).toContain("missing required file");
   });
 });
+
+describe("runCli — --json schema contract (M6, 9.6)", () => {
+  it("stamps schema: 1 on every JSON payload", async () => {
+    const cases: string[][] = [
+      ["status", "--root", projectA, "--json"],
+      ["backlog", "--root", projectA, "--json"],
+      ["progress", "--root", projectA, "--json"],
+      ["validate", "--root", projectA, "--json"],
+      ["validate", "--root", projectDrift, "--json"],
+    ];
+    for (const argv of cases) {
+      const io = makeIo();
+      const code = await runCli(argv, io.io);
+      expect(code, argv.join(" ")).toBe(0);
+      const parsed = JSON.parse(io.stdout) as { schema?: number };
+      expect(parsed.schema, argv.join(" ")).toBe(1);
+    }
+  });
+
+  it("stamps schema on archive and progress-update payloads (dry-run and apply)", async () => {
+    const dir = tempProject("project-a");
+
+    const dry = makeIo();
+    await runCli(["archive", "--root", dir, "--id", "H1", "--note", "test", "--json"], dry.io);
+    expect((JSON.parse(dry.stdout) as { schema?: number }).schema).toBe(1);
+
+    const applied = makeIo();
+    await runCli(["archive", "--root", dir, "--id", "H1", "--note", "test", "--apply", "--json"], applied.io);
+    expect((JSON.parse(applied.stdout) as { schema?: number }).schema).toBe(1);
+
+    const plan = makeIo();
+    await runCli(["progress-update", "--root", dir, "--phase", "Phase 2", "--step", "2.2", "--status", "done", "--json"], plan.io);
+    expect((JSON.parse(plan.stdout) as { schema?: number }).schema).toBe(1);
+  });
+
+  it("keeps the top-level key contract per command (schema + documented fields)", async () => {
+    const io = makeIo();
+    await runCli(["status", "--root", projectA, "--json"], io.io);
+    expect(Object.keys(JSON.parse(io.stdout) as object).sort()).toEqual([
+      "doneQuote", "openByPriority", "openTotal", "runningPhases", "runningSteps", "schema", "warnings",
+    ]);
+  });
+});
