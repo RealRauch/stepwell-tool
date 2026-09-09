@@ -102,7 +102,10 @@ Die Test-Suite deckt denselben Protokoll-Pfad automatisiert ab
 
 ### Tools
 
-Alle Tools nehmen `root` (absoluter Pfad zum Projekt-Root) **pro Call**.
+Alle Tools nehmen `root` (absoluter Pfad zum Projekt-Root) **pro Call**. `docs_validate`,
+`progress_update` und `archive_item` liefern ihre Daten **zusätzlich** als
+`structuredContent` (M3/9.7) — der Text-Payload bleibt unverändert menschenlesbar;
+Fehlerantworten (inkl. `PROJECT_NOT_INITIALIZED`) tragen kein `structuredContent`.
 Fehler (fehlende Pflichtdatei, unbekannte ID/Phase) liefern `isError: true`
 mit klarer Meldung — der Server stürzt nicht ab.
 

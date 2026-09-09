@@ -32,29 +32,49 @@ function textResult(value: unknown): ToolResult {
   return { content: [{ type: "text", text: JSON.stringify(value, null, 2) }] };
 }
 
+/** Text-Payload + dieselben Daten zusätzlich maschinenlesbar als structuredContent (M3/9.7). */
+function structuredResult(value: Record<string, unknown>): ToolResult {
+  return {
+    content: [{ type: "text", text: JSON.stringify(value, null, 2) }],
+    structuredContent: value,
+  };
+}
+
 function errorResult(err: unknown): ToolResult {
   const message = err instanceof Error ? err.message : String(err);
   return { content: [{ type: "text", text: message }], isError: true };
+}
+
+function errorOrThrow(err: unknown): ToolResult {
+  if (err instanceof ProjectNotInitializedError) {
+    return {
+      content: [{
+        type: "text",
+        text: JSON.stringify(
+          { code: err.code, message: err.message, missing: err.missing },
+          null,
+          2,
+        ),
+      }],
+      isError: true,
+    };
+  }
+  return errorResult(err);
 }
 
 async function asResult(fn: () => unknown): Promise<ToolResult> {
   try {
     return textResult(fn());
   } catch (err) {
-    if (err instanceof ProjectNotInitializedError) {
-      return {
-        content: [{
-          type: "text",
-          text: JSON.stringify(
-            { code: err.code, message: err.message, missing: err.missing },
-            null,
-            2,
-          ),
-        }],
-        isError: true,
-      };
-    }
-    return errorResult(err);
+    return errorOrThrow(err);
+  }
+}
+
+async function asStructuredResult(fn: () => unknown): Promise<ToolResult> {
+  try {
+    return structuredResult(fn() as Record<string, unknown>);
+  } catch (err) {
+    return errorOrThrow(err);
   }
 }
 
@@ -234,7 +254,7 @@ export function registerDocsTools(server: McpServer): void {
         "Archivierung, 🔄 ↔ Detail-Block, ID-/Datum-Konvention) und sammelt Parse-Warnungen ein.",
       inputSchema: { root: ROOT_FIELD },
     },
-    ({ root }) => asResult(() => docsValidate(root)),
+    ({ root }) => asStructuredResult(() => docsValidate(root)),
   );
 
   server.registerTool(
@@ -258,7 +278,7 @@ export function registerDocsTools(server: McpServer): void {
       },
     },
     ({ root, id, note, locale, dryRun }) =>
-      asResult(() => {
+      asStructuredResult(() => {
         const plan = planArchiveItem(root, id, {
           dryRun,
           ...(note !== undefined ? { note } : {}),
@@ -293,7 +313,7 @@ export function registerDocsTools(server: McpServer): void {
       },
     },
     ({ root, phase, step, status, title, note, locale, dryRun }) =>
-      asResult(() => {
+      asStructuredResult(() => {
         const plan = planProgressUpdate(root, phase, step, status as Status, {
           dryRun,
           ...(title !== undefined ? { title } : {}),
