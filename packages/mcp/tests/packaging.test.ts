@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
@@ -65,11 +65,13 @@ describe("pack smoke wiring (L6, 9.8)", () => {
 describe("pack smoke with spaces in the temp path (R8, 10.2)", () => {
   it("runs green when TMP/TEMP contain spaces (windows shell quoting)", () => {
     const spacedTemp = join(repoRoot, "test-results", "tmp with spaces");
+    mkdirSync(spacedTemp, { recursive: true });
     const result = spawnSync(process.execPath, [join(repoRoot, "scripts", "pack-smoke.mjs")], {
       encoding: "utf8",
       timeout: 120_000,
       env: { ...process.env, TMP: spacedTemp, TEMP: spacedTemp, TMPDIR: spacedTemp },
     });
+    rmSync(spacedTemp, { recursive: true, force: true });
     expect(result.status, `stderr: ${result.stderr}`).toBe(0);
   }, 150_000);
 });
