@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -43,5 +43,20 @@ describe("stepwell skill asset (M7, 9.5)", () => {
     expect(text).toContain("archive_item");
     expect(text).toContain("Freigabe");
     expect(text).toContain("methoddocs://templates/");
+  });
+});
+
+describe("pack smoke wiring (L6, 9.8)", () => {
+  it("provides the pack smoke script and wires it into CI", () => {
+    expect(existsSync(join(repoRoot, "scripts", "pack-smoke.mjs"))).toBe(true);
+    const workflow = readFileSync(join(repoRoot, ".github", "workflows", "ci.yml"), "utf8");
+    expect(workflow).toMatch(/pack-smoke:/u);
+  });
+
+  it("keeps the versioned release documents in place", () => {
+    expect(existsSync(join(repoRoot, "CHANGELOG.md"))).toBe(true);
+    const changelog = readFileSync(join(repoRoot, "CHANGELOG.md"), "utf8");
+    expect(changelog).toContain("## [Unreleased]");
+    expect(changelog).toContain("Keep a Changelog");
   });
 });
