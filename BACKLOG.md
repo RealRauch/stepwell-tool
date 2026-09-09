@@ -40,12 +40,6 @@
 - **Fix:** Entscheidung ergänzen: Tools nur für konkrete Struktur-/Lese-Operationen; Methoden-Anleitung bleibt in Dateien/Resources; jedes neue Tool begründet den Surface-Zuwachs (Alternativprüfung: Parameter an existierendes Tool oder Resource statt neues Tool).
 - **Abnahme:** Regel als Decision verankert; Tool-Liste enthält kein reines Doku-/Guide-Tool; Begründungspflicht im README (Contribution/Entwurfs-Abschnitt) erwähnt.
 
-### [ ] R8 — pack-smoke: unquoted Argumente bei shell:true brechen bei Leerzeichen im Windows-Temp-Pfad — 🟡
-- **Ort:** `scripts/pack-smoke.mjs` (`run()`-Hilfe, `shell: true` auf win32); Fundstelle: Code-Review Phase 9 (09/2026).
-- **Problem:** `spawnSync("npm", args, { shell: true })` verkettet Argumente **unquoted**; unter Windows brechen Tarball-/Install-Pfade, wenn das Temp-Verzeichnis Leerzeichen enthält (z. B. `C:\Users\John Smith\...`). CI (ubuntu, kein Shell-Parsing-Problem) ist nicht betroffen — nur lokale Windows-Läufe in solchen Umgebungen.
-- **Fix:** Pfad-Argumente beim Shell-Aufruf explizit quoting (doppelte Anführungszeichen, interne `"` escapen) oder npm ohne Shell auflösen (`npm.cmd` auf win32 via `where`/feste Kandidaten).
-- **Abnahme:** pack-smoke läuft mit Leerzeichen im Temp-Pfad (Test via `TMP`/`TEMP`-Override mit Leerzeichen-Verzeichnis); REST unverändert grün.
-
 ---
 
 ## 🟢 NIEDRIG
@@ -100,5 +94,6 @@
 - L9 — Review-Polish: Warning.file-Kontrakt dokumentieren + Template-Resource-URIs auflisten — erledigt (Fix `9a369c9` (Test-Commit `be7b5f0`, ROT belegt) — Templates-Resource mit statischem List-Callback (`listResources` liefert die vier URIs, mimeType text/markdown); Warning.file-Kontrakt dokumentiert (Datei oder Root bei Root-level-Funden) in types.ts-Kommentar + Fixture-Spec + README; 256/256 grün)
 - L10 — nextStep-Kaskade: Fallback auf rein vorausgeplante Phasen — erledigt (Fix `14093de` (Test-Commit `b40be1f`, 3× ROT belegt) — nextStep-Kaskade: (1) erste ⬜-Zeile einer Phase mit 🔄 (Vorrang laufender Arbeit), (2) sonst erste ⬜-Zeile rein vorausgeplanter Phasen (Tabellen-Ordnung), (3) sonst undefined; per Test belegt: Fallback bei reiner Plan-Phase (2.1), Vorrang der laufenden gegen spätere Plan-Phase (2.2 vor 3.1), Durchfall bei erledigter früherer Phase (3.1); project-a/-b-Ergebnisse unverändert; 259/259 grün)
 - R7 — Coverage-Gate-Test rekurriert: Nested-Run startet sich selbst, Gate-Akzeptanz nicht beweisbar — erledigt (Fix `4c03eb8` — Nested-Config schließt die Gate-Datei selbst aus (`configDefaults.exclude` + Glob) → genau eine Nested-Ebene; Assertion auf die Ursache geschärft (Threshold-Meldung `does not meet "<glob>" threshold`, Format empirisch verifiziert); Gate-Test 128 s → 7 s, Gesamtsuite ~2 min → ~9 s; Beiwerk: neuer Fund R9 (Exit-Code umgebungsabhängig) als 🔴-Item, Step 10.7 folgt)
+- R8 — pack-smoke: unquoted Argumente bei shell:true brechen bei Leerzeichen im Windows-Temp-Pfad — erledigt (Fix `9976d3b` (Test-Commit `7f532e6`, ROT belegt) — pack-smoke quotet Shell-Argumente bei win32 (`quoteForShell`: doppelte Anführungszeichen + internes `\"`-Escaping); Abnahme per Test: Smoke mit `TMP/TEMP/TMPDIR` auf Leerzeichen-Verzeichnis läuft grün (npm pack + install gegen spaced paths))
 
 ---
