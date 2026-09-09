@@ -47,20 +47,21 @@ if (tarballs.length !== 2) fail(`expected 2 tarballs, got: ${tarballs.join(", ")
 // 2) Tarballs installieren (löst auch die Workspace-Abhängigkeit über die Artefakte auf)
 run("npm", ["install", "--prefix", installDir, "--no-audit", "--no-fund", ...tarballs.map((t) => join(work, t))]);
 
-// 3) Artefakt-Inhalt statisch prüfen
+// 3) Artefakt-Inhalt statisch prüfen (seit 10.4/H1: compiled dist, kein src)
 const mcpRoot = join(installDir, "node_modules", "@method-docs", "mcp");
 const coreRoot = join(installDir, "node_modules", "@method-docs", "core");
 for (const path of [
-  join(coreRoot, "src", "index.ts"),
-  join(mcpRoot, "src", "serve.ts"),
-  join(mcpRoot, "src", "cli.ts"),
-  join(mcpRoot, "src", "tools.ts"),
+  join(coreRoot, "dist", "index.js"),
+  join(coreRoot, "dist", "index.d.ts"),
+  join(mcpRoot, "dist", "serve.js"),
+  join(mcpRoot, "dist", "cli.js"),
+  join(mcpRoot, "dist", "tools.js"),
   join(mcpRoot, "skills", "stepwell", "SKILL.md"),
 ]) {
   assertExists(path);
 }
 const mcpManifest = JSON.parse(readFileSync(join(mcpRoot, "package.json"), "utf8"));
-if (mcpManifest.bin?.["method-docs"] !== "./src/cli.ts") {
+if (mcpManifest.bin?.["method-docs"] !== "./dist/cli.js") {
   fail(`unexpected bin mapping: ${JSON.stringify(mcpManifest.bin)}`);
 }
 if (mcpManifest.dependencies?.["@method-docs/core"] === undefined) {

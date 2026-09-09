@@ -3,14 +3,17 @@
   "version": "0.1.0",
   "type": "module",
   "files": [
-    "src",
+    "dist",
     "skills"
   ],
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
   },
   "bin": {
-    "method-docs": "./src/cli.ts"
+    "method-docs": "./dist/cli.js"
   },
   "dependencies": {
     "@method-docs/core": "*",
@@ -19,6 +22,7 @@
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
-    "build": "tsc -p tsconfig.build.json"
+    "build": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run build"
   }
 }

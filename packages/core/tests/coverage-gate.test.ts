@@ -14,14 +14,24 @@ const TMP_DIR = "test-results/tmp-coverage-gate";
 const TMP_CONFIG = join(TMP_DIR, "vitest.high.config.ts");
 
 const HIGH_THRESHOLD_CONFIG = `
+import { resolve } from "node:path";
 import { configDefaults, defineConfig } from "vitest/config";
+// vitest behält root beim Repo-cwd (Spawn läuft mit cwd=repo) — import.meta.dirname
+// der Config-Datei läge im tmp-Verzeichnis und wäre falsch.
+const repoRoot = process.cwd();
 export default defineConfig({
+  resolve: {
+    // identisch zur Haupt-Config: Tests immer gegen die core-Quelle (10.4/H1)
+    alias: { "@method-docs/core": resolve(repoRoot, "packages/core/src/index.ts") },
+  },
   test: {
     environment: "node",
     include: ["packages/*/tests/**/*.test.ts"],
     // R7: Gate-Datei ausschließen — sonst startet der Nested-Run diesen Test
     // erneut (Rekursion), bis ein Worker crasht; genau eine Nested-Ebene läuft.
     exclude: [...configDefaults.exclude, "**/coverage-gate.test.ts"],
+    // 10.3/H1: Spawn-lastige Tests (build/pack) sonst Kollision, s. Haupt-Config
+    fileParallelism: false,
     coverage: {
       provider: "v8",
       include: ["packages/*/src/**/*.ts"],
