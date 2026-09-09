@@ -339,7 +339,7 @@ describe("runCli — --json schema contract (M6, 9.6)", () => {
     const io = makeIo();
     await runCli(["status", "--root", projectA, "--json"], io.io);
     expect(Object.keys(JSON.parse(io.stdout) as object).sort()).toEqual([
-      "doneQuote", "openByPriority", "openTotal", "runningPhases", "runningSteps", "schema", "warnings",
+      "doneQuote", "nextPriority", "nextStep", "openByPriority", "openTotal", "runningPhases", "runningSteps", "schema", "warnings",
     ]);
   });
 });
@@ -351,13 +351,5 @@ describe("runCli — status next-action lines (L7, 9.12)", () => {
     expect(code).toBe(0);
     expect(io.stdout).toContain("Nächster Step: 2.2 U21 Fehlertexte (⬜)");
     expect(io.stdout).toContain("Nächste Priorität: 🟠 (3 offen)");
-  });
-
-  it("stamps the new fields into the json contract (additive, schema stays 1)", async () => {
-    const io = makeIo();
-    await runCli(["status", "--root", projectA, "--json"], io.io);
-    expect(Object.keys(JSON.parse(io.stdout) as object).sort()).toEqual([
-      "doneQuote", "nextPriority", "nextStep", "openByPriority", "openTotal", "runningPhases", "runningSteps", "schema", "warnings",
-    ]);
   });
 });

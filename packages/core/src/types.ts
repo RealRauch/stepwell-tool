@@ -84,6 +84,10 @@ export interface DocsStatus {
   runningSteps: ProgressRow[];
   runningPhases: string[];
   doneQuote: { done: number; total: number; percent: number };
+  /** Erste ⬜-Zeile einer laufenden Phase (Tabellen-Ordnung) — undefined, wenn keine. */
+  nextStep: ProgressRow | undefined;
+  /** Erste nicht-leere Prioritäts-Sektion (🔴→🔵) — undefined, wenn keine offenen Items. */
+  nextPriority: Priority | undefined;
   warnings: Warning[];
 }
 

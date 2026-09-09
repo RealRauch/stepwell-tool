@@ -189,7 +189,7 @@ Versionsfeld `schema` (aktuell **1**). Feldkontrakt je Command:
 
 | Command | Felder (neben `schema`) |
 |---------|--------------------------|
-| `status` | `openByPriority`, `openTotal`, `runningSteps`, `runningPhases`, `doneQuote`, `warnings` |
+| `status` | `openByPriority`, `openTotal`, `runningSteps`, `runningPhases`, `doneQuote`, `nextStep`, `nextPriority`, `warnings` |
 | `backlog` | `count`, `items[]` (ohne `raw`), `warnings` |
 | `progress` | `count`, `rows[]`, `warnings` |
 | `validate` | `findings[]`, `warnings[]`, `ok` |

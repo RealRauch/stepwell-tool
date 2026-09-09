@@ -215,11 +215,17 @@ function statusText(s: DocsStatus): string {
     ? s.runningSteps.map((r) => `${r.step} ${r.name} (${r.status})`).join(", ")
     : "(keine)";
   const phases = s.runningPhases.length > 0 ? s.runningPhases.join(", ") : "(keine)";
+  const nextStep = s.nextStep !== undefined ? `${s.nextStep.step} ${s.nextStep.name} (⬜)` : "(keiner)";
+  const nextPriority = s.nextPriority !== undefined
+    ? `${s.nextPriority} (${s.openByPriority[s.nextPriority]} offen)`
+    : "(keine)";
   const quote = `✅-Quote: ${s.doneQuote.done}/${s.doneQuote.total} (${s.doneQuote.percent}%)`;
   return [
     `Offene Items: ${s.openTotal} (${prioLine})`,
     `Laufende Steps: ${steps}`,
     `Laufende Phasen: ${phases}`,
+    `Nächster Step: ${nextStep}`,
+    `Nächste Priorität: ${nextPriority}`,
     quote,
     `Warnungen: ${s.warnings.length}`,
     "",
