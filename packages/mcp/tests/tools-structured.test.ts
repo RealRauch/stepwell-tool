@@ -28,7 +28,11 @@ describe("structuredContent (M3, 9.7)", () => {
         status: "🔄",
       });
       expect(result.isError).toBeFalsy();
-      const structured = result.structuredContent as { step?: string; completedPhase?: boolean };
+      const structured = result.structuredContent as {
+        step?: string;
+        completedPhase?: boolean;
+        changes?: unknown[];
+      };
       expect(structured.step).toBe("2.2");
       expect(structured.completedPhase).toBe(false);
       expect(Array.isArray(structured.changes)).toBe(true);
