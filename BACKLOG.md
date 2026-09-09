@@ -1,4 +1,4 @@
-# BACKLOG.md — Offene Punkte (Stand: 260909/1948
+# BACKLOG.md — Offene Punkte (Stand: 260909/2116
 
 > **Diese Datei enthält nur OFFENE Items.** Erledigte Items werden nach dem Abschluss
 > **unverändert** in `docs/archive/BACKLOG_ARCHIVE.md` verschoben; hier bleibt je Item nur ein Einzeiler
@@ -24,6 +24,12 @@
 - **Fix:** Build-/dist-Schritt ergänzen (tsc → `dist/` in beiden Workspaces), `exports`/`bin` auf `dist` umstellen, `files` entsprechend, CI-Job auf den dynamischen Smoke (Handshake + Bin gegen `dist`-Artefakt) erweitern; Variante diskutieren: `tsc` in prepublishOnly oder committed dist. Achtung Content-Gate: Dependency-/Manifest-Änderungen = Mittel (Freigabe je Vorkommnis).
 - **Abnahme:** `node node_modules/@method-docs/mcp/src/…`-Äquivalent (dist-Einstieg) startet aus Installation; pack-smoke mit dynamischem Handshake grün; README-Install verifiziert (`npx @method-docs/mcp`); `npm run typecheck && npm run test` grün.
 
+### [ ] R7 — Coverage-Gate-Test rekurriert: Nested-Run startet sich selbst, Gate-Akzeptanz nicht beweisbar — 🟠
+- **Ort:** `packages/core/tests/coverage-gate.test.ts:21` (Nested-Config `HIGH_THRESHOLD_CONFIG`); Fundstelle: Code-Review Phase 9 (09/2026) — empirisch belegt via `test-results/`-Logs (Gate-Test 93–110 s gegenüber ~4 s Rest-Suite; `Unhandled Error: Timeout calling "onTaskUpdate"`).
+- **Problem:** Die temporäre Nested-Config erbt `include: ["packages/*/tests/**/*.test.ts"]` ohne den Gate-Test selbst auszuschließen — vitest behält `root` beim Repo-cwd, also startet der Nested-Run `coverage-gate.test.ts` erneut (Rekursion), bis ein Worker crasht. Folgen: (1) `exitCode !== 0` kann durch den gecrashten Nested-Run statt durch echtes Threshold-Versagen zustande kommen — die 9.1-Akzeptanz ist nicht beweisbar; (2) der Unhandled Error kann den Outer-Run failen (nondeterministische Suite, einmal beobachtet); (3) auf langsamen CI-Runnern kann die Kette das Timeout sprengen.
+- **Fix:** Gate-Datei in der Nested-Config ausschließen (`exclude: ["**/coverage-gate.test.ts"]`), sodass genau eine Nested-Ebene läuft; Assertion auf die Ursache schärfen (Output enthält Threshold-Meldung, nicht nur Exit-Code). Nebeneffekt: Gate-Test von ~100 s auf ~10 s.
+- **Abnahme:** Gate-Test beweist deterministisch das Versagen am Threshold (Output-Assert), Rest-Suite unverändert grün, Laufzeit deutlich reduziert; `npm run typecheck && npm run test` grün.
+
 ---
 
 ## 🟡 MITTEL
@@ -33,6 +39,12 @@
 - **Problem:** Ohne Guardrail wachsen Meta-/Guide-/How-to-Tools in die Tool-Liste; Agenten entdecken die operative Oberfläche dann schlechter. Methoden-Wissen lebt bei uns bereits in PLAYBOOK.md + Resources — das soll so bleiben.
 - **Fix:** Entscheidung ergänzen: Tools nur für konkrete Struktur-/Lese-Operationen; Methoden-Anleitung bleibt in Dateien/Resources; jedes neue Tool begründet den Surface-Zuwachs (Alternativprüfung: Parameter an existierendes Tool oder Resource statt neues Tool).
 - **Abnahme:** Regel als Decision verankert; Tool-Liste enthält kein reines Doku-/Guide-Tool; Begründungspflicht im README (Contribution/Entwurfs-Abschnitt) erwähnt.
+
+### [ ] R8 — pack-smoke: unquoted Argumente bei shell:true brechen bei Leerzeichen im Windows-Temp-Pfad — 🟡
+- **Ort:** `scripts/pack-smoke.mjs` (`run()`-Hilfe, `shell: true` auf win32); Fundstelle: Code-Review Phase 9 (09/2026).
+- **Problem:** `spawnSync("npm", args, { shell: true })` verkettet Argumente **unquoted**; unter Windows brechen Tarball-/Install-Pfade, wenn das Temp-Verzeichnis Leerzeichen enthält (z. B. `C:\Users\John Smith\...`). CI (ubuntu, kein Shell-Parsing-Problem) ist nicht betroffen — nur lokale Windows-Läufe in solchen Umgebungen.
+- **Fix:** Pfad-Argumente beim Shell-Aufruf explizit quoting (doppelte Anführungszeichen, interne `"` escapen) oder npm ohne Shell auflösen (`npm.cmd` auf win32 via `where`/feste Kandidaten).
+- **Abnahme:** pack-smoke läuft mit Leerzeichen im Temp-Pfad (Test via `TMP`/`TEMP`-Override mit Leerzeichen-Verzeichnis); REST unverändert grün.
 
 ---
 
@@ -85,5 +97,6 @@
 - L7 — docs_status um Next-Action-Empfehlung ergänzen — erledigt (Fix `ab2af81` (Test-Commit `f7b8233`, 4× ROT belegt) — DocsStatus.nextStep (erste ⬜-Zeile einer laufenden Phase in Tabellen-Ordnung) + nextPriority (erste nicht-leere Sektion 🔴→🔵), deterministisch über project-a/-b getestet; CLI `status` zeigt beide Zeilen; JSON-Contract additiv erweitert (schema bleibt 1, Snapshot-Test aktualisiert); ohne laufende Phase/offene Items → undefined (auch im M5-Zero-State))
 - T5 — BOM-Toleranz des Parsers (UTF-8-BOM in Datei-Köpfen) — erledigt (Fix `f6921f1` (Test-Commit `9b96c4f`, ROT belegt) — stripBom (U+FEFF am Dateianfang) in parseBacklog/parseProgress (Archive delegieren) — stille Toleranz, keine Warnung; Fixture project-f-bom (project-a-Zwilling mit BOM in allen vier Dateien): Parsing + docsValidate ergebnisgleich zum BOM-losen Original; ROT-Befund: BOM vor der ersten Sektion brach die Sektionserkennung (Layout-abhängige Zufalls-Toleranz beseitigt); README + Fixtures-Spec dokumentiert)
 - L5 — docs_review-Tool-Idee: Phasen-Review gegen Plan/Spec — erledigt (Entscheidung (Alternativprüfung nach M4, 09/2026): KEIN docs_review-Tool. (1) Plan-Compliance ist bereits abgedeckt: docs_validate prüft 🔄↔Detail-Block (WIP_WITHOUT_PLAN/PLAN_WITHOUT_WIP), progress_show liefert Ziel/Abnahme/Scope verbatim, docs_status aggregiert Findings + Next-Action; ein Review-Tool würde diese Funde doppelt ausgeben. (2) „Tests gelaufen?" ist aus den vier Doku-Dateien nicht ableitbar — das Tool müsste CI-/Log-Quellen lesen und bräche die Architektur-Grenze (core liest nur die vier Dateien). (3) M4-Guardrail: kein bekannter Fund des Feldtests/ Betriebs, der den Surface-Zuwachs rechtfertigt; Review läuft über LESSONS-Checkliste + docs_validate. Reaktivierungs-Kriterium: zeigen Feldtests, dass Plan-Compliance-Reviews wiederholt manuell nachgebaut werden, dann Minimal-Entwurf als Read-Only-Tool neu bewerten (Findings im Warning-Modell gem. Decision 6, Annotations + M4-Begründung im README))
+- L9 — Review-Polish: Warning.file-Kontrakt dokumentieren + Template-Resource-URIs auflisten — erledigt (Fix `9a369c9` (Test-Commit `be7b5f0`, ROT belegt) — Templates-Resource mit statischem List-Callback (`listResources` liefert die vier URIs, mimeType text/markdown); Warning.file-Kontrakt dokumentiert (Datei oder Root bei Root-level-Funden) in types.ts-Kommentar + Fixture-Spec + README; 256/256 grün)
 
 ---
