@@ -292,3 +292,18 @@ AGENTS Decisions 13/14, `docs_validate` beider Projekte clean).
 - **9.13 BOM-Toleranz des Parsers (T5)**
 - **9.14 docs_review-Alternativprüfung (L5)**
 **Verifikation:** `npm run typecheck` — fehlerfrei · `npm run test` — 255/255 Tests grün · `node scripts/pack-smoke.mjs` — OK (statisch, dynamischer Teil an H1 gekoppelt) · `docs_validate` — fund-frei
+
+---
+
+### Phase 10 — Review-Fixes, Distribution & Surface-Guardrail
+
+**Umfang (Steps):**
+
+- **10.1 Coverage-Gate-Rekursion fixen: Nested-Exclude + Output-Assert (R7)**
+- **10.2 pack-smoke: Pfad-Quoting bei shell:true (R8)**
+- **10.3 Build-Pipeline: tsc → dist in beiden Workspaces (H1/1)**
+- **10.4 Manifests auf dist umstellen: exports/bin/files (H1/2, Content-Gate Mittel)**
+- **10.5 Dynamischer Pack-Smoke + README-Install-Verifikation (H1/3)**
+- **10.6 Surface-Guardrail als Decision verankern + README (M4)**
+- **10.7 Coverage-Gate-Exit-Code robust stellen: Ursache klären + Gate Exit-unabhängig (R9, CI-Änderung = Gate Hoch)**
+**Verifikation:** `npm run typecheck` — fehlerfrei · `npm run test` — 261/261 grün · Messartefakt klargestellt: PowerShell `$LASTEXITCODE` → vitest exit 1 bei Threshold-Verletzung (isoliert + verschachtelt) — Gate validiert, kein CI-Edit nötig
