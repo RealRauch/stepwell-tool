@@ -266,3 +266,12 @@
 - **Fix:** Entscheidung zwischen zwei Varianten: **A** Templates als Read-Only-Resources (`methoddocs://templates/backlog|progress|archive/…`), Agent legt Dateien selbst an (kein Write-Surface-Wachstum) — oder **B** `init_project`-Tool (scaffold nur wenn alle vier Dateien fehlen, sonst harter Fehler; Dry-run-Modell wie gehabt; M4-Guardrail-Begründung nötig). Skeletons kanonisch in `packages/core` ablegen, Abgleich mit Fixture `project-a` (Parser-Positivpfad); M5-Anleitung auf den neuen Weg verweisen.
 - **Abnahme:** Entscheidung (inkl. Begründung) dokumentiert; gewählte Variante test-first umgesetzt (Resources bzw. Tool inkl. Guard-Fälle „Datei existiert bereits"); `docs_validate` an den geleerten Skeletons clean; `npm run typecheck && npm run test` grün.
 - **Erledigt:** Fix `fdf6907` (Test-Commit `f17573e`, ROT belegt) — Entscheidung Variante A (Templates als Read-Only-Resources, Begründung M4-Guardrail, im README dokumentiert): projectTemplates (4 Skeletons) kanonisch in core, Resource `methoddocs://templates/{kind}` mit Kind-Validierung; Skeleton-Projekt docs_validate-fund-frei; M5-Anleitung verweist auf Templates
+
+---
+
+### [x] M7 — SKILL.md als ergänzender Distributionsweg (stepwell-Skill) — 🟡
+- **Ort:** Repo-Root/`packages/mcp` (neues Asset `skills/stepwell/SKILL.md`); Fundstelle: Google Conductor — verteilt die Methode als portable Markdown-Skills (Gemini CLI, Antigravity, Claude Code, Codex-Port), agent-übergreifend; passt zu Phase 7 „Distribution & Feldtest".
+- **Problem:** Unser Vertriebsweg ist nur MCP (Server-Setup nötig); Agenten in Skill-Ökosystemen (SKILL.md-Format) bekommen keine Anleitung, WANN sie welches stepwell-Tool aufrufen — die Methoden-Disziplin lebt sonst nur in AGENTS.md-Kopien.
+- **Fix:** Schlankes SKILL.md („wann rufe ich welches Tool auf": Statuspflege nur via Tools, Freigabe-Gate, Test-First) als zweiter Distributionskanal neben MCP; verweist auf die MCP-Tools, ersetzt sie nicht; Decisions 13/15 einpreisen.
+- **Abnahme:** Skill-Datei liegt im npm-Pack (files-Check), Inhalt konsistent mit PLAYBOOK; README-Distributionsabschnitt nennt beide Kanäle.
+- **Erledigt:** Fix `57ffc54` (2× ROT belegt) — packages/mcp/skills/stepwell/SKILL.md (Session-Einstieg, Tool-Zuordnung, Freigabe-/Content-Gates, Inline-Fix-Lane, Test-First, Abschlüsse; konsistent mit PLAYBOOK, ohne nicht existierende Parameter); files-Feld um "skills" erweitert (Pack-Check im packaging-Test); README-Abschnitt "Distribution (zwei Kanäle)"
