@@ -2,6 +2,7 @@ export type Priority = "🔴" | "🟠" | "🟡" | "🟢" | "🔵" | "unknown";
 
 export interface Warning {
   code: string;
+  /** Dateipfad des Befunds — Ausnahme: Root-level-Funde (z. B. PROJECT_NOT_INITIALIZED) tragen den Projekt-Root (Verzeichnis). */
   file: string;
   line?: number;
   message: string;
