@@ -93,6 +93,8 @@ describe("pack smoke with spaces in the temp path (R8, 10.2)", () => {
     });
     rmSync(spacedTemp, { recursive: true, force: true });
     expect(result.status, `stderr: ${result.stderr}`).toBe(0);
+    // H1/10.5: the smoke must prove the artifact RUNS - dynamic handshake included
+    expect(result.stdout).toContain("handshake OK");
   }, 150_000);
 });
 
