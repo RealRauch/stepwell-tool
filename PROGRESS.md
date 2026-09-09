@@ -73,7 +73,7 @@
 | 9.1 | Coverage-Gate: Schwellen + CI (T6) | ✅ |
 | 9.2 | MCP-Tool-Annotations (M2) | ✅ |
 | 9.3 | Init-Fallback bei leerem Root (M5) | ✅ |
-| 9.4 | Projekt-Init: Vorlagen-Auslieferung (M8) | ⬜ |
+| 9.4 | Projekt-Init: Vorlagen-Auslieferung (M8) | ✅ |
 | 9.5 | SKILL.md-Distributionsweg (M7) | ⬜ |
 | 9.6 | JSON-Output-Schema versionieren (M6) | ⬜ |
 | 9.7 | structuredContent-Entscheidung (M3) | ⬜ |
