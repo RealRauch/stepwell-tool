@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { allSynonyms, escapeRegExp, synonymPattern } from "./profile.ts";
+import { allSynonyms, escapeRegExp, stripBom, synonymPattern } from "./profile.ts";
 import {
   BACKLOG_PATH,
   REQUIRED_FILES,
@@ -226,7 +226,8 @@ function buildItem(raw: RawItem, section: BacklogSection | null, file: string): 
   return { item, warnings };
 }
 
-export function parseBacklog(content: string, file = "BACKLOG.md"): ParseResult<Backlog> {
+export function parseBacklog(rawContent: string, file = "BACKLOG.md"): ParseResult<Backlog> {
+  const content = stripBom(rawContent);
   const lines = content.split(/\r?\n/);
   const warnings: Warning[] = [];
   const sections: BacklogSection[] = [];

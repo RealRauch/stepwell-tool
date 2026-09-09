@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { allSynonyms, escapeRegExp, getFieldByRole } from "./profile.ts";
+import { allSynonyms, escapeRegExp, getFieldByRole, stripBom } from "./profile.ts";
 import {
   PROGRESS_PATH,
   REQUIRED_FILES,
@@ -87,7 +87,8 @@ function buildBlock(raw: RawBlock, lines: string[]): PhaseBlock {
   return block;
 }
 
-export function parseProgress(content: string, file = "PROGRESS.md"): ParseResult<Progress> {
+export function parseProgress(rawContent: string, file = "PROGRESS.md"): ParseResult<Progress> {
+  const content = stripBom(rawContent);
   const lines = content.split(/\r?\n/);
   const warnings: Warning[] = [];
   const rows: ProgressRow[] = [];

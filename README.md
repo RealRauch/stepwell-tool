@@ -269,7 +269,8 @@ verlangt keine CI.
 **Parse-Warnungen** entstehen beim Parsen einzelner Dateien (Drift-Toleranz),
 **Validate-Funde** prüfen Querkonsistenz über Dateien hinweg (`docs_validate`
 sammelt beides). Konventions-Warnungen betreffen **nur offene Dateien** — Archive
-sind append-only und werden nie beanstandet.
+sind append-only und werden nie beanstandet. Ein UTF-8-BOM (U+FEFF) am Dateianfang
+wird still toleriert (deterministisch gestrippt, T5/9.13) — keine Warnung.
 
 | Code | Ebene | Bedeutung |
 |------|-------|-----------|

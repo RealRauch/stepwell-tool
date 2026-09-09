@@ -25,6 +25,15 @@ export const SYNONYMS = {
 
 export type SynonymRole = keyof typeof SYNONYMS;
 
+/**
+ * Entfernt ein UTF-8-BOM (U+FEFF) am Dateianfang — stille Toleranz (T5/9.13):
+ * Windows-Editoren/PowerShell schreiben gern BOM; deterministisch strippen statt
+ * Layout-abhängig durchrutschen lassen. Keine Warnung.
+ */
+export function stripBom(content: string): string {
+  return content.startsWith("\uFEFF") ? content.slice(1) : content;
+}
+
 export function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }
