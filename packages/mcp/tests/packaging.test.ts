@@ -25,3 +25,23 @@ describe("packaging manifests (D3, 7.3)", () => {
     expect(m.bin?.["method-docs"]).toBeTruthy();
   });
 });
+
+describe("stepwell skill asset (M7, 9.5)", () => {
+  const skillPath = join(repoRoot, "packages", "mcp", "skills", "stepwell", "SKILL.md");
+
+  it("ships the skill directory in the mcp package files", () => {
+    const m = manifest("mcp");
+    expect(m.files, "mcp files field must include skills").toContain("skills");
+  });
+
+  it("contains the SKILL.md with method-consistent guidance", () => {
+    const text = readFileSync(skillPath, "utf8");
+    expect(text).toContain("name: stepwell");
+    expect(text).toContain("PLAYBOOK");
+    expect(text).toContain("docs_status");
+    expect(text).toContain("progress_update");
+    expect(text).toContain("archive_item");
+    expect(text).toContain("Freigabe");
+    expect(text).toContain("methoddocs://templates/");
+  });
+});
