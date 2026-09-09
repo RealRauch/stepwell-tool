@@ -24,7 +24,16 @@ function readOrThrow(path: string): string {
 export function registerDocsResources(server: McpServer): void {
   server.registerResource(
     "templates",
-    new ResourceTemplate("methoddocs://templates/{kind}", { list: undefined }),
+    new ResourceTemplate("methoddocs://templates/{kind}", {
+      list: () => ({
+        resources: TEMPLATE_KINDS.map((kind) => ({
+          uri: `methoddocs://templates/${kind}`,
+          name: `template: ${kind}`,
+          description: "Kanonisches Skeleton einer Pflichtdatei (M8) — unverändert übernehmen.",
+          mimeType: MARKDOWN,
+        })),
+      }),
+    }),
     {
       title: "Projekt-Vorlagen",
       description:

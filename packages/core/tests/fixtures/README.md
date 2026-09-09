@@ -173,7 +173,7 @@ Sektions-Emoji als Fallback (+ Warnung `PRIO_MISSING`) → nur wenn beides fehlt
 | Objekt | Felder | Step |
 |---|---|---|
 | `ParseResult<T>` | `value`, `warnings[]` | 1.2 |
-| `Warning` | `code`, `file`, `line?`, `message` | 1.2 |
+| `Warning` | `code`, `file` (Dateipfad; **Ausnahme:** Root-level-Funde wie `PROJECT_NOT_INITIALIZED` tragen den Projekt-Root als Verzeichnis), `line?`, `message` | 1.2 |
 | `BacklogItem` | `id`, `title`, `priority`, `section`, `open`, `location?`, `text`, `span{start,end}`, `raw` | 1.2 |
 | `DoneEntry` | `id`, `summary`, `sha?` | 1.2 |
 | `Backlog` | `sections[]` (`title`, `emoji`, `headerRule`), `items[]` (flach), `doneIndex[]` | 1.2 |
