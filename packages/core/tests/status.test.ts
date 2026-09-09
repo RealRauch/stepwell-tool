@@ -28,6 +28,11 @@ describe("docsStatus — project-a (clean)", () => {
     expect(status.doneQuote).toEqual({ done: 5, total: 9, percent: 56 });
   });
 
+  it("derives next action: first ⬜ of the running phase and highest open priority (L7)", () => {
+    expect(status.nextStep).toEqual({ step: "2.2", name: "U21 Fehlertexte", status: "⬜" });
+    expect(status.nextPriority).toBe("🟠");
+  });
+
   it("embeds no warnings for a clean project", () => {
     expect(status.warnings).toEqual([]);
   });
@@ -49,6 +54,11 @@ describe("docsStatus — project-b-drift", () => {
     expect(status.runningSteps.map((r) => r.step)).toEqual(["1.4"]);
     expect(status.runningPhases).toEqual([]);
     expect(status.doneQuote).toEqual({ done: 1, total: 4, percent: 25 });
+  });
+
+  it("derives next action for drift: no planned running phase, highest open priority wins (L7)", () => {
+    expect(status.nextStep).toBeUndefined();
+    expect(status.nextPriority).toBe("🔴");
   });
 
   it("embeds validate findings first, then the collected parse warnings", () => {
@@ -98,6 +108,8 @@ describe("docsStatus — project-empty (M5)", () => {
     expect(status.runningSteps).toEqual([]);
     expect(status.runningPhases).toEqual([]);
     expect(status.doneQuote).toEqual({ done: 0, total: 0, percent: 0 });
+    expect(status.nextStep).toBeUndefined();
+    expect(status.nextPriority).toBeUndefined();
     expect(status.warnings).toHaveLength(1);
     expect(status.warnings[0]!.code).toBe("PROJECT_NOT_INITIALIZED");
     expect(status.warnings[0]!.message).toMatch(/PLAYBOOK/);

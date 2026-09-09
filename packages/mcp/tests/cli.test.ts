@@ -343,3 +343,21 @@ describe("runCli — --json schema contract (M6, 9.6)", () => {
     ]);
   });
 });
+
+describe("runCli — status next-action lines (L7, 9.12)", () => {
+  it("shows the derived next step and next priority", async () => {
+    const io = makeIo();
+    const code = await runCli(["status", "--root", projectA], io.io);
+    expect(code).toBe(0);
+    expect(io.stdout).toContain("Nächster Step: 2.2 U21 Fehlertexte (⬜)");
+    expect(io.stdout).toContain("Nächste Priorität: 🟠 (3 offen)");
+  });
+
+  it("stamps the new fields into the json contract (additive, schema stays 1)", async () => {
+    const io = makeIo();
+    await runCli(["status", "--root", projectA, "--json"], io.io);
+    expect(Object.keys(JSON.parse(io.stdout) as object).sort()).toEqual([
+      "doneQuote", "nextPriority", "nextStep", "openByPriority", "openTotal", "runningPhases", "runningSteps", "schema", "warnings",
+    ]);
+  });
+});
