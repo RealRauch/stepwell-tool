@@ -44,12 +44,6 @@
 - **Fix:** Erst Alternativprüfung nach M4 (Parameter an docs_status/progress_show? Resource?), dann Minimal-Entwurf: Review-Report als Read-Only-Tool; Findings-Format ans Warning-Modell (Decision 6) anlehnen.
 - **Abnahme:** Entwurfsentscheidung dokumentiert (neues Tool vs. Erweiterung Bestand); falls Tool: Annotations, Tests und M4-Begründung im README.
 
-### [ ] L7 — docs_status um Next-Action-Empfehlung ergänzen — 🟢
-- **Ort:** `packages/core` (Status-Report) + `packages/mcp` (docs_status-Antwort); Fundstelle: Conductor-Status-Skill („Next Action Needed", „Current Phase and Task", „Blockers").
-- **Problem:** docs_status liefert Aggregate (offene Items je Prio, 🔄-Steps, ✅-Quote), aber keine Ableitung „was ist als Nächstes zu tun" — der Session-Kickoff braucht derzeit den zweiten Blick in progress_list/backlog_list.
-- **Fix:** Zwei abgeleitete Zeilen ergänzen: „nächster offener Step" (erste ⬜-Zeile der laufenden Phase in definierter Reihenfolge) und „nächste Priorität mit offenen Items" (erste nicht-leere Prioritäts-Sektion 🔴→🔵); rein ableitend aus geparsten Daten, keine neue Tool-Oberfläche.
-- **Abnahme:** Beide Felder deterministisch über Fixtures project-a/-b getestet; CLI `status` zeigt sie; `npm run typecheck && npm run test` grün.
-
 ---
 
 ## 🔵 TEST-LÜCKEN
@@ -100,5 +94,6 @@
 - L8 — Sync-Schlag: 🔵-Semantik + Session-Einstieg kanonisieren (PLAYBOOK-Kopien) — erledigt (Sync-Schlag 09/2026 — PLAYBOOK §3 „🔵 = Test-Lücken" (thematische Serien-ID, nie Auto-Nummer aus Prioritäts-Serie) + §0.8 „Session-Einstieg (bindend)" (PLAYBOOK/LESSONS → PROGRESS nächster Step 🔄 → BACKLOG) in beiden Kopien textgleich (method-docs@ee00f9c, stadtpfad-pwa@eed7ae9, SHA256 4BAEBA88…AE0D); docs_validate method-docs clean)
 - L2 — Checkpoint-SHA je Phase in PROGRESS verankern — erledigt (Fix `e3ff79f` (Test-Commit `af48a97`, 4× ROT belegt) — progress_update checkpoint-Parameter (7–40 Hex validiert, lowercase) erscheint bei Phasen-Abschluss verbatim in der **Verifikation:**-Zeile des Archiv-Blocks — allein (`(checkpoint: <sha>)`) oder kombiniert mit note; ohne Parameter unverändertes Verhalten; MCP-Schema + CLI `--checkpoint`; README/Fixtures-Spec/SKILL.md nachgezogen; Apply-Roundtrip per Test)
 - L4 — Doc-Sync-Reminder bei Phasen-Abschluss — erledigt (Fix `a093a1e` (Test-Commit `830def8`, 2× ROT belegt) — statischer Reminder „Doku-Sync prüfen: AGENTS-Kickoff, README, PLAYBOOK-Kopien" bei Phasen-Abschluss: ProgressUpdatePlan.docSyncReminder (nur bei completedPhase, sonst undefined) + Apply-Verifikations-Messages; übrige Antworten unverändert (per Test); README-Tool-Zeile nachgezogen)
+- L7 — docs_status um Next-Action-Empfehlung ergänzen — erledigt (Fix `ab2af81` (Test-Commit `f7b8233`, 4× ROT belegt) — DocsStatus.nextStep (erste ⬜-Zeile einer laufenden Phase in Tabellen-Ordnung) + nextPriority (erste nicht-leere Sektion 🔴→🔵), deterministisch über project-a/-b getestet; CLI `status` zeigt beide Zeilen; JSON-Contract additiv erweitert (schema bleibt 1, Snapshot-Test aktualisiert); ohne laufende Phase/offene Items → undefined (auch im M5-Zero-State))
 
 ---
