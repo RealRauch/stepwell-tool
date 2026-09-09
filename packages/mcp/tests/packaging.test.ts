@@ -75,3 +75,22 @@ describe("pack smoke with spaces in the temp path (R8, 10.2)", () => {
     expect(result.status, `stderr: ${result.stderr}`).toBe(0);
   }, 150_000);
 });
+
+describe("build pipeline (H1/1, 10.3)", () => {
+  it("emits js + declarations for both workspaces with rewritten relative imports", () => {
+    const result = spawnSync("npm", ["run", "build"], {
+      cwd: repoRoot,
+      encoding: "utf8",
+      shell: true,
+      timeout: 120_000,
+    });
+    expect(result.status, `stderr: ${result.stderr}`).toBe(0);
+    expect(existsSync(join(repoRoot, "packages", "core", "dist", "index.js"))).toBe(true);
+    expect(existsSync(join(repoRoot, "packages", "core", "dist", "index.d.ts"))).toBe(true);
+    expect(existsSync(join(repoRoot, "packages", "mcp", "dist", "index.js"))).toBe(true);
+    expect(existsSync(join(repoRoot, "packages", "mcp", "dist", "tools.js"))).toBe(true);
+    // relative .ts imports must be rewritten to .js in the emitted output
+    const projectFilesJs = readFileSync(join(repoRoot, "packages", "core", "dist", "project-files.js"), "utf8");
+    expect(projectFilesJs).not.toMatch(/from "[^"]+\.ts"/u);
+  }, 150_000);
+});
