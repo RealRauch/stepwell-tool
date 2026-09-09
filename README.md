@@ -92,6 +92,14 @@ npx @modelcontextprotocol/inspector node packages/mcp/src/serve.ts
 Die Test-Suite deckt denselben Protokoll-Pfad automatisiert ab
 (`InMemoryTransport` + Client, plus ein echter stdio-Handshake-Test).
 
+### Distribution (zwei Kanäle)
+
+1. **MCP-Server:** `npx @method-docs/mcp` (bzw. `serve.ts`) — operativ, Tools wie unten.
+2. **SKILL.md:** `packages/mcp/skills/stepwell/SKILL.md` (liegt im npm-Pack) —
+   portabler Wegweiser für Skill-Ökosysteme (Claude Skills, Gemini CLI, …): wann
+   welches Tool, Gates (Freigabe/Content), Test-First, Statuspflege nur via Tools.
+   Er ersetzt weder MCP-Server noch PLAYBOOK.md — beides bleibt bindend.
+
 ### Tools
 
 Alle Tools nehmen `root` (absoluter Pfad zum Projekt-Root) **pro Call**.
