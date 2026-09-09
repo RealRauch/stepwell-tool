@@ -9,6 +9,17 @@
 > wandern nach Abschluss **unverändert** in `docs/archive/PROGRESS_ARCHIVE.md`.
 
 ## Laufende Phasen
+### Phase 10 — Review-Fixes, Distribution & Surface-Guardrail
+
+**Umfang (Steps):**
+
+- **10.1 Coverage-Gate-Rekursion fixen: Nested-Exclude + Output-Assert (R7)**
+- **10.2 pack-smoke: Pfad-Quoting bei shell:true (R8)**
+- **10.3 Build-Pipeline: tsc → dist in beiden Workspaces (H1/1)**
+- **10.4 Manifests auf dist umstellen: exports/bin/files (H1/2, Content-Gate Mittel)**
+- **10.5 Dynamischer Pack-Smoke + README-Install-Verifikation (H1/3)**
+- **10.6 Surface-Guardrail als Decision verankern + README (M4)**
+
 
 
 ---
@@ -66,3 +77,9 @@
 | 9.12 | Next-Action in docs_status (L7) | ✅ |
 | 9.13 | BOM-Toleranz des Parsers (T5) | ✅ |
 | 9.14 | docs_review-Alternativprüfung (L5) | ✅ |
+| 10.1 | Coverage-Gate-Rekursion fixen: Nested-Exclude + Output-Assert (R7) | ⬜ |
+| 10.2 | pack-smoke: Pfad-Quoting bei shell:true (R8) | ⬜ |
+| 10.3 | Build-Pipeline: tsc → dist in beiden Workspaces (H1/1) | ⬜ |
+| 10.4 | Manifests auf dist umstellen: exports/bin/files (H1/2, Content-Gate Mittel) | ⬜ |
+| 10.5 | Dynamischer Pack-Smoke + README-Install-Verifikation (H1/3) | ⬜ |
+| 10.6 | Surface-Guardrail als Decision verankern + README (M4) | ⬜ |
