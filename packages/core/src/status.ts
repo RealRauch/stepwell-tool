@@ -57,16 +57,19 @@ export function docsStatus(root: string): DocsStatus {
   const total = progress.value.rows.length;
   const percent = total === 0 ? 0 : Math.round((done / total) * 100);
 
-  // Next-Action (L7): erste ⬜-Zeile der laufenden Phasen (Tabellen-Ordnung) +
-  // erste nicht-leere Prioritäts-Sektion (🔴→🔵) — rein ableitend.
-  const planningBlocks = progress.value.phases.filter((block) => {
+  // Next-Action (L7/L10): Kaskade — (1) erste ⬜-Zeile einer Phase mit 🔄
+  // (Vorrang laufender Arbeit), (2) sonst erste ⬜-Zeile einer rein vorausgeplanten
+  // Phase (Tabellen-Ordnung), (3) sonst undefined.
+  const openRowIn = (blocks: typeof progress.value.phases): ProgressRow | undefined => {
+    const steps = new Set(blocks.flatMap((block) => scopeSteps(block)));
+    return progress.value.rows.find((r) => r.status === "⬜" && steps.has(r.step));
+  };
+  const runningBlocks = progress.value.phases.filter((block) => {
     const steps = new Set(scopeSteps(block));
     return progress.value.rows.some((r) => r.status === "🔄" && steps.has(r.step));
   });
-  const plannedSteps = new Set(planningBlocks.flatMap((block) => scopeSteps(block)));
-  const nextStep: ProgressRow | undefined = progress.value.rows.find(
-    (r) => r.status === "⬜" && plannedSteps.has(r.step),
-  );
+  const plannedOnlyBlocks = progress.value.phases.filter((block) => !runningBlocks.includes(block));
+  const nextStep: ProgressRow | undefined = openRowIn(runningBlocks) ?? openRowIn(plannedOnlyBlocks);
   const nextPriority = (["🔴", "🟠", "🟡", "🟢", "🔵"] as const).find(
     (p) => openByPriority[p] > 0,
   );
