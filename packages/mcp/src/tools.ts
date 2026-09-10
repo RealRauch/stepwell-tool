@@ -87,6 +87,30 @@ const DRYRUN_FIELD = z.boolean().default(true)
   .describe("true (Default): nur Plan/Diff-Vorschau; false: Änderungen schreiben.");
 const STRUCTURED_FIELD = z.boolean().default(false)
   .describe("true: Payload zusätzlich als structuredContent (M3); false (Default): nur Text-Content.");
+const DETAIL_FIELD = z.enum(["summary", "diff"]).default("diff")
+  .describe(
+    "Plan-Detailstufe bei Dry-run: \"diff\" (Default) = volle Vorschau; \"summary\" = " +
+      "Headline + Zeilenzahlen (Routine-Statuspflege). Apply antwortet unverändert.",
+  );
+
+/** Projiziert Dry-run-Pläne auf Headline + Zeilenzahlen (E1/12.2) — Apply bleibt unberührt. */
+function summarizePlan<T extends object>(plan: T): T {
+  if ((plan as { dryRun?: unknown }).dryRun !== true) return plan;
+  const changes = (plan as {
+    changes?: Array<{ file: string; description: string; before: string; after: string }>;
+  }).changes;
+  if (changes === undefined) return plan;
+  return {
+    ...plan,
+    detail: "summary",
+    changes: changes.map((c) => ({
+      file: c.file,
+      description: c.description,
+      beforeLines: c.before.split("\n").length,
+      afterLines: c.after.split("\n").length,
+    })),
+  } as T;
+}
 
 const ROOT_FIELD = z.string().describe("Absoluter Pfad zum Projekt-Root (mit BACKLOG.md/PROGRESS.md).");
 
@@ -118,6 +142,25 @@ function withoutRaw(item: BacklogItem): Omit<BacklogItem, "raw"> {
   return rest;
 }
 
+const PROJECTABLE_FIELDS = [
+  "id",
+  "title",
+  "priority",
+  "section",
+  "open",
+  "location",
+  "text",
+  "span",
+] as const;
+
+function projectItem(
+  item: BacklogItem,
+  fields: readonly (typeof PROJECTABLE_FIELDS)[number][],
+): Record<string, unknown> {
+  const full = withoutRaw(item) as unknown as Record<string, unknown>;
+  return Object.fromEntries(fields.map((f) => [f, full[f]]));
+}
+
 export function registerDocsTools(server: McpServer): void {
   server.registerTool(
     "backlog_list",
@@ -126,16 +169,20 @@ export function registerDocsTools(server: McpServer): void {
       title: "Backlog-Liste",
       description:
         "Listet Items der BACKLOG.md eines STEPWELL-Projekts (ohne raw, schlanker Payload) " +
-        "inkl. Parse-Warnungen; Filter: priority, open, section.",
+        "inkl. Parse-Warnungen; Filter: priority, open, section; Projektion: fields " +
+        "(z. B. [\"id\",\"title\",\"priority\",\"open\",\"section\"] für Übersichts-Calls).",
       inputSchema: {
         root: ROOT_FIELD,
         priority: z.array(z.enum(PRIORITY_VALUES)).optional()
           .describe("Filter auf Prioritäten."),
         open: z.boolean().optional().describe("Filter auf offene/erledigte Checkbox."),
         section: z.string().optional().describe("Exakter Sektions-Titel (ohne Emoji)."),
+        fields: z.array(z.enum(PROJECTABLE_FIELDS)).optional()
+          .describe("Projiziert jedes Item auf die genannten Felder (Token-Ökonomie, E1); " +
+            "fehlt der Parameter, werden alle Felder außer raw geliefert."),
       },
     },
-    ({ root, priority, open, section }) =>
+    ({ root, priority, open, section, fields }) =>
       asResult(() => {
         const parsed = readBacklog(root);
         let items = parsed.value.items;
@@ -149,7 +196,11 @@ export function registerDocsTools(server: McpServer): void {
         if (section !== undefined) {
           items = items.filter((i) => i.section === section);
         }
-        return { count: items.length, items: items.map(withoutRaw), warnings: parsed.warnings };
+        return {
+          count: items.length,
+          items: items.map((i) => (fields ? projectItem(i, fields) : withoutRaw(i))),
+          warnings: parsed.warnings,
+        };
       }),
   );
 
@@ -276,18 +327,20 @@ export function registerDocsTools(server: McpServer): void {
           .describe("Optionale Erledigt-Notiz (z. B. Commit-Hash) — landet im Archiv-Block und Index-Tail."),
         locale: LOCALE_FIELD,
         structured: STRUCTURED_FIELD,
+        detail: DETAIL_FIELD,
         dryRun: z.boolean().default(true)
           .describe("true (Default): nur Plan/Diff-Vorschau; false: Änderungen schreiben."),
       },
     },
-    ({ root, id, note, locale, structured, dryRun }) =>
+    ({ root, id, note, locale, structured, detail, dryRun }) =>
       asStructuredResult(() => {
         const plan = planArchiveItem(root, id, {
           dryRun,
           ...(note !== undefined ? { note } : {}),
           ...(locale !== undefined ? { locale: locale as Locale } : {}),
         });
-        return plan.dryRun ? plan : applyArchivePlan(plan);
+        const result = plan.dryRun ? plan : applyArchivePlan(plan);
+        return detail === "summary" ? summarizePlan(result) : result;
       }, structured),
   );
 
@@ -314,11 +367,12 @@ export function registerDocsTools(server: McpServer): void {
           .describe("Optionaler Commit-SHA der Phase (7–40 Hex) — bei Phasen-Abschluss in der Verifikations-Zeile des Archiv-Blocks."),
         locale: LOCALE_FIELD,
         structured: STRUCTURED_FIELD,
+        detail: DETAIL_FIELD,
         dryRun: z.boolean().default(true)
           .describe("true (Default): nur Plan/Diff-Vorschau; false: Änderungen schreiben."),
       },
     },
-    ({ root, phase, step, status, title, note, checkpoint, locale, structured, dryRun }) =>
+    ({ root, phase, step, status, title, note, checkpoint, locale, structured, detail, dryRun }) =>
       asStructuredResult(() => {
         const plan = planProgressUpdate(root, phase, step, status as Status, {
           dryRun,
@@ -327,7 +381,8 @@ export function registerDocsTools(server: McpServer): void {
           ...(checkpoint !== undefined ? { checkpoint } : {}),
           ...(locale !== undefined ? { locale: locale as Locale } : {}),
         });
-        return plan.dryRun ? plan : applyProgressPlan(plan);
+        const result = plan.dryRun ? plan : applyProgressPlan(plan);
+        return detail === "summary" ? summarizePlan(result) : result;
       }, structured),
   );
 
@@ -349,10 +404,11 @@ export function registerDocsTools(server: McpServer): void {
         id: z.string().optional()
           .describe("Explizite Item-ID (Konvention ^[A-Z][0-9]+$); fehlt sie, wird die nächste freie Nummer der Prioritäts-Serie (K/H/M/L) vergeben. 🔵 erfordert eine explizite ID."),
         text: TEXT_FIELD,
+        detail: DETAIL_FIELD,
         dryRun: DRYRUN_FIELD,
       },
     },
-    ({ root, section, title, priority, id, text, dryRun }) =>
+    ({ root, section, title, priority, id, text, detail, dryRun }) =>
       asResult(() => {
         const plan = planBacklogAdd(root, {
           dryRun,
@@ -362,7 +418,8 @@ export function registerDocsTools(server: McpServer): void {
           ...(id !== undefined ? { id } : {}),
           ...(text !== undefined ? { text } : {}),
         });
-        return plan.dryRun ? plan : applyBacklogAddPlan(plan);
+        const result = plan.dryRun ? plan : applyBacklogAddPlan(plan);
+        return detail === "summary" ? summarizePlan(result) : result;
       }),
   );
 
@@ -384,10 +441,11 @@ export function registerDocsTools(server: McpServer): void {
         section: z.string().optional()
           .describe("Neue Ziel-Sektion (Titel ohne Emoji); Default: passende Prioritäts-Sektion bei Prioritätswechsel, sonst bleibt das Item in-place."),
         text: TEXT_FIELD,
+        detail: DETAIL_FIELD,
         dryRun: DRYRUN_FIELD,
       },
     },
-    ({ root, id, title, priority, section, text, dryRun }) =>
+    ({ root, id, title, priority, section, text, detail, dryRun }) =>
       asResult(() => {
         const plan = planBacklogUpdate(root, id, {
           dryRun,
@@ -396,7 +454,8 @@ export function registerDocsTools(server: McpServer): void {
           ...(section !== undefined ? { section } : {}),
           ...(text !== undefined ? { text } : {}),
         });
-        return plan.dryRun ? plan : applyBacklogUpdatePlan(plan);
+        const result = plan.dryRun ? plan : applyBacklogUpdatePlan(plan);
+        return detail === "summary" ? summarizePlan(result) : result;
       }),
   );
 
@@ -416,17 +475,19 @@ export function registerDocsTools(server: McpServer): void {
         note: z.string().optional()
           .describe("Optionale Entfernt-Notiz — landet im Archiv-Block und Index-Tail."),
         locale: LOCALE_FIELD,
+        detail: DETAIL_FIELD,
         dryRun: DRYRUN_FIELD,
       },
     },
-    ({ root, id, note, locale, dryRun }) =>
+    ({ root, id, note, locale, detail, dryRun }) =>
       asResult(() => {
         const plan = planBacklogRemove(root, id, {
           dryRun,
           ...(note !== undefined ? { note } : {}),
           ...(locale !== undefined ? { locale: locale as Locale } : {}),
         });
-        return plan.dryRun ? plan : applyBacklogRemovePlan(plan);
+        const result = plan.dryRun ? plan : applyBacklogRemovePlan(plan);
+        return detail === "summary" ? summarizePlan(result) : result;
       }),
   );
 
@@ -448,13 +509,15 @@ export function registerDocsTools(server: McpServer): void {
         steps: z
           .array(z.object({ step: z.string(), name: z.string() }))
           .describe("Steps der Phase in Reihenfolge (z. B. [{ step: \"7.1\", name: \"Setup\" }])."),
+        detail: DETAIL_FIELD,
         dryRun: DRYRUN_FIELD,
       },
     },
-    ({ root, phase, steps, dryRun }) =>
+    ({ root, phase, steps, detail, dryRun }) =>
       asResult(() => {
         const plan = planPhase(root, phase, steps, { dryRun });
-        return plan.dryRun ? plan : applyPhasePlan(plan);
+        const result = plan.dryRun ? plan : applyPhasePlan(plan);
+        return detail === "summary" ? summarizePlan(result) : result;
       }),
   );
 }

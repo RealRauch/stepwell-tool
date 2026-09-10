@@ -40,7 +40,10 @@ Feldtest (Decision 16); bis dahin 0.x mit Lockstep über alle drei `package.json
 - **Token-Ökonomie I (E1):** Alle MCP-Tool-Text-Payloads sind **kompaktes JSON** (ohne
   Einrückung) statt Pretty-Print; `structuredContent` wird bei `docs_validate`,
   `progress_update` und `archive_item` **nur noch auf Opt-in** (`structured: true`)
-  geliefert — Default ist nur Text-Content (Dedupe). Kontrakt-Notiz: Output-Kompaktierung
+  geliefert — Default ist nur Text-Content (Dedupe); `backlog_list` akzeptiert
+  `fields[]` zur Feldprojektion (schlanke Übersichts-Calls); Mutations akzeptieren
+  `detail: "summary" | "diff"` für Dry-run-Pläne (summary = Headline + Zeilenzahlen,
+  Default bleibt `diff`). Kontrakt-Notiz: Output-Kompaktierung
   und Removal des `structuredContent`-Defaults sind Vertragsänderungen im 0.x-Fenster
   (SemVer-0-Regel, Decision 16); das CLI-`schema`-Feld (M6) bleibt unverändert auf `1`
   — die JSON-Struktur der Daten ändert sich nicht, nur die Serialisierung.
