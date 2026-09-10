@@ -54,29 +54,29 @@ interface CliOptions {
 const USAGE = `usage: stepwell <command> [options]
 
 commands:
-  status           Aggregat des Projekts (offene Items, laufende Phasen, ✅-Quote)
-  backlog          Items der BACKLOG.md listen
-  progress         Fortschrittstabelle listen
-  validate         Konsistenz prüfen (Exit 1 bei Funden)
-  archive          Erledigtes Item ins Archiv verschieben (Dry-run; --apply zum Schreiben)
-  progress-update  Step-Status pflegen inkl. Phasen-Abschluss (Dry-run; --apply zum Schreiben)
+  status           Project aggregate (open items, running phases, ✅ ratio)
+  backlog          List items of BACKLOG.md
+  progress         List progress table rows
+  validate         Check consistency (exit 1 on findings)
+  archive          Move completed item into archive (dry-run; --apply to write)
+  progress-update  Update step status incl. phase completion (dry-run; --apply to write)
 
 options:
-  --root <dir>       Projekt-Root (Pflicht)
-  --priority <list>  Komma-Liste, Icons oder Aliase: 🔴=red/kritisch/p1, 🟠=orange/hoch/p2,
-                     🟡=yellow/mittel/p3, 🟢=green/niedrig/p4, 🔵=blue/test/p5, unknown
-  --open <bool>      Checkbox-Filter (true/false, nur backlog)
-  --section <title>  Exakter Sektions-Titel (nur backlog)
-  --status <icon>    Status-Filter (progress) bzw. neues Icon (progress-update):
-                     ⬜=open, 🔄=running/wip, ✅=done, ⛔=blocked, unknown (nur Filter)
-  --id <id>          Item-ID (nur archive)
-  --note <text>      Erledigt-/Verifikations-Notiz (archive, progress-update)
-  --title <text>     Neuer Phasen-Titel (progress-update) — benennt Block-Heading um
-  --checkpoint <sha> Commit-SHA der Phase, 7–40 Hex (progress-update) — landet in der
-                     Verifikations-Zeile des Archiv-Blocks
-  --locale <de|en>   Sprache generierter Texte (archive, progress-update; Default: Auto-Erkennung)
-  --apply            Änderungen schreiben (archive, progress-update; Default: Dry-run-Vorschau)
-  --json             Roh-Payloads statt Lesbarkeit
+  --root <dir>       Project root (required)
+  --priority <list>  Comma list, icons or aliases: 🔴=red/critical/p1, 🟠=orange/high/p2,
+                     🟡=yellow/medium/p3, 🟢=green/low/p4, 🔵=blue/test/p5, unknown
+  --open <bool>      Checkbox filter (true/false, backlog only)
+  --section <title>  Exact section title (backlog only)
+  --status <icon>    Status filter (progress) or new icon (progress-update):
+                     ⬜=open, 🔄=running/wip, ✅=done, ⛔=blocked, unknown (filter only)
+  --id <id>          Item id (archive only)
+  --note <text>      Done/verification note (archive, progress-update)
+  --title <text>     New phase title (progress-update) — renames the block heading
+  --checkpoint <sha> Commit SHA of the phase, 7–40 hex (progress-update) — lands in
+                     the verification line of the archive block
+  --locale <de|en>   Language for generated text (archive, progress-update; default: auto-detect)
+  --apply            Write the changes (archive, progress-update; default: dry-run preview)
+  --json             Raw payloads instead of human-readable text
 `;
 
 function parseArgs(argv: string[]): { command: string | undefined; options: CliOptions } {
@@ -173,7 +173,7 @@ function basename(path: string): string {
 function requireLocale(options: CliOptions): "de" | "en" | undefined {
   if (options.locale === undefined || options.locale === "") return undefined;
   if (options.locale !== "de" && options.locale !== "en") {
-    throw new UsageError("invalid --locale: erlaubt sind de und en");
+    throw new UsageError("invalid --locale: allowed values are de and en");
   }
   return options.locale;
 }
@@ -182,7 +182,7 @@ function requirePriorities(options: CliOptions): string[] {
   return options.priority.map((token) => {
     const resolved = resolvePriority(token);
     if (resolved === undefined) {
-      throw new UsageError(`invalid --priority value: "${token}" — erlaubt sind ${priorityAliasHelp()}`);
+      throw new UsageError(`invalid --priority value: "${token}" — allowed: ${priorityAliasHelp()}`);
     }
     return resolved;
   });
@@ -192,7 +192,7 @@ function requireStatusFilter(options: CliOptions): string {
   const resolved = resolveStatus(options.status!);
   if (resolved === undefined) {
     throw new UsageError(
-      `invalid --status value: "${options.status}" — erlaubt sind ${statusAliasHelp()}`,
+      `invalid --status value: "${options.status}" — allowed: ${statusAliasHelp()}`,
     );
   }
   return resolved;
@@ -202,7 +202,7 @@ function requireStatusIcon(options: CliOptions): "⬜" | "🔄" | "✅" | "⛔" 
   const resolved = resolveStatus(options.status!);
   if (resolved === undefined || resolved === "unknown") {
     throw new UsageError(
-      `invalid --status value: "${options.status}" — erlaubt sind ${statusAliasHelp().replace(", unknown", "")}`,
+      `invalid --status value: "${options.status}" — allowed: ${statusAliasHelp().replace(", unknown", "")}`,
     );
   }
   return resolved;
@@ -213,21 +213,21 @@ function statusText(s: DocsStatus): string {
   const prioLine = `🔴 ${prio["🔴"]} · 🟠 ${prio["🟠"]} · 🟡 ${prio["🟡"]} · 🟢 ${prio["🟢"]} · 🔵 ${prio["🔵"]} · unknown ${prio.unknown}`;
   const steps = s.runningSteps.length > 0
     ? s.runningSteps.map((r) => `${r.step} ${r.name} (${r.status})`).join(", ")
-    : "(keine)";
-  const phases = s.runningPhases.length > 0 ? s.runningPhases.join(", ") : "(keine)";
-  const nextStep = s.nextStep !== undefined ? `${s.nextStep.step} ${s.nextStep.name} (⬜)` : "(keiner)";
+    : "(none)"
+  const phases = s.runningPhases.length > 0 ? s.runningPhases.join(", ") : "(none)";
+  const nextStep = s.nextStep !== undefined ? `${s.nextStep.step} ${s.nextStep.name} (⬜)` : "(none)";
   const nextPriority = s.nextPriority !== undefined
-    ? `${s.nextPriority} (${s.openByPriority[s.nextPriority]} offen)`
-    : "(keine)";
-  const quote = `✅-Quote: ${s.doneQuote.done}/${s.doneQuote.total} (${s.doneQuote.percent}%)`;
+    ? `${s.nextPriority} (${s.openByPriority[s.nextPriority]} open)`
+    : "(none)";
+  const quote = `✅ ratio: ${s.doneQuote.done}/${s.doneQuote.total} (${s.doneQuote.percent}%)`;
   return [
-    `Offene Items: ${s.openTotal} (${prioLine})`,
-    `Laufende Steps: ${steps}`,
-    `Laufende Phasen: ${phases}`,
-    `Nächster Step: ${nextStep}`,
-    `Nächste Priorität: ${nextPriority}`,
+    `Open items: ${s.openTotal} (${prioLine})`,
+    `Running steps: ${steps}`,
+    `Running phases: ${phases}`,
+    `Next step: ${nextStep}`,
+    `Next priority: ${nextPriority}`,
     quote,
-    `Warnungen: ${s.warnings.length}`,
+    `Warnings: ${s.warnings.length}`,
     "",
   ].join("\n");
 }
@@ -239,28 +239,28 @@ function backlogText(items: Array<{ id: string; title: string; priority: string;
 
 function progressText(rows: Array<{ step: string; name: string; status: string }>): string {
   const lines = rows.map((r) => `${r.step} ${r.status} ${r.name}`);
-  return [...lines, "", `Zeilen: ${rows.length}`, ""].join("\n");
+  return [...lines, "", `Rows: ${rows.length}`, ""].join("\n");
 }
 
 function validateText(result: { findings: Array<{ code: string; file: string; line?: number; message: string }>; warnings: Array<{ code: string }>; ok: boolean }): string {
   const lines: string[] = [];
   if (result.ok) {
-    lines.push("OK — keine Konsistenz-Funde.");
+    lines.push("OK — no consistency findings.");
   } else {
-    lines.push(`Funde: ${result.findings.length}`);
+    lines.push(`Findings: ${result.findings.length}`);
     for (const f of result.findings) {
       const where = f.line === undefined ? basename(f.file) : `${basename(f.file)}:${f.line}`;
       lines.push(`${f.code} ${where} — ${f.message}`);
     }
   }
-  lines.push(`Warnungen (Parse): ${result.warnings.length}`);
+  lines.push(`Warnings (parse): ${result.warnings.length}`);
   lines.push("");
   return lines.join("\n");
 }
 
 function planText(plan: { dryRun: boolean; changes: PlanChange[] }): string {
   const lines: string[] = [
-    plan.dryRun ? "Dry-run — es wurde nichts geschrieben (--apply zum Anwenden)." : "Apply — Änderungen geschrieben:",
+    plan.dryRun ? "Dry-run — nothing was written (--apply to apply)." : "Apply — changes written:",
     "",
   ];
   for (const change of plan.changes as PlanChange[]) {
@@ -273,7 +273,7 @@ function planText(plan: { dryRun: boolean; changes: PlanChange[] }): string {
 
 function applyResultText(result: ApplyResult): string {
   const lines = [
-    result.verification.ok ? "OK — Archivierung verifiziert." : "FEHLER — Verifikation fehlgeschlagen:",
+    result.verification.ok ? "OK — archival verified." : "ERROR — verification failed:",
     ...result.verification.messages.map((m) => `  ${m}`),
     "",
   ];

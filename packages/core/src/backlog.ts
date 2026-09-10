@@ -147,7 +147,7 @@ function buildItem(raw: RawItem, section: BacklogSection | null, file: string): 
       code: "PRIO_DUPLICATE",
       file,
       line: raw.headingLine,
-      message: `Item "${id}" trägt mehrere Prioritäts-Marker im Titel — nur einer wird erfasst.`,
+      message: `Item "${id}" carries multiple priority markers in its title — only one is captured.`,
     });
   }
 
@@ -160,7 +160,7 @@ function buildItem(raw: RawItem, section: BacklogSection | null, file: string): 
       code: "PRIO_UNKNOWN",
       file,
       line: raw.headingLine,
-      message: `Item "${id}" trägt ein unbekanntes Prioritäts-Emoji — priority ist "unknown".`,
+      message: `Item "${id}" carries an unknown priority emoji — priority is "unknown".`,
     });
   } else if (section !== null && isKnownPriority(section.emoji)) {
     priority = section.emoji;
@@ -168,7 +168,7 @@ function buildItem(raw: RawItem, section: BacklogSection | null, file: string): 
       code: "PRIO_MISSING",
       file,
       line: raw.headingLine,
-      message: `Item "${id}" hat keinen Prioritäts-Suffix — Priorität aus dem Sektions-Emoji übernommen.`,
+      message: `Item "${id}" has no priority suffix in its title — priority taken from the section emoji.`,
     });
   } else {
     priority = "unknown";
@@ -176,7 +176,7 @@ function buildItem(raw: RawItem, section: BacklogSection | null, file: string): 
       code: "PRIO_MISSING",
       file,
       line: raw.headingLine,
-      message: `Item "${id}" hat weder Titel-Suffix noch bekanntes Sektions-Emoji — priority ist "unknown".`,
+      message: `Item "${id}" has neither a title suffix nor a known section emoji — priority is "unknown".`,
     });
   }
 
@@ -185,7 +185,7 @@ function buildItem(raw: RawItem, section: BacklogSection | null, file: string): 
       code: "TITLE_EMPTY",
       file,
       line: raw.headingLine,
-      message: `Item "${id}" hat keinen Titel nach dem Trenner.`,
+      message: `Item "${id}" has no title after the separator.`,
     });
   }
 
@@ -201,7 +201,7 @@ function buildItem(raw: RawItem, section: BacklogSection | null, file: string): 
       code: "BLOCK_UNSTRUCTURED",
       file,
       line: raw.headingLine,
-      message: `Item "${id}" hat keinen strukturierten Block (keine **Label:**-Bullets) — Text als Freitext erfasst.`,
+      message: `Item "${id}" has no structured block (no **Label:** bullets) — text captured as free prose.`,
     });
   }
 

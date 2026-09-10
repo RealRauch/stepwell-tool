@@ -32,11 +32,11 @@ describe("runCli — status", () => {
     const io = makeIo();
     const code = await runCli(["status", "--root", projectA], io.io);
     expect(code).toBe(0);
-    expect(io.stdout).toContain("Offene Items: 7");
+    expect(io.stdout).toContain("Open items: 7");
     expect(io.stdout).toContain("🟠 3");
     expect(io.stdout).toContain("Phase 2 — UI-Polish");
-    expect(io.stdout).toContain("✅-Quote: 5/9 (56%)");
-    expect(io.stdout).toContain("Warnungen: 0");
+    expect(io.stdout).toContain("✅ ratio: 5/9 (56%)");
+    expect(io.stdout).toContain("Warnings: 0");
   });
 
   it("prints raw JSON with --json", async () => {
@@ -51,7 +51,7 @@ describe("runCli — status", () => {
     const io = makeIo();
     const code = await runCli(["status", "--root", projectDrift], io.io);
     expect(code).toBe(0);
-    expect(io.stdout).toContain("Warnungen: 19");
+    expect(io.stdout).toContain("Warnings: 19");
   });
 });
 
@@ -349,7 +349,7 @@ describe("runCli — status next-action lines (L7, 9.12)", () => {
     const io = makeIo();
     const code = await runCli(["status", "--root", projectA], io.io);
     expect(code).toBe(0);
-    expect(io.stdout).toContain("Nächster Step: 2.2 U21 Fehlertexte (⬜)");
-    expect(io.stdout).toContain("Nächste Priorität: 🟠 (3 offen)");
+    expect(io.stdout).toContain("Next step: 2.2 U21 Fehlertexte (⬜)");
+    expect(io.stdout).toContain("Next priority: 🟠 (3 open)");
   });
 });

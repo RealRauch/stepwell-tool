@@ -29,7 +29,7 @@ function scanLegacyDates(filePath: string, file: string, findings: Warning[]): v
         code: "DATE_LEGACY",
         file,
         line: idx + 1,
-        message: `Legacy-Datumsformat "${m[1]}" — kanonisch ist JJMMDD/HHMM (PLAYBOOK §3).`,
+        message: `Legacy date format "${m[1]}" — canonical is JJMMDD/HHMM (PLAYBOOK §3).`,
       });
     }
   }
@@ -69,7 +69,7 @@ export function docsValidate(root: string): {
         code: "NOT_ARCHIVED",
         file: backlogPath,
         line: item.span.start,
-        message: `Item "${item.id}" ist abgehakt ([x]), hängt aber noch im offenen BACKLOG — ins Archiv verschieben + Einzeiler im Erledigt-Index.`,
+        message: `Item "${item.id}" is checked off ([x]) but still in the open BACKLOG — move to archive + one-liner in the Done Index.`,
       });
     }
   }
@@ -86,7 +86,7 @@ export function docsValidate(root: string): {
         code: "ID_DUPLICATE",
         file: backlogPath,
         line,
-        message: `Item-ID "${id}" kommt doppelt vor (erste Vorkommens-Zeile: ${lines[0]}) — IDs sind projektweit eindeutig.`,
+        message: `Item-ID "${id}" appears more than once (first occurrence line: ${lines[0]}) — IDs are project-wide unique.`,
       });
     }
   }
@@ -97,7 +97,7 @@ export function docsValidate(root: string): {
         code: "ID_CONVENTION",
         file: backlogPath,
         line: item.span.start,
-        message: `Item-ID "${item.id}" verletzt die Nomenklatur ^[A-Z][0-9]+$ — Warnung, das Item bleibt gelistet.`,
+        message: `Item-ID "${item.id}" violates the naming convention ^[A-Z][0-9]+$ — warning, the item stays listed.`,
       });
     }
   }
@@ -106,7 +106,7 @@ export function docsValidate(root: string): {
       findings.push({
         code: "ID_CONVENTION",
         file: backlogPath,
-        message: `Item-ID "${done.id}" im Erledigt-Index verletzt die Nomenklatur ^[A-Z][0-9]+$.`,
+        message: `Item-ID "${done.id}" in the Done Index violates the naming convention ^[A-Z][0-9]+$.`,
       });
     }
   }
@@ -117,7 +117,7 @@ export function docsValidate(root: string): {
       findings.push({
         code: "INDEX_WITHOUT_ARCHIVE",
         file: backlogPath,
-        message: `Erledigt-Index-Eintrag "${done.id}" hat keinen Block im BACKLOG_ARCHIVE.md.`,
+        message: `Done Index entry "${done.id}" has no block in BACKLOG_ARCHIVE.md.`,
       });
     }
   }
@@ -130,7 +130,7 @@ export function docsValidate(root: string): {
         code: "ARCHIVE_WITHOUT_INDEX",
         file: backlogArchivePath,
         line: item.span.start,
-        message: `Archiv-Block "${item.id}" fehlt im Erledigt-Index der BACKLOG.md.`,
+        message: `Archive block "${item.id}" is missing from the Done Index of BACKLOG.md.`,
       });
     }
   }
@@ -142,7 +142,7 @@ export function docsValidate(root: string): {
       findings.push({
         code: "WIP_WITHOUT_PLAN",
         file: progressPath,
-        message: `Step ${row.step} ist 🔄, aber kein Detail-Block unter „Laufende Phasen“ paketiert ihn.`,
+        message: `Step ${row.step} is 🔄, but no detail block under "Active Phases" packages it.`,
       });
     }
   }
@@ -154,7 +154,7 @@ export function docsValidate(root: string): {
         code: "PLAN_WITHOUT_WIP",
         file: progressPath,
         line: block.span.start,
-        message: `Detail-Block "${block.name}" hat keinen 🔄-Step in der Fortschrittstabelle.`,
+        message: `Detail block "${block.name}" has no 🔄 step in the progress table.`,
       });
     }
   }
@@ -175,7 +175,7 @@ export function docsValidate(root: string): {
         code: "STEP_DUPLICATE",
         file: progressPath,
         line,
-        message: `Step-Nummer "${step}" kommt doppelt in der Fortschrittstabelle vor (erste Zeile: ${lines[0]}) — progress_update pflegt bei Dubletten nur die erste Zeile.`,
+        message: `Step number "${step}" appears more than once in the progress table (first row: ${lines[0]}) — progress_update only maintains the first row on duplicates.`,
       });
     }
   }

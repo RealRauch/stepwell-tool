@@ -166,20 +166,20 @@ export function registerDocsTools(server: McpServer): void {
     "backlog_list",
     {
       annotations: { ...READ_ONLY_ANNOTATIONS },
-      title: "Backlog-Liste",
+      title: "Backlog list",
       description:
-        "Listet Items der BACKLOG.md eines STEPWELL-Projekts (ohne raw, schlanker Payload) " +
-        "inkl. Parse-Warnungen; Filter: priority, open, section; Projektion: fields " +
-        "(z. B. [\"id\",\"title\",\"priority\",\"open\",\"section\"] für Übersichts-Calls).",
+        "Lists items of a STEPWELL project's BACKLOG.md (without raw, lean payload) " +
+        "including parse warnings; filter: priority, open, section; projection: fields " +
+        "(e.g. [\"id\",\"title\",\"priority\",\"open\",\"section\"] for overview calls).",
       inputSchema: {
         root: ROOT_FIELD,
         priority: z.array(z.enum(PRIORITY_VALUES)).optional()
-          .describe("Filter auf Prioritäten."),
-        open: z.boolean().optional().describe("Filter auf offene/erledigte Checkbox."),
-        section: z.string().optional().describe("Exakter Sektions-Titel (ohne Emoji)."),
+          .describe("Filter on priorities."),
+        open: z.boolean().optional().describe("Filter on open/completed checkbox."),
+        section: z.string().optional().describe("Exact section title (without emoji)."),
         fields: z.array(z.enum(PROJECTABLE_FIELDS)).optional()
-          .describe("Projiziert jedes Item auf die genannten Felder (Token-Ökonomie, E1); " +
-            "fehlt der Parameter, werden alle Felder außer raw geliefert."),
+          .describe("Project each item to the listed fields (token economy, E1); " +
+            "if the parameter is missing, all fields except raw are returned."),
       },
     },
     ({ root, priority, open, section, fields }) =>
@@ -208,13 +208,13 @@ export function registerDocsTools(server: McpServer): void {
     "backlog_show",
     {
       annotations: { ...READ_ONLY_ANNOTATIONS },
-      title: "Backlog-Item-Ansicht",
+      title: "Backlog item view",
       description:
-        "Merge-Sicht für eine Item-ID über offenes BACKLOG, Erledigt-Index und BACKLOG_ARCHIVE " +
-        "— inkl. raw + span; identifiziert das Item nicht, wird isError geliefert.",
+        "Merge view for an item id across the open BACKLOG, Done Index and BACKLOG_ARCHIVE " +
+        "— including raw + span; if the item is not identified, isError is returned.",
       inputSchema: {
         root: ROOT_FIELD,
-        id: z.string().describe("Item-ID, exakt und case-sensitiv (z. B. \"H1\")."),
+        id: z.string().describe("Item id, exact and case-sensitive (e.g. \"H1\")."),
       },
     },
     ({ root, id }) =>
@@ -233,13 +233,13 @@ export function registerDocsTools(server: McpServer): void {
     "progress_list",
     {
       annotations: { ...READ_ONLY_ANNOTATIONS },
-      title: "Fortschrittsliste",
+      title: "Progress list",
       description:
-        "Listet die Zeilen der Fortschrittstabelle aus PROGRESS.md inkl. Parse-Warnungen; " +
-        "Filter: status (Icon oder \"unknown\").",
+        "Lists the rows of the progress table in PROGRESS.md including parse warnings; " +
+        "filter: status (icon or \"unknown\").",
       inputSchema: {
         root: ROOT_FIELD,
-        status: z.enum(STATUS_VALUES).optional().describe("Filter auf Status-Icon."),
+        status: z.enum(STATUS_VALUES).optional().describe("Filter on status icon."),
       },
     },
     ({ root, status }) =>
@@ -262,13 +262,13 @@ export function registerDocsTools(server: McpServer): void {
     "progress_show",
     {
       annotations: { ...READ_ONLY_ANNOTATIONS },
-      title: "Phasen-Detail",
+      title: "Phase detail",
       description:
-        "Detail-Block einer Phase (inkl. raw) — Suche über laufende Phasen und Archiv; " +
-        "erkannt werden Name (\"Phase 2\"), Titel oder beides (\"Phase 2 — UI-Polish\").",
+        "Detail block of a phase (including raw) — search across active phases and archive; " +
+        "matched by name (\"Phase 2\"), title, or both (\"Phase 2 — UI Polish\").",
       inputSchema: {
         root: ROOT_FIELD,
-        phase: z.string().describe("Phasen-Name oder -Titel, z. B. \"Phase 2\"."),
+        phase: z.string().describe("Phase name or title, e.g. \"Phase 2\"."),
       },
     },
     ({ root, phase }) =>
@@ -288,15 +288,15 @@ export function registerDocsTools(server: McpServer): void {
     "docs_status",
     {
       annotations: { ...READ_ONLY_ANNOTATIONS },
-      title: "Doku-Status",
+      title: "Docs status",
       description:
-        "Aggregat eines STEPWELL-Projekts: offene Items je Priorität, laufende Steps/Phasen, " +
-        "✅-Quote und sämtliche Validierungs-/Parse-Warnungen.",
+        "Aggregate of a STEPWELL project: open items per priority, running steps/phases, " +
+        "✅-ratio and all validation/parse warnings.",
       inputSchema: {
         root: ROOT_FIELD,
         include: z.array(z.enum(["nextStepScope"])).optional()
-          .describe('Zusatz-Kontext: "nextStepScope" liefert Ziel/Abnahme/Scope-Bullet + ' +
-            "gemergtes Backlog-Item des nächsten Steps (1 Call statt 3, E2/12.3)."),
+          .describe('Additional context: "nextStepScope" returns the goal/acceptance/scope bullet + ' +
+            "merged backlog item of the next step (1 call instead of 3, E2/12.3)."),
       },
     },
     ({ root, include }) =>
@@ -307,10 +307,10 @@ export function registerDocsTools(server: McpServer): void {
     "docs_validate",
     {
       annotations: { ...READ_ONLY_ANNOTATIONS },
-      title: "Doku-Validierung",
+      title: "Docs validation",
       description:
-        "Prüft die Querkonsistenz der vier Doku-Dateien (Erledigt-Index ↔ Archiv, Checkbox ↔ " +
-        "Archivierung, 🔄 ↔ Detail-Block, ID-/Datum-Konvention) und sammelt Parse-Warnungen ein.",
+        "Checks cross-consistency of the four doc files (Done Index ↔ archive, checkbox ↔ " +
+        "archival, 🔄 ↔ detail block, id/date convention) and collects parse warnings.",
       inputSchema: { root: ROOT_FIELD, structured: STRUCTURED_FIELD },
     },
     ({ root, structured }) => asStructuredResult(() => docsValidate(root), structured),
@@ -320,22 +320,22 @@ export function registerDocsTools(server: McpServer): void {
     "archive_item",
     {
       annotations: { ...DESTRUCTIVE_ANNOTATIONS },
-      title: "Item archivieren (Dry-run)",
+      title: "Archive item (dry-run)",
       description:
-        "Plant die verbatim-Verschiebung eines erledigten Backlog-Items ins BACKLOG_ARCHIVE " +
-        "(Checkbox → [x], optionale note als **Erledigt:**-Zeile) plus Einzeiler im " +
-        "Erledigt-Index. Liefert den Plan mit Diff-Vorschau; geschrieben wird nur mit " +
-        "dryRun: false.",
+        "Plans the verbatim move of a completed backlog item into BACKLOG_ARCHIVE " +
+        "(checkbox → [x], optional note as **Done:** line) plus a one-liner in the " +
+        "Done Index. Returns the plan with a diff preview; nothing is written unless " +
+        "dryRun is false.",
       inputSchema: {
         root: ROOT_FIELD,
-        id: z.string().describe("Item-ID des offenen Backlog-Items, exakt (z. B. \"H1\")."),
+        id: z.string().describe("Item id of the open backlog item, exact (e.g. \"H1\")."),
         note: z.string().optional()
-          .describe("Optionale Erledigt-Notiz (z. B. Commit-Hash) — landet im Archiv-Block und Index-Tail."),
+          .describe("Optional done note (e.g. commit hash) — ends up in the archive block and index tail."),
         locale: LOCALE_FIELD,
         structured: STRUCTURED_FIELD,
         detail: DETAIL_FIELD,
         dryRun: z.boolean().default(true)
-          .describe("true (Default): nur Plan/Diff-Vorschau; false: Änderungen schreiben."),
+          .describe("true (default): plan/diff preview only; false: write the changes."),
       },
     },
     ({ root, id, note, locale, structured, detail, dryRun }) =>
@@ -354,29 +354,29 @@ export function registerDocsTools(server: McpServer): void {
     "progress_update",
     {
       annotations: { ...MUTATING_ANNOTATIONS },
-      title: "Step-Status pflegen (Dry-run)",
+      title: "Update step status (dry-run)",
       description:
-        "Setzt den Status eines Steps in der Fortschrittstabelle (fehlende Zeilen werden ergänzt), " +
-        "legt bei 🔄 ein Detail-Block-Skelett unter 'Laufende Phasen' an und verschiebt vollständige " +
-        "Phasen verbatim ins PROGRESS_ARCHIVE (note → **Verifikation:**-Zeile). Liefert den Plan " +
-        "mit Diff-Vorschau; geschrieben wird nur mit dryRun: false.",
+        "Sets the status of a step in the progress table (missing rows are added), " +
+        "creates a detail block skeleton under 'Active Phases' on 🔄 and moves complete " +
+        "phases verbatim into PROGRESS_ARCHIVE (note → **Verification:** line). Returns the " +
+        "plan with a diff preview; nothing is written unless dryRun is false.",
       inputSchema: {
         root: ROOT_FIELD,
-        phase: z.string().describe("Phasen-Name, -Titel oder beides (z. B. \"Phase 2\" / \"Phase 2 — UI-Polish\")."),
+        phase: z.string().describe("Phase name, title or both (e.g. \"Phase 2\" / \"Phase 2 — UI Polish\")."),
         step: z.union([z.string(), z.array(z.string())])
-          .describe("Step-Nummer laut Tabelle/Scope (z. B. \"2.2\") oder Array von Step-Nummern für Multi-Step-Statuspflege in einem Call (z. B. Phasenabschluss; nur mit dryRun: false)."),
-        status: z.enum(["⬜", "🔄", "✅", "⛔"]).describe("Neues Status-Icon."),
+          .describe("Step number per table/scope (e.g. \"2.2\") or an array of step numbers for multi-step updates in one call (e.g. phase completion; only with dryRun: false)."),
+        status: z.enum(["⬜", "🔄", "✅", "⛔"]).describe("New status icon."),
         title: z.string().optional()
-          .describe("Neuer Phasen-Titel — benennt das Detail-Block-Heading konsistent um (Tabelle bleibt unverändert); bei Phasen-Abschluss im selben Call wandert der Block unter dem neuen Titel ins Archiv."),
+          .describe("New phase title — renames the detail block heading consistently (table stays unchanged); on phase completion in the same call the block moves into the archive under the new title."),
         note: z.string().optional()
-          .describe("Optionale Notiz — bei Phasen-Abschluss als **Verifikation:**-Zeile am Archiv-Block."),
+          .describe("Optional note — on phase completion it becomes the **Verification:** line on the archive block."),
         checkpoint: z.string().optional()
-          .describe("Optionaler Commit-SHA der Phase (7–40 Hex) — bei Phasen-Abschluss in der Verifikations-Zeile des Archiv-Blocks."),
+          .describe("Optional commit SHA of the phase (7–40 hex) — on phase completion it appears in the verification line of the archive block."),
         locale: LOCALE_FIELD,
         structured: STRUCTURED_FIELD,
         detail: DETAIL_FIELD,
         dryRun: z.boolean().default(true)
-          .describe("true (Default): nur Plan/Diff-Vorschau; false: Änderungen schreiben."),
+          .describe("true (default): plan/diff preview only; false: write the changes."),
       },
     },
     ({ root, phase, step, status, title, note, checkpoint, locale, structured, detail, dryRun }) =>
@@ -414,19 +414,19 @@ export function registerDocsTools(server: McpServer): void {
     "backlog_add",
     {
       annotations: { ...MUTATING_ANNOTATIONS },
-      title: "Backlog-Item anlegen (Dry-run)",
+      title: "Create backlog item (dry-run)",
       description:
-        "Legt ein offenes Backlog-Item am Ende der Ziel-Sektion an: konforme ID (Serien-Konvention, " +
-        "Auto-Vergabe K/H/M/L je Priorität oder explizit), korrektes Block-Format, " +
-        "Stand:-Zeitstempel wird aktualisiert. Liefert den Plan mit Diff-Vorschau; geschrieben " +
-        "wird nur mit dryRun: false.",
+        "Creates an open backlog item at the end of the target section: conforming id " +
+        "(series convention, auto-assigned K/H/M/L per priority or explicit), correct " +
+        "block format, As of: timestamp updated. Returns the plan with a diff preview; " +
+        "nothing is written unless dryRun is false.",
       inputSchema: {
         root: ROOT_FIELD,
-        section: z.string().describe("Ziel-Sektion (Titel ohne Emoji, z. B. \"HOCH\")."),
-        title: z.string().describe("Item-Titel nach der ID."),
-        priority: z.enum(PRIORITY_WRITE_VALUES).describe("Prioritäts-Emoji (Teil des Titels)."),
+        section: z.string().describe("Target section (title without emoji, e.g. \"HIGH\")."),
+        title: z.string().describe("Item title after the id."),
+        priority: z.enum(PRIORITY_WRITE_VALUES).describe("Priority emoji (part of the title)."),
         id: z.string().optional()
-          .describe("Explizite Item-ID (Konvention ^[A-Z][0-9]+$); fehlt sie, wird die nächste freie Nummer der Prioritäts-Serie (K/H/M/L) vergeben. 🔵 erfordert eine explizite ID."),
+          .describe("Explicit item id (convention ^[A-Z][0-9]+$); if missing, the next free number of the priority series (K/H/M/L) is assigned. 🔵 requires an explicit id."),
         text: TEXT_FIELD,
         detail: DETAIL_FIELD,
         dryRun: DRYRUN_FIELD,
@@ -451,19 +451,19 @@ export function registerDocsTools(server: McpServer): void {
     "backlog_update",
     {
       annotations: { ...MUTATING_ANNOTATIONS },
-      title: "Backlog-Item ändern (Dry-run)",
+      title: "Update backlog item (dry-run)",
       description:
-        "Ändert Titel, Priorität, Text oder Sektion eines offenen Items im Block-Format " +
-        "(Span-Neuberechnung, Stand:-Zeitstempel). Prioritätswechsel verschiebt den Block in die " +
-        "passende Prioritäts-Sektion. Liefert den Plan mit Diff-Vorschau; geschrieben wird nur " +
-        "mit dryRun: false.",
+        "Changes title, priority, text or section of an open item in the block format " +
+        "(span re-computation, As of: timestamp). A priority change moves the block to the " +
+        "matching priority section. Returns the plan with a diff preview; nothing is " +
+        "written unless dryRun is false.",
       inputSchema: {
         root: ROOT_FIELD,
-        id: z.string().describe("Item-ID des offenen Backlog-Items, exakt (z. B. \"H1\")."),
-        title: z.string().optional().describe("Neuer Titel."),
-        priority: z.enum(PRIORITY_WRITE_VALUES).optional().describe("Neue Priorität."),
+        id: z.string().describe("Item id of the open backlog item, exact (e.g. \"H1\")."),
+        title: z.string().optional().describe("New title."),
+        priority: z.enum(PRIORITY_WRITE_VALUES).optional().describe("New priority."),
         section: z.string().optional()
-          .describe("Neue Ziel-Sektion (Titel ohne Emoji); Default: passende Prioritäts-Sektion bei Prioritätswechsel, sonst bleibt das Item in-place."),
+          .describe("New target section (title without emoji); default: matching priority section on priority change, otherwise the item stays in place."),
         text: TEXT_FIELD,
         detail: DETAIL_FIELD,
         dryRun: DRYRUN_FIELD,
@@ -487,17 +487,17 @@ export function registerDocsTools(server: McpServer): void {
     "backlog_remove",
     {
       annotations: { ...DESTRUCTIVE_ANNOTATIONS },
-      title: "Backlog-Item entfernen (Dry-run)",
+      title: "Remove backlog item (dry-run)",
       description:
-        "Entfernt ein offenes Item OHNE Hard-Delete: der Block wandert verbatim ins BACKLOG_ARCHIVE " +
-        "(Checkbox bleibt [ ], optionale note als **Entfernt:**-Zeile), im Erledigt-Index erscheint " +
-        "ein Tail ohne Erledigt-Marker. Liefert den Plan mit Diff-Vorschau; geschrieben wird nur " +
-        "mit dryRun: false.",
+        "Removes an open item WITHOUT hard delete: the block moves verbatim into BACKLOG_ARCHIVE " +
+        "(checkbox stays [ ], optional note as **Removed:** line), the Done Index gets a tail " +
+        "without a Done marker. Returns the plan with a diff preview; nothing is written " +
+        "unless dryRun is false.",
       inputSchema: {
         root: ROOT_FIELD,
-        id: z.string().describe("Item-ID des offenen Backlog-Items, exakt (z. B. \"H1\")."),
+        id: z.string().describe("Item id of the open backlog item, exact (e.g. \"H1\")."),
         note: z.string().optional()
-          .describe("Optionale Entfernt-Notiz — landet im Archiv-Block und Index-Tail."),
+          .describe("Optional removal note — ends up in the archive block and index tail."),
         locale: LOCALE_FIELD,
         detail: DETAIL_FIELD,
         dryRun: DRYRUN_FIELD,
@@ -519,20 +519,21 @@ export function registerDocsTools(server: McpServer): void {
     "progress_plan_phase",
     {
       annotations: { ...MUTATING_ANNOTATIONS },
-      title: "Phase vorausplanen (Dry-run)",
+      title: "Plan phase ahead (dry-run)",
       description:
-        "Plant eine neue Phase: legt Tabellen-Zeilen für alle Steps (⬜, mit Namen) und ein " +
-        "Detail-Block-Skelett mit vollständigem Scope unter 'Laufende Phasen' an. Existiert die " +
-        "Phase bereits als laufende Phase, wird sie um die Steps erweitert (fehlende Tabellen-Zeilen " +
-        "+ Scope-Bullets, ohne Nachbar-Zeilen anzutasten). Validiert, dass " +
-        "die Step-Nummern zum Phasen-Namen passen (Phase <N> → <N>.<x>) und Phase/Steps noch frei " +
-        "sind. Liefert den Plan mit Diff-Vorschau; geschrieben wird nur mit dryRun: false.",
+        "Plans a new phase: creates table rows for all steps (⬜, with names) and a " +
+        "detail block skeleton with the full scope under 'Active Phases'. If the phase " +
+        "already exists as an active phase, it is extended with the new steps (missing " +
+        "table rows + scope bullets, without touching neighbouring rows). Validates that " +
+        "the step numbers match the phase name (Phase <N> → <N>.<x>) and that phase/steps " +
+        "are still free. Returns the plan with a diff preview; nothing is written unless " +
+        "dryRun is false.",
       inputSchema: {
         root: ROOT_FIELD,
-        phase: z.string().describe('Neue Phase im Muster "Phase <Nr>[ — Titel]", z. B. "Phase 7 — Rundung".'),
+        phase: z.string().describe('New phase in the pattern "Phase <Nr>[ — Title]", e.g. "Phase 7 — Polish".'),
         steps: z
           .array(z.object({ step: z.string(), name: z.string() }))
-          .describe("Steps der Phase in Reihenfolge (z. B. [{ step: \"7.1\", name: \"Setup\" }])."),
+          .describe("Steps of the phase in order (e.g. [{ step: \"7.1\", name: \"Setup\" }])."),
         detail: DETAIL_FIELD,
         dryRun: DRYRUN_FIELD,
       },
