@@ -96,6 +96,22 @@ describe("tool docs_status (2.3)", () => {
       await c.close();
     }
   });
+
+  it("omits nextStepScope unless include requests it (12.3, E2/1)", async () => {
+    const c = await connect();
+    try {
+      const plain = payload(await callTool(c, "docs_status", { root: projectA }));
+      expect(plain.nextStepScope).toBeUndefined();
+      const withScope = payload(
+        await callTool(c, "docs_status", { root: projectA, include: ["nextStepScope"] }),
+      );
+      expect(withScope.nextStepScope).toMatchObject({ step: "2.2", phase: "Phase 2" });
+      expect(withScope.nextStepScope.goal).toContain("Admin-Bereich");
+      expect(withScope.nextStepScope.acceptance).toContain("U21/U22");
+    } finally {
+      await c.close();
+    }
+  });
 });
 
 describe("tool docs_validate (2.3)", () => {

@@ -175,3 +175,72 @@ describe("nextStep cascade (L10, option C)", () => {
     expect(status.nextStep).toEqual({ step: "3.1", name: "Erster Schritt", status: "⬜" });
   });
 });
+
+describe("docsStatus include: nextStepScope (12.3, E2/1)", () => {
+  function tempProject(): string {
+    const dir = mkdtempSync(join(tmpdir(), "method-docs-status-scope-"));
+    tempDirs.push(dir);
+    cpSync(join(fixtures, "project-a"), dir, { recursive: true });
+    return dir;
+  }
+
+  it("delivers goal, acceptance and the step's scope bullet in one call", () => {
+    const status = docsStatus(join(fixtures, "project-a"), { include: ["nextStepScope"] });
+    expect(status.nextStepScope).toEqual({
+      phase: "Phase 2",
+      phaseTitle: "UI-Polish",
+      step: "2.2",
+      name: "U21 Fehlertexte",
+      goal: "Admin-Bereich fühlt sich für Laypersonen richtig an (siehe BACKLOG U-Reihe).",
+      acceptance: "typecheck + unit + e2e grün; U21/U22 abgeschlossen.",
+      scope: "- **2.2 U21 Fehlertexte migrieren**",
+      item: undefined,
+    });
+  });
+
+  it("omits nextStepScope when include is not requested (contract unchanged)", () => {
+    const status = docsStatus(join(fixtures, "project-a"));
+    expect(status.nextStepScope).toBeUndefined();
+  });
+
+  it("resolves an (X/n) item ref from the scope bullet against the open backlog", () => {
+    const dir = tempProject();
+    const progressPath = join(dir, "PROGRESS.md");
+    writeFileSync(
+      progressPath,
+      readFileSync(progressPath, "utf8").replace(
+        "- **2.2 U21 Fehlertexte migrieren**",
+        "- **2.2 U21 Fehlertexte migrieren (U21/1)**",
+      ),
+      "utf8",
+    );
+    const status = docsStatus(dir, { include: ["nextStepScope"] });
+    const scope = status.nextStepScope!;
+    expect(scope.item).toBeDefined();
+    expect(scope.item!.id).toBe("U21");
+    expect(scope.item!.open).toBe(true);
+    expect(scope.item!.text.length).toBeGreaterThan(0);
+  });
+
+  it("tolerates unknown item refs without crashing (Decision 6)", () => {
+    const dir = tempProject();
+    const progressPath = join(dir, "PROGRESS.md");
+    writeFileSync(
+      progressPath,
+      readFileSync(progressPath, "utf8").replace(
+        "- **2.2 U21 Fehlertexte migrieren**",
+        "- **2.2 U21 Fehlertexte migrieren (ZZ99/1)**",
+      ),
+      "utf8",
+    );
+    const status = docsStatus(dir, { include: ["nextStepScope"] });
+    expect(status.nextStepScope).toBeDefined();
+    expect(status.nextStepScope!.item).toBeUndefined();
+  });
+
+  it("stays undefined in the zero state (project-empty)", () => {
+    const status = docsStatus(join(fixtures, "project-empty"), { include: ["nextStepScope"] });
+    expect(status.nextStepScope).toBeUndefined();
+    expect(status.warnings).toHaveLength(1);
+  });
+});
