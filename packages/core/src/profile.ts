@@ -73,7 +73,7 @@ export function detectLocale(...contents: string[]): Locale {
     de += count(content, "de");
     en += count(content, "en");
   }
-  return en > de ? "en" : "de";
+  return de > en ? "de" : "en";
 }
 
 /** Groß-/klein-insensitiver Feld-Lookup in einer Label-Map über Synonyme. */

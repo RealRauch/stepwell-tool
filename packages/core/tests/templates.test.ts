@@ -41,7 +41,7 @@ describe("project templates (M8/9.4)", () => {
     const parsed = parseBacklog(projectTemplates.backlog, "BACKLOG.md");
     expect(parsed.warnings).toEqual([]);
     expect(parsed.value.sections.map((s) => s.title)).toEqual([
-      "KRITISCH", "HOCH", "MITTEL", "NIEDRIG", "TEST-LÜCKEN",
+      "CRITICAL", "HIGH", "MEDIUM", "LOW", "TEST GAPS",
     ]);
     expect(parsed.value.items).toEqual([]);
     expect(parsed.value.doneIndex).toEqual([]);
