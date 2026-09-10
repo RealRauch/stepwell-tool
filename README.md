@@ -104,10 +104,12 @@ Die Test-Suite deckt denselben Protokoll-Pfad automatisiert ab
 
 ### Tools
 
-Alle Tools nehmen `root` (absoluter Pfad zum Projekt-Root) **pro Call**. `docs_validate`,
+Alle Tools nehmen `root` (absoluter Pfad zum Projekt-Root) **pro Call**. Alle JSON-Text-Payloads
+sind **kompakt** (ohne Einrückung — Token-Ökonomie, E1). `docs_validate`,
 `progress_update` und `archive_item` liefern ihre Daten **zusätzlich** als
-`structuredContent` (M3/9.7) — der Text-Payload bleibt unverändert menschenlesbar;
-Fehlerantworten (inkl. `PROJECT_NOT_INITIALIZED`) tragen kein `structuredContent`.
+`structuredContent` nur auf Opt-in mit `structured: true` (M3/9.7, Dedupe seit E1 —
+Default ist nur Text); Fehlerantworten (`isError: true`, inkl. `PROJECT_NOT_INITIALIZED`)
+tragen kein `structuredContent`.
 Fehler (fehlende Pflichtdatei, unbekannte ID/Phase) liefern `isError: true`
 mit klarer Meldung — der Server stürzt nicht ab.
 
@@ -120,14 +122,14 @@ mit klarer Meldung — der Server stürzt nicht ab.
 | `backlog_show` | `root`, `id` | Merge-Sicht für eine Item-ID über offenes BACKLOG ↔ Erledigt-Index ↔ BACKLOG_ARCHIVE, inkl. `raw` + `span`; case-sensitiv |
 | `progress_list` | `root`, optional `status` | Zeilen der Fortschrittstabelle `{step, name, status}` |
 | `progress_show` | `root`, `phase` | Detail-Block inkl. `raw` — Suche über laufende Phasen **und** Archiv (Name, Titel oder `Name — Titel`) |
-| `docs_validate` | `root` | Validate-Funde (Konsistenzregeln) + eingesammelte Parse-Warnungen, `ok` |
+| `docs_validate` | `root`, optional `structured` | Validate-Funde (Konsistenzregeln) + eingesammelte Parse-Warnungen, `ok` |
 
 #### Schreiben (Dry-run + Apply)
 
 | Tool | Parameter | Verhalten |
 |------|-----------|-----------|
-| `archive_item` | `root`, `id`, optional `note`, `locale`, `dryRun` (**Default `true`**) | Plant die **verbatim-Verschiebung** eines Items: Block (span-basiert) aus BACKLOG.md entfernen, im Archiv-Exemplar Checkbox → `[x]`, optionaler `note` wird Erledigt-Zeile; dazu Einzeiler `- <ID> — <Titel> — erledigt (note?)` am Ende des Erledigt-Index. Apply verifiziert frisch: ID weg aus offen, im Archiv + Index, keine Funde mehr. Das ist das Gegenmittel zum Validate-Fund `NOT_ARCHIVED` (D2). |
-| `progress_update` | `root`, `phase`, `step`, `status` (`⬜🔄✅⛔`), optional `title`, `note`, `checkpoint` (Commit-SHA, 7–40 Hex), `locale`, `dryRun` (**Default `true`**) | Setzt die Statuszelle des Steps (fehlende Zeile wird ergänzt, Name aus dem Scope-Bullet abgeleitet); legt bei 🔄 ein Detail-Block-Skelett unter „Laufende Phasen" an (`### Phase …` + `**Umfang (Steps):**` + Step-Bullet — **keine** erfundenen Ziel-/Abnahme-Texte); `title` benennt den Block-Heading konsistent um (Rename → Archivierung im selben Call ist definiert); ist danach kein Step der Phase mehr 🔄/⬜, wandert der Block **verbatim** ins PROGRESS_ARCHIVE (`note`/`checkpoint` → Verifikations-Zeile, Antwort enthält den Doku-Sync-Reminder). Apply verifiziert Zeile, Block-Wanderung und `docs_validate`. |
+| `archive_item` | `root`, `id`, optional `note`, `locale`, `structured`, `dryRun` (**Default `true`**) | Plant die **verbatim-Verschiebung** eines Items: Block (span-basiert) aus BACKLOG.md entfernen, im Archiv-Exemplar Checkbox → `[x]`, optionaler `note` wird Erledigt-Zeile; dazu Einzeiler `- <ID> — <Titel> — erledigt (note?)` am Ende des Erledigt-Index. Apply verifiziert frisch: ID weg aus offen, im Archiv + Index, keine Funde mehr. Das ist das Gegenmittel zum Validate-Fund `NOT_ARCHIVED` (D2). |
+| `progress_update` | `root`, `phase`, `step`, `status` (`⬜🔄✅⛔`), optional `title`, `note`, `checkpoint` (Commit-SHA, 7–40 Hex), `locale`, `structured`, `dryRun` (**Default `true`**) | Setzt die Statuszelle des Steps (fehlende Zeile wird ergänzt, Name aus dem Scope-Bullet abgeleitet); legt bei 🔄 ein Detail-Block-Skelett unter „Laufende Phasen" an (`### Phase …` + `**Umfang (Steps):**` + Step-Bullet — **keine** erfundenen Ziel-/Abnahme-Texte); `title` benennt den Block-Heading konsistent um (Rename → Archivierung im selben Call ist definiert); ist danach kein Step der Phase mehr 🔄/⬜, wandert der Block **verbatim** ins PROGRESS_ARCHIVE (`note`/`checkpoint` → Verifikations-Zeile, Antwort enthält den Doku-Sync-Reminder). Apply verifiziert Zeile, Block-Wanderung und `docs_validate`. |
 | `backlog_add` | `root`, `section`, `title`, `priority` (`🔴🟠🟡🟢🔵`), optional `id`, `text`, `dryRun` | Legt ein offenes Item am **Ende der Ziel-Sektion** an: ID mit Konventionsprüfung (`^[A-Z][0-9]+$`), Auto-Vergabe = nächste freie Nummer der Prioritäts-Serie (K/H/M/L; 🔵 erfordert explizite ID), `text`-Bullets verbatim, `Stand:`-Zeitstempel im Heading wird aktualisiert. |
 | `backlog_update` | `root`, `id`, optional `title`, `priority`, `section`, `text`, `dryRun` | Ändert Titel/Priorität/Text/Sektion im Block-Format (Span-Neuberechnung, Checkbox- und `*(…)*`-Suffix bleiben erhalten). Prioritätswechsel verschiebt den Block in die passende Prioritäts-Sektion. |
 | `backlog_remove` | `root`, `id`, optional `note`, `locale`, `dryRun` | **Kein Hard-Delete:** Block wandert verbatim ins BACKLOG_ARCHIVE (Checkbox bleibt `[ ]`, optional `note` → `**Entfernt:**`-Zeile), im Erledigt-Index erscheint ein Tail ohne Erledigt-Marker (`- <ID> — <Titel> — entfernt (note?)`). `docs_validate` meldet Checkbox-`[ ]`-Blöcke bewusst **nicht** als `ARCHIVE_WITHOUT_INDEX`. |
