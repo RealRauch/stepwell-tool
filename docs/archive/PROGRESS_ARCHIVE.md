@@ -307,3 +307,12 @@ AGENTS Decisions 13/14, `docs_validate` beider Projekte clean).
 - **10.6 Surface-Guardrail als Decision verankern + README (M4)**
 - **10.7 Coverage-Gate-Exit-Code robust stellen: Ursache klären + Gate Exit-unabhängig (R9, CI-Änderung = Gate Hoch)**
 **Verifikation:** `npm run typecheck` — fehlerfrei · `npm run test` — 261/261 grün · Messartefakt klargestellt: PowerShell `$LASTEXITCODE` → vitest exit 1 bei Threshold-Verletzung (isoliert + verschachtelt) — Gate validiert, kein CI-Edit nötig
+
+---
+
+### Phase 11 — Methoden-Sync: Mess-Lesson
+
+**Umfang (Steps):**
+
+- **11.1 Sync-Schlag: Lesson #18 (Exit-Codes mit Host-Sprache messen) in beiden LESSONS-Kopien (G4)**
+**Verifikation:** Lesson #18 in beiden Kopien textgleich (SHA256 D40FA413F3A4F42D7BEF2806B5BA6FB5CEED0C70FEE86AE03B8351133530924B; method-docs@6152eb6, stadtpfad-pwa@0e5a64c) — Verifikation: npm run typecheck && npm run test (261/261 grün), docs_validate clean (checkpoint: 6152eb6)
