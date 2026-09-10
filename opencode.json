@@ -3,7 +3,7 @@
   "mcp": {
     "stepwell": {
       "type": "local",
-      "command": ["node", "D:/Development/method-docs/packages/mcp/src/serve.ts"],
+      "command": ["node", "D:/Development/stepwell-tool/packages/mcp/src/serve.ts"],
       "enabled": true
     }
   }
