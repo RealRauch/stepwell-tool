@@ -1,71 +1,69 @@
 ---
 name: stepwell
-description: STEPWELL-Arbeitsweise für Projekte mit BACKLOG.md/PROGRESS.md und dem stepwell-MCP-Server — Session-Einstieg, Statuspflege, Archivierung und Release-Disziplin. Aktiv, wenn das Zielprojekt die vier STEPWELL-Dateien enthält oder ein solches aufgesetzt werden soll.
+description: STEPWELL method for projects with BACKLOG.md/PROGRESS.md and the stepwell-MCP-Server — session entry, status maintenance, archival and release discipline. Active when the target project contains the four STEPWELL files or one is to be set up.
 ---
 
-# STEPWELL — Arbeitsweise (stepwell)
+# STEPWELL — Method (stepwell)
 
-Bindende Methode: `docs/PLAYBOOK.md` im Zielprojekt (verbatim-Kopie). Checkliste:
-`docs/LESSONS.md`. Diese Skill-Datei fasst zusammen, **wann du welches Tool aufrufst** —
-sie ersetzt die Tools nicht und die Methode nicht.
+Binding method: `docs/PLAYBOOK.md` in the target project (verbatim copy). Checklist:
+`docs/LESSONS.md`. This skill file summarises **when to call which tool** —
+it does not replace the tools nor the method.
 
-## Die vier Dateien
+## The four files
 
-`BACKLOG.md` (nur Offenes, Prioritäts-Sektionen 🔴→🔵), `PROGRESS.md` (Fortschrittstabelle +
-Detail-Blöcke **laufender** Phasen), `docs/archive/BACKLOG_ARCHIVE.md` und
-`docs/archive/PROGRESS_ARCHIVE.md` (beide **append-only** — nie nachbearbeiten).
+`BACKLOG.md` (only open items, priority sections 🔴→🔵), `PROGRESS.md` (progress table +
+detail blocks of **active** phases), `docs/archive/BACKLOG_ARCHIVE.md` and
+`docs/archive/PROGRESS_ARCHIVE.md` (both **append-only** — never edited afterwards).
 
-Fehlen alle vier im `root`: kein STEPWELL-Projekt → die vier Dateien aus den Vorlagen
-anlegen: MCP-Resources `stepwell://templates/{kind}` (backlog | progress |
-backlog-archive | progress-archive), danach `docs_validate` — muss fund-frei sein.
+If all four are missing in `root`: no STEPWELL project → create the four files
+from the templates: MCP resources `stepwell://templates/{kind}` (backlog | progress |
+backlog-archive | progress-archive), then run `docs_validate` — must be clean.
 
-## Session-Einstieg (in dieser Reihenfolge, vor jeder Schreiboperation)
+## Session entry (in this order, before any write operation)
 
-1. `docs_status` (root) — Aggregate + Validierungs-Funde.
-2. `progress_show` (root, phase) — Detail-Block der laufenden Phase.
-3. Nächster offener Step = erste ⬜-Zeile der laufenden Phase. Sequenziell arbeiten,
-   niemals Schritte überspringen.
+1. `docs_status` (root) — aggregate + validation findings.
+2. `progress_show` (root, phase) — detail block of the active phase.
+3. Next open step = first ⬜ row of the active phase. Work sequentially, never skip steps.
 
-## Statuspflege — immer über die Tools, nie per Hand (LESSONS 17)
+## Status maintenance — always via the tools, never by hand (LESSONS 17)
 
-- `progress_update` — Step-Status in Tabelle + Detail-Block (🔄 vor Beginn, ✅ nach
-  verifiziertem Abschluss; vollständige Phase wandert automatisch ins Archiv).
-  Optionale Parameter: `title` (Phasen-Titel umbenennen), `note` (Verifikations-Zeile
-  im Archiv-Block), `checkpoint` (Commit-SHA der Phase, 7–40 Hex).
-- `archive_item` — erledigtes Backlog-Item verbatim ins Archiv + Einzeiler im
-  Erledigt-Index (`note` = Commit-Hash).
-- `backlog_add` / `backlog_update` / `backlog_remove` — Items format-sicher anlegen,
-  ändern, entfernen (statt Hand-Edit).
-- `progress_plan_phase` — neue Phase vorausplanen (Tabellen-Zeilen ⬜ + Scope-Skelett).
-- `dryRun` ist überall Default `true`: erst Vorschau/Diff, dann mit `dryRun: false`
-  schreiben.
+- `progress_update` — step status in the table + detail block (🔄 before starting, ✅
+  after verified completion; a complete phase is moved to the archive automatically).
+  Optional parameters: `title` (rename phase title), `note` (verification line in
+  the archive block), `checkpoint` (commit SHA of the phase, 7–40 hex).
+- `archive_item` — completed backlog item verbatim into the archive + one-liner in the
+  Done Index (`note` = commit hash).
+- `backlog_add` / `backlog_update` / `backlog_remove` — add/change/remove items in a
+  format-safe way (instead of hand-editing).
+- `progress_plan_phase` — plan a new phase ahead (table rows ⬜ + scope skeleton).
+- `dryRun` defaults to `true` everywhere: preview/diff first, then write with
+  `dryRun: false`.
 
-## Gates (bindend)
+## Gates (binding)
 
-- **Freigabe-Gate:** Planen → Paketieren → **erst nach expliziter menschlicher
-  Freigabe** implementieren. Agenten starten Code-Steps nicht eigenmächtig.
-- **Content-Gates je Dateiklasse:** Source-/Test-Edits im Step-Scope = autonom;
-  Dependency-Manifeste/Dockerfiles = anhalten; `.env`/CI-Workflows/Löschen von Tests/
-  Schema-Migrationen = explizites menschliches Gate.
-- **Inline-Fix-Lane:** Ein Bug im laufenden, freigegebenen Step-Scope (≤ ~10 Zeilen,
-  nur „Niedrig“-Dateien) darf sofort gefixt werden — Pflicht danach: retro
-  `backlog_add` (Serie `F`) + sofortiges `archive_item` mit Commit-Hash.
-- **Test-First (ROT → GRÜN):** jeder Code-Step bringt seine Tests mit; die ROT-Phase
-  wird belegt (eigener Test-Commit mit Failure-Beleg), Verifikation vor jedem ✅:
-  `npm run typecheck && npm run test` (oder projektäquivalent) — fehlerfrei.
+- **Release gate:** plan → package → **only after explicit human release** implement.
+  Agents do not start code steps on their own.
+- **Content gates per file class:** source/test edits in step scope = autonomous;
+  dependency manifests / Dockerfiles = pause; `.env` / CI workflows / deleting tests /
+  schema migrations = explicit human gate.
+- **Inline-fix lane:** a bug in a running, released step scope (≤ ~10 lines, only
+  "low" file classes) may be fixed on the spot — required afterwards: retro
+  `backlog_add` (series `F`) + immediate `archive_item` with the commit hash.
+- **Test-first (RED → GREEN):** every code step brings its tests; the RED phase is
+  evidenced (own test commit with failure evidence), verification before every ✅:
+  `npm run typecheck && npm run test` (or project equivalent) — must be clean.
 
-## Abschlüsse
+## Closures
 
-- **Step fertig:** `progress_update` ✅ erst nach bestandener Verifikation; Commit pro
-  Step (Tests zuerst, dann Implementierung — auditierbar im Log).
-- **Phase fertig:** `progress_update` verschiebt den Block verbatim ins
-  `PROGRESS_ARCHIVE`; danach Doku-Sync prüfen (AGENTS-Kickoff, README, PLAYBOOK-Kopien)
-  und Commit.
-- Vor jedem Commit: `docs_validate` muss fund-frei sein.
+- **Step done:** `progress_update` ✅ only after passing verification; commit per
+  step (tests first, then implementation — auditable in the log).
+- **Phase done:** `progress_update` moves the block verbatim into `PROGRESS_ARCHIVE`;
+  then check doc sync (AGENTS kickoff, README, PLAYBOOK copies) and commit.
+- Before every commit: `docs_validate` must be clean.
 
-## Werkzeug-Alternativen
+## Tool alternatives
 
-Ohne MCP-Server steht dieselbe Oberfläche als CLI bereit (`npx stepwell`):
-`status`/`backlog`/`progress`/`validate`/`archive`/`progress-update` — `--json`-Ausgaben
-tragen das versionierte Schema-Feld (`schema: <n>`; Breaking ⇒ Nummer hoch). Die Methode
-selbst lebt in PLAYBOOK.md — dieses Skill ist nur der Wegweiser zu den Tools.
+Without the MCP server, the same surface is available as a CLI (`npx stepwell`):
+`status`/`backlog`/`progress`/`validate`/`archive`/`progress-update` — `--json` output
+carries the versioned schema field (`schema: <n>`; breaking ⇒ bump the number). The
+method itself lives in PLAYBOOK.md — this skill is only the pointer to the tools.
