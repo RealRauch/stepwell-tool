@@ -114,7 +114,7 @@
 | 10.7 | Coverage-Gate-Exit-Code robust stellen: Ursache klären + Gate Exit-unabhängig (R9, CI-Änderung = Gate Hoch) | ✅ |
 | 11.1 | Sync-Schlag: Lesson #18 (Exit-Codes mit Host-Sprache messen) in beiden LESSONS-Kopien (G4) | ✅ |
 | 12.1 | Kompakt-JSON + structuredContent-Opt-in (E1/1) | ✅ |
-| 12.2 | backlog_list-Feldprojektion + Plan-Detailstufe (E1/2) | ⬜ |
+| 12.2 | backlog_list-Feldprojektion + Plan-Detailstufe (E1/2) | ✅ |
 | 12.3 | docs_status: nextStepScope-Include (E2/1) | ⬜ |
 | 12.4 | progress_update: Multi-Step (E2/2) | ⬜ |
 | 12.5 | Hash-Kurzschluss: SHA256 in Read-Tools + Resources (E2/3) | ⬜ |
