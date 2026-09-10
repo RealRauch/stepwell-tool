@@ -363,7 +363,8 @@ export function registerDocsTools(server: McpServer): void {
       inputSchema: {
         root: ROOT_FIELD,
         phase: z.string().describe("Phasen-Name, -Titel oder beides (z. B. \"Phase 2\" / \"Phase 2 — UI-Polish\")."),
-        step: z.string().describe("Step-Nummer laut Tabelle/Scope (z. B. \"2.2\")."),
+        step: z.union([z.string(), z.array(z.string())])
+          .describe("Step-Nummer laut Tabelle/Scope (z. B. \"2.2\") oder Array von Step-Nummern für Multi-Step-Statuspflege in einem Call (z. B. Phasenabschluss; nur mit dryRun: false)."),
         status: z.enum(["⬜", "🔄", "✅", "⛔"]).describe("Neues Status-Icon."),
         title: z.string().optional()
           .describe("Neuer Phasen-Titel — benennt das Detail-Block-Heading konsistent um (Tabelle bleibt unverändert); bei Phasen-Abschluss im selben Call wandert der Block unter dem neuen Titel ins Archiv."),
@@ -380,15 +381,32 @@ export function registerDocsTools(server: McpServer): void {
     },
     ({ root, phase, step, status, title, note, checkpoint, locale, structured, detail, dryRun }) =>
       asStructuredResult(() => {
-        const plan = planProgressUpdate(root, phase, step, status as Status, {
-          dryRun,
-          ...(title !== undefined ? { title } : {}),
-          ...(note !== undefined ? { note } : {}),
-          ...(checkpoint !== undefined ? { checkpoint } : {}),
-          ...(locale !== undefined ? { locale: locale as Locale } : {}),
-        });
-        const result = plan.dryRun ? plan : applyProgressPlan(plan);
-        return detail === "summary" ? summarizePlan(result) : result;
+        const steps = Array.isArray(step) ? step : [step];
+        if (steps.length > 1 && dryRun) {
+          throw new Error(
+            `multi-step (${steps.join(", ")}) requires dryRun: false — dry-run previews are only defined for a single step`,
+          );
+        }
+        const runSingle = (oneStep: string): unknown => {
+          const plan = planProgressUpdate(root, phase, oneStep, status as Status, {
+            dryRun,
+            ...(title !== undefined ? { title } : {}),
+            ...(note !== undefined ? { note } : {}),
+            ...(checkpoint !== undefined ? { checkpoint } : {}),
+            ...(locale !== undefined ? { locale: locale as Locale } : {}),
+          });
+          const result = plan.dryRun ? plan : applyProgressPlan(plan);
+          return detail === "summary" ? summarizePlan(result) : result;
+        };
+        if (steps.length === 1) return runSingle(steps[0]!);
+        const results = steps.map(runSingle) as Array<{
+          written: string[];
+          verification: { ok: boolean; messages: string[] };
+        }>;
+        const written = [...new Set(results.flatMap((r) => r.written))];
+        const messages = results.flatMap((r) => r.verification.messages);
+        const allOk = results.every((r) => r.verification.ok);
+        return { written, steps, verification: { ok: allOk, messages } };
       }, structured),
   );
 
