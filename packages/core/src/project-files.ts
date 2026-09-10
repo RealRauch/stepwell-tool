@@ -24,7 +24,7 @@ export class ProjectNotInitializedError extends Error {
   constructor(root: string, missing: readonly string[]) {
     super(
       `Kein STEPWELL-Projekt unter "${root}" — alle vier Doku-Dateien fehlen. ` +
-        `Lege ${missing.join(", ")} an — Vorlagen: \`methoddocs://templates/{kind}\` ` +
+        `Lege ${missing.join(", ")} an — Vorlagen: \`stepwell://templates/{kind}\` ` +
         `(backlog | progress | backlog-archive | progress-archive) oder Muster: ` +
         `PLAYBOOK §3 — oder prüfe den root-Pfad.`,
     );

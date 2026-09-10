@@ -82,5 +82,5 @@ export type {
   Warning,
 } from "./types.ts";
 
-export const TOOL_NAME = "method-docs";
+export const TOOL_NAME = "stepwell";
 export const TOOL_VERSION = "0.1.0";

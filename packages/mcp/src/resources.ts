@@ -31,10 +31,10 @@ function readOrThrow(path: string): string {
 export function registerDocsResources(server: McpServer): void {
   server.registerResource(
     "templates",
-    new ResourceTemplate("methoddocs://templates/{kind}", {
+    new ResourceTemplate("stepwell://templates/{kind}", {
       list: () => ({
         resources: TEMPLATE_KINDS.map((kind) => ({
-          uri: `methoddocs://templates/${kind}`,
+          uri: `stepwell://templates/${kind}`,
           name: `template: ${kind}`,
           description: "Kanonisches Skeleton einer Pflichtdatei (M8) — unverändert übernehmen.",
           mimeType: MARKDOWN,
@@ -64,7 +64,7 @@ export function registerDocsResources(server: McpServer): void {
 
   server.registerResource(
     "backlog",
-    new ResourceTemplate("methoddocs://{root}/backlog", { list: undefined }),
+    new ResourceTemplate("stepwell://{root}/backlog", { list: undefined }),
     {
       title: "BACKLOG.md",
       description: "Offene Items eines STEPWELL-Projekts (verbatim; Root percent-encoded im URI).",
@@ -83,7 +83,7 @@ export function registerDocsResources(server: McpServer): void {
 
   server.registerResource(
     "progress",
-    new ResourceTemplate("methoddocs://{root}/progress", { list: undefined }),
+    new ResourceTemplate("stepwell://{root}/progress", { list: undefined }),
     {
       title: "PROGRESS.md",
       description: "Fortschrittstabelle + laufende Phasen (verbatim; Root percent-encoded im URI).",
@@ -102,7 +102,7 @@ export function registerDocsResources(server: McpServer): void {
 
   server.registerResource(
     "hashes",
-    new ResourceTemplate("methoddocs://{root}/hashes", { list: undefined }),
+    new ResourceTemplate("stepwell://{root}/hashes", { list: undefined }),
     {
       title: "Datei-Hashes",
       description:
@@ -124,14 +124,13 @@ export function registerDocsResources(server: McpServer): void {
 
   server.registerResource(
     "phase",
-    new ResourceTemplate("methoddocs://{root}/phase/{phase}", { list: undefined }),
+    new ResourceTemplate("stepwell://{root}/phase/{phase}", { list: undefined }),
     {
       title: "Phasen-Kontext",
       description:
         "Phase verbatim + Tabellen-Zeilen + gemergte Backlog-Item-Bodies in Step-Reihenfolge " +
         "(G5/12.6 — Komposition zur Lesezeit, kein Duplikat in den Dateien). Suche über laufende " +
-        "Phasen und Archiv; Root und Phase percent-encoded im URI. URI-Schema wandert mit N1/13.2 " +
-        "auf stepwell://.",
+        "Phasen und Archiv; Root und Phase percent-encoded im URI.",
       mimeType: MARKDOWN,
     },
     (uri, { root, phase }) => ({
@@ -147,7 +146,7 @@ export function registerDocsResources(server: McpServer): void {
 
   server.registerResource(
     "archive",
-    new ResourceTemplate("methoddocs://{root}/archive/{kind}", { list: undefined }),
+    new ResourceTemplate("stepwell://{root}/archive/{kind}", { list: undefined }),
     {
       title: "Archiv",
       description:
