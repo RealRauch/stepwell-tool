@@ -35,7 +35,7 @@ describe("template resources (M8/9.4)", () => {
         "progress-archive": "# PROGRESS_ARCHIVE.md — Archiv abgeschlossener Phasen (append-only)",
       };
       for (const kind of TEMPLATE_KINDS) {
-        const result = await c.client.readResource({ uri: `methoddocs://templates/${kind}` });
+        const result = await c.client.readResource({ uri: `stepwell://templates/${kind}` });
         expect(resourceMime(result), kind).toBe("text/markdown");
         expect(resourceText(result), kind).toContain(titles[kind]!);
       }
@@ -48,7 +48,7 @@ describe("template resources (M8/9.4)", () => {
     const c = await connect();
     try {
       await expect(
-        c.client.readResource({ uri: "methoddocs://templates/nope" }),
+        c.client.readResource({ uri: "stepwell://templates/nope" }),
       ).rejects.toThrow(/unknown template kind/);
     } finally {
       await c.close();
@@ -71,7 +71,7 @@ describe("template resources (M8/9.4)", () => {
     try {
       const result = await callTool(c, "backlog_list", { root: join(fixturesEmpty()) });
       expect(result.isError).toBe(true);
-      expect(payload(result).message).toContain("methoddocs://templates/");
+      expect(payload(result).message).toContain("stepwell://templates/");
     } finally {
       await c.close();
     }

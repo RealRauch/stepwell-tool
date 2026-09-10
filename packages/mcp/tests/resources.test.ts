@@ -15,12 +15,12 @@ describe("resource templates (2.4)", () => {
     try {
       const { resourceTemplates } = await c.client.listResourceTemplates();
       expect(resourceTemplates.map((t) => t.uriTemplate).sort()).toEqual([
-        "methoddocs://templates/{kind}",
-        "methoddocs://{root}/archive/{kind}",
-        "methoddocs://{root}/backlog",
-        "methoddocs://{root}/hashes",
-        "methoddocs://{root}/phase/{phase}",
-        "methoddocs://{root}/progress",
+        "stepwell://templates/{kind}",
+        "stepwell://{root}/archive/{kind}",
+        "stepwell://{root}/backlog",
+        "stepwell://{root}/hashes",
+        "stepwell://{root}/phase/{phase}",
+        "stepwell://{root}/progress",
       ]);
     } finally {
       await c.close();
@@ -31,12 +31,12 @@ describe("resource templates (2.4)", () => {
     const c = await connect();
     try {
       const { resources } = await c.client.listResources();
-      const templates = resources.filter((r) => r.uri.startsWith("methoddocs://templates/"));
+      const templates = resources.filter((r) => r.uri.startsWith("stepwell://templates/"));
       expect(templates.map((r) => r.uri).sort()).toEqual([
-        "methoddocs://templates/backlog",
-        "methoddocs://templates/backlog-archive",
-        "methoddocs://templates/progress",
-        "methoddocs://templates/progress-archive",
+        "stepwell://templates/backlog",
+        "stepwell://templates/backlog-archive",
+        "stepwell://templates/progress",
+        "stepwell://templates/progress-archive",
       ]);
       expect(templates.every((r) => r.mimeType === "text/markdown")).toBe(true);
     } finally {
@@ -47,7 +47,7 @@ describe("resource templates (2.4)", () => {
   it("reads BACKLOG.md verbatim through the template", async () => {
     const c = await connect();
     try {
-      const result = await c.client.readResource({ uri: `methoddocs://${enc(projectA)}/backlog` });
+      const result = await c.client.readResource({ uri: `stepwell://${enc(projectA)}/backlog` });
       expect(resourceMime(result)).toBe("text/markdown");
       const text = resourceText(result);
       expect(text).toContain("# BACKLOG.md — Offene Punkte (Stand: 260907/1200)");
@@ -60,7 +60,7 @@ describe("resource templates (2.4)", () => {
   it("reads PROGRESS.md verbatim through the template", async () => {
     const c = await connect();
     try {
-      const result = await c.client.readResource({ uri: `methoddocs://${enc(projectA)}/progress` });
+      const result = await c.client.readResource({ uri: `stepwell://${enc(projectA)}/progress` });
       const text = resourceText(result);
       expect(text).toContain("# Projekt-Tracking: Demo-Projekt");
       expect(text).toContain("| 2.1 | Strings-Modul | 🔄 |");
@@ -73,13 +73,13 @@ describe("resource templates (2.4)", () => {
     const c = await connect();
     try {
       const backlog = await c.client.readResource({
-        uri: `methoddocs://${enc(projectA)}/archive/backlog`,
+        uri: `stepwell://${enc(projectA)}/archive/backlog`,
       });
       expect(resourceText(backlog)).toContain("# BACKLOG_ARCHIVE.md");
       expect(resourceText(backlog)).toContain("### [x] S1");
 
       const progress = await c.client.readResource({
-        uri: `methoddocs://${enc(projectA)}/archive/progress`,
+        uri: `stepwell://${enc(projectA)}/archive/progress`,
       });
       expect(resourceText(progress)).toContain("# PROGRESS_ARCHIVE.md");
       expect(resourceText(progress)).toContain("### Phase 0 — Projektaufsetzung");
@@ -92,10 +92,10 @@ describe("resource templates (2.4)", () => {
     const c = await connect();
     try {
       await expect(
-        c.client.readResource({ uri: `methoddocs://${enc(projectA)}/archive/nope` }),
+        c.client.readResource({ uri: `stepwell://${enc(projectA)}/archive/nope` }),
       ).rejects.toThrow(/unknown archive kind/);
       await expect(
-        c.client.readResource({ uri: `methoddocs://${enc(projectA + "\\missing")}/backlog` }),
+        c.client.readResource({ uri: `stepwell://${enc(projectA + "\\missing")}/backlog` }),
       ).rejects.toThrow(/BACKLOG\.md/);
       void projectDrift;
     } finally {
@@ -107,7 +107,7 @@ describe("resource templates (2.4)", () => {
     const c = await connect();
     try {
       const result = await c.client.readResource({
-        uri: `methoddocs://${enc(projectA)}/hashes`,
+        uri: `stepwell://${enc(projectA)}/hashes`,
       });
       expect(resourceMime(result)).toBe("application/json");
       const hashes = JSON.parse(resourceText(result)) as Record<string, string>;
@@ -129,7 +129,7 @@ describe("resource templates (2.4)", () => {
     const c = await connect();
     try {
       const result = await c.client.readResource({
-        uri: `methoddocs://${enc(projectA)}/phase/${enc("Phase 2 — UI-Polish")}`,
+        uri: `stepwell://${enc(projectA)}/phase/${enc("Phase 2 — UI-Polish")}`,
       });
       expect(resourceMime(result)).toBe("text/markdown");
       const text = resourceText(result);
@@ -146,7 +146,7 @@ describe("resource templates (2.4)", () => {
     const c = await connect();
     try {
       await expect(
-        c.client.readResource({ uri: `methoddocs://${enc(projectA)}/phase/${enc("Phase 99")}` }),
+        c.client.readResource({ uri: `stepwell://${enc(projectA)}/phase/${enc("Phase 99")}` }),
       ).rejects.toThrow(/Phase 99/);
     } finally {
       await c.close();
