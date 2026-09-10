@@ -39,14 +39,6 @@
 - **Abnahme:** `rg "method-docs|methoddocs"` über Code + Config (exkl. Archiv/historische Prosa) → 0 Treffer; pack-smoke grün gegen die neuen Namen; installiertes Artefakt startet als `stepwell` (Handshake); Templates-Resource unter `stepwell://` erreichbar; CHANGELOG + Decision-Eintrag; Timing: zusammen mit/vor I1, sicher vor dem ersten npm-Publish bzw. 1.0. Hinweis: Z1 nennt `@method-docs/core` — nach Umbenennung (flat: `stepwell-core`) lesen.
 - **Step-Paketierung:** Phase 13 — 13.1 (N1/1), 13.2 (N1/2), 13.3 (N1/3), 13.4 (N1/4 — Repo-Rename als explizites menschliches Gate, letzter Schritt).
 
-### [ ] G5 — Phase-Kontext-Resource: Phase + Item-Bodies zur Lesezeit mergen (Subagent-Kontext in einem Read) — 🟡
-- **Ort:** `packages/core/src/context.ts` (neu — `phaseContext`), `packages/mcp/src/resources.ts` (Resource `methoddocs://{root}/phase/{phase}`); Phasen-Suche analog `progress_show` (`matchesPhase` + Archiv-Fallback), Item-Auflösung via `loadProject`/`backlogShow`-Muster.
-- **Problem:** Ein Subagent, der einen Step umsetzt, braucht heute Phase-Block und BACKLOG-Items als getrennte Reads; die Details leben im Item (Single Source), der Step verweist nur per `(E1/1)`-Ref im Namen. Ein zusammengesetzter Lese-Pfad spart Round-Trips, ohne Daten zu duplizieren (Anti-Drift: keine Kopie in Dateien — Merge existiert nur zur Lesezeit).
-- **Fix (Entwurf):** core: `phaseContext(root, phase) → { phase, rows, items, unresolved, markdown }` — Phase verbatim, Tabellen-Zeilen der Phase, gemergte Item-Bodies in Step-Reihenfolge (offen bevorzugt, sonst Archiv), `unresolved` toleranter als Crash (Decision 6). Generated Headings über die Locale-Maschine (`canonical(role, detectLocale(…))` aus `profile.ts`) — nach Phase 14 automatisch EN. MCP: Read-Only-Resource `methoddocs://{root}/phase/{phase}` (percent-encoded, mimeType text/markdown; URI-Schema wandert mit N1/13.2 auf `stepwell://`). Kein Schreibpfad, kein Cache (Zero-Cache bleibt).
-- **Tests (ROT→GRÜN):** project-a: Phase mit zwei Item-Refs → Block verbatim + beide Bodies in Step-Reihenfolge; unbekannter Ref → `unresolved` + Hinweiszeile im Markdown, kein Fehler; Phase im Archiv → Fallback greift; Block ohne Refs → Phase + Rows genügen.
-- **Abnahme:** `npm run typecheck` + `npm run test` grün; `docs_validate` clean; README-Resource-Zeile + CHANGELOG (MINOR — neue Resource); M4-Alternativprüfung dokumentiert (Resource statt Tool, Komposition statt Duplikat).
-- **Step-Paketierung:** Phase 12 — 12.6.
-
 ---
 
 ## 🟢 NIEDRIG
@@ -123,5 +115,6 @@
 - G4 — Sync-Schlag: Lesson „Exit-Codes mit der Host-Sprache messen“ in LESSONS-Kopien (aus R9/Messartefakt) — erledigt (Sync-Schlag 09/2026 — Lesson #18 in beiden LESSONS-Kopien textgleich (method-docs@6152eb6, stadtpfad-pwa@0e5a64c, SHA256 D40FA413…30924B); docs_validate clean; Step 11.1/Phase 11 abgeschlossen)
 - E1 — Token-Ökonomie I: kompakte Tool-Outputs (JSON-Dedupe, Feldprojektion, Plan-Detailstufe) — erledigt (Commit `8b4a800` (12.1: Kompakt-JSON + structuredContent-Opt-in, Test-Commit `ce94b7f`) + `7afed7e` (12.2: backlog_list-Feldprojektion + Plan-Detailstufe, Test-Commit `5e71c8f`) — 273/273 grün, Steps 12.1/12.2.)
 - E2 — Token-Ökonomie II: Runden-Ersparnis (docs_status-Scope-Include, Multi-Step-Update, Hash-Kurzschluss) — erledigt (Commits `9676e3c` (12.3: docs_status nextStepScope-Include, Test `42388e0`) + `153537f` (12.4: Multi-Step-Update, Test `6badfce`) + `5b18a9e` (12.5: Hash-Kurzschluss, Test `61fcba8`) — 290/290 grün, Steps 12.3–12.5.)
+- G5 — Phase-Kontext-Resource: Phase + Item-Bodies zur Lesezeit mergen (Subagent-Kontext in einem Read) — erledigt (Commit `f9f0e3b` (12.6: phaseContext + Resource `methoddocs://{root}/phase/{phase}`, Test-Commit `e1bd5c1`) — 297/297 grün, Step 12.6; M4-Alternativprüfung im README dokumentiert.)
 
 ---

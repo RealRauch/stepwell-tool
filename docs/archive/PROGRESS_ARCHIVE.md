@@ -316,3 +316,17 @@ AGENTS Decisions 13/14, `docs_validate` beider Projekte clean).
 
 - **11.1 Sync-Schlag: Lesson #18 (Exit-Codes mit Host-Sprache messen) in beiden LESSONS-Kopien (G4)**
 **Verifikation:** Lesson #18 in beiden Kopien textgleich (SHA256 D40FA413F3A4F42D7BEF2806B5BA6FB5CEED0C70FEE86AE03B8351133530924B; method-docs@6152eb6, stadtpfad-pwa@0e5a64c) — Verifikation: npm run typecheck && npm run test (261/261 grün), docs_validate clean (checkpoint: 6152eb6)
+
+---
+
+### Phase 12 — Token-Ökonomie: kompakte Outputs + Runden-Ersparnis
+
+**Umfang (Steps):**
+
+- **12.1 Kompakt-JSON + structuredContent-Opt-in (E1/1)**
+- **12.2 backlog_list-Feldprojektion + Plan-Detailstufe (E1/2)**
+- **12.3 docs_status: nextStepScope-Include (E2/1)**
+- **12.4 progress_update: Multi-Step (E2/2)**
+- **12.5 Hash-Kurzschluss: SHA256 in Read-Tools + Resources (E2/3)**
+- **12.6 Phase-Kontext-Resource: Items zur Lesezeit mergen (G5)**
+**Verifikation:** npm run typecheck && npm run test — beide grün (297/297). Test-Commit e1bd5c1 (ROT: 3), Fix-Commit f9f0e3b.
