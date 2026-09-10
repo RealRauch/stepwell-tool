@@ -32,6 +32,10 @@ Feldtest (Decision 16); bis dahin 0.x mit Lockstep über alle drei `package.json
 - MCP-Annotations (readOnly/destructive/idempotent) auf der gesamten Tool-Surface;
   `structuredContent` zusätzlich bei `docs_validate`, `progress_update`, `archive_item`.
 - Versionierter JSON-Output: `schema: 1` als erstes Feld jeder CLI-`--json`-Ausgabe.
+- Neue Resource `methoddocs://{root}/phase/{phase}` (G5): Phase verbatim +
+  Tabellen-Zeilen + gemergte Backlog-Item-Bodies in Step-Reihenfolge als Markdown —
+  Subagent-Kontext in einem Read, Komposition zur Lesezeit statt Duplikat in den
+  Dateien (M4-Alternativprüfung: Resource statt Tool).
 - `stepwell`-SKILL.md als zweiter Distributionskanal (liegt im npm-Pack).
 - Verifikation: Coverage-Gate je Glob in Vitest + CI; Pack-Smoke gegen die npm-Artefakte
   (statisch, dynamischer Teil blockiert durch Dist-Blocker H1).

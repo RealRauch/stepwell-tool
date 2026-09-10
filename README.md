@@ -169,12 +169,19 @@ enthalten `:` und `\`); der Read-Callback dekodiert ihn. Inhalt jeweils verbatim
 methoddocs://{root}/backlog          → BACKLOG.md
 methoddocs://{root}/progress         → PROGRESS.md
 methoddocs://{root}/archive/{kind}   → kind = "backlog" | "progress"
+methoddocs://{root}/phase/{phase}    → Phasen-Kontext: Phase verbatim + Tabellen-Zeilen
+                                       + gemergte Item-Bodies in Step-Reihenfolge (G5/12.6)
 methoddocs://{root}/hashes           → SHA256 je Doku-Datei (application/json;
                                        Hash-Kurzschluss, E2/12.5 — Fast-Pfad-Fundament E3)
 methoddocs://templates/{kind}        → Skeletons der vier Pflichtdateien
                                        (kind = "backlog" | "progress" |
                                         "backlog-archive" | "progress-archive")
 ```
+
+**M4-Alternativprüfung (G5):** Resource statt Tool — der Phasen-Kontext ist reiner
+Lese-Pfad, und die Komposition passiert **zur Lesezeit** statt als Duplikat in den
+Dateien (Anti-Drift): ein Subagent bekommt Phase + Item-Bodies in einem Read, ohne
+dass ein neues Tool die Surface vergrößert.
 
 Beispiel: `methoddocs://D%3A%5Cproj%5Cdemo/backlog`
 

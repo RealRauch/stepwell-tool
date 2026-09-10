@@ -1,7 +1,13 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ResourceTemplate, type McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { TEMPLATE_KINDS, fileHashes, projectTemplates, type TemplateKind } from "@method-docs/core";
+import {
+  TEMPLATE_KINDS,
+  fileHashes,
+  phaseContext,
+  projectTemplates,
+  type TemplateKind,
+} from "@method-docs/core";
 
 const MARKDOWN = "text/markdown";
 const JSON_MIME = "application/json";
@@ -111,6 +117,29 @@ export function registerDocsResources(server: McpServer): void {
           uri: uri.href,
           text: JSON.stringify(fileHashes(decodeRoot(String(root)))),
           mimeType: JSON_MIME,
+        },
+      ],
+    }),
+  );
+
+  server.registerResource(
+    "phase",
+    new ResourceTemplate("methoddocs://{root}/phase/{phase}", { list: undefined }),
+    {
+      title: "Phasen-Kontext",
+      description:
+        "Phase verbatim + Tabellen-Zeilen + gemergte Backlog-Item-Bodies in Step-Reihenfolge " +
+        "(G5/12.6 — Komposition zur Lesezeit, kein Duplikat in den Dateien). Suche über laufende " +
+        "Phasen und Archiv; Root und Phase percent-encoded im URI. URI-Schema wandert mit N1/13.2 " +
+        "auf stepwell://.",
+      mimeType: MARKDOWN,
+    },
+    (uri, { root, phase }) => ({
+      contents: [
+        {
+          uri: uri.href,
+          text: phaseContext(decodeRoot(String(root)), decodeRoot(String(phase))).markdown,
+          mimeType: MARKDOWN,
         },
       ],
     }),
