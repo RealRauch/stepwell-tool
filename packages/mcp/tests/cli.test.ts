@@ -339,7 +339,7 @@ describe("runCli — --json schema contract (M6, 9.6)", () => {
     const io = makeIo();
     await runCli(["status", "--root", projectA, "--json"], io.io);
     expect(Object.keys(JSON.parse(io.stdout) as object).sort()).toEqual([
-      "doneQuote", "nextPriority", "nextStep", "openByPriority", "openTotal", "runningPhases", "runningSteps", "schema", "warnings",
+      "doneQuote", "hashes", "nextPriority", "nextStep", "openByPriority", "openTotal", "runningPhases", "runningSteps", "schema", "warnings",
     ]);
   });
 });

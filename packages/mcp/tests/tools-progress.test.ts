@@ -112,6 +112,24 @@ describe("tool docs_status (2.3)", () => {
       await c.close();
     }
   });
+
+  it("returns sha256 hashes per doc file (12.5, E2/3)", async () => {
+    const c = await connect();
+    try {
+      const data = payload(await callTool(c, "docs_status", { root: projectA }));
+      expect(Object.keys(data.hashes).sort()).toEqual([
+        "BACKLOG.md",
+        "PROGRESS.md",
+        "docs/archive/BACKLOG_ARCHIVE.md",
+        "docs/archive/PROGRESS_ARCHIVE.md",
+      ]);
+      for (const hash of Object.values<string>(data.hashes)) {
+        expect(hash).toMatch(/^[0-9a-f]{64}$/u);
+      }
+    } finally {
+      await c.close();
+    }
+  });
 });
 
 describe("tool docs_validate (2.3)", () => {
