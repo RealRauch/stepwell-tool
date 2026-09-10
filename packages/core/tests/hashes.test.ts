@@ -31,7 +31,7 @@ describe("fileHashes (12.5, E2/3)", () => {
   });
 
   it("changes only for the file whose content changed", () => {
-    const dir = mkdtempSync(join(tmpdir(), "method-docs-hashes-"));
+    const dir = mkdtempSync(join(tmpdir(), "stepwell-hashes-"));
     tempDirs.push(dir);
     cpSync(join(fixtures, "project-a"), dir, { recursive: true });
     const before = fileHashes(dir);
@@ -43,7 +43,7 @@ describe("fileHashes (12.5, E2/3)", () => {
   });
 
   it("tolerates missing files by omitting their keys (Decision 6)", () => {
-    const dir = mkdtempSync(join(tmpdir(), "method-docs-hashes-"));
+    const dir = mkdtempSync(join(tmpdir(), "stepwell-hashes-"));
     tempDirs.push(dir);
     cpSync(join(fixtures, "project-a"), dir, { recursive: true });
     rmSync(join(dir, "PROGRESS.md"));

@@ -24,7 +24,7 @@ export default defineConfig({
     // 10.4/H1: Die Workspace-Exports zeigen auf dist — Tests müssen aber immer
     // gegen die AKTUELLE Quelle laufen (dist könnte stale sein), daher Alias.
     alias: {
-      "@method-docs/core": resolve(repoRoot, "packages/core/src/index.ts"),
+      "stepwell-core": resolve(repoRoot, "packages/core/src/index.ts"),
     },
   },
   test: {

@@ -3,7 +3,7 @@
   "compilerOptions": {
     "types": ["node"],
     "paths": {
-      "@method-docs/core": ["../core/src/index.ts"]
+      "stepwell-core": ["../core/src/index.ts"]
     }
   },
   "include": ["src", "tests"]

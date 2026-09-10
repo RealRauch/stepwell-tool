@@ -7,7 +7,7 @@ import {
   phaseContext,
   projectTemplates,
   type TemplateKind,
-} from "@method-docs/core";
+} from "stepwell-core";
 
 const MARKDOWN = "text/markdown";
 const JSON_MIME = "application/json";

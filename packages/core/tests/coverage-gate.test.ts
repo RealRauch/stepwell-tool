@@ -22,7 +22,7 @@ const repoRoot = process.cwd();
 export default defineConfig({
   resolve: {
     // identisch zur Haupt-Config: Tests immer gegen die core-Quelle (10.4/H1)
-    alias: { "@method-docs/core": resolve(repoRoot, "packages/core/src/index.ts") },
+    alias: { "stepwell-core": resolve(repoRoot, "packages/core/src/index.ts") },
   },
   test: {
     environment: "node",

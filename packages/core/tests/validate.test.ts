@@ -8,7 +8,7 @@ const fixtures = join(import.meta.dirname, "fixtures");
 
 const tempDirs: string[] = [];
 function tempCopy(project: string): string {
-  const dir = mkdtempSync(join(tmpdir(), "method-docs-validate-"));
+  const dir = mkdtempSync(join(tmpdir(), "stepwell-validate-"));
   tempDirs.push(dir);
   cpSync(join(fixtures, project), dir, { recursive: true });
   return dir;

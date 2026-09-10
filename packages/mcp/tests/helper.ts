@@ -14,7 +14,7 @@ const tempDirs: string[] = [];
 
 /** Copy of a fixture project in the OS temp dir — mutations only ever run here. */
 export function tempProject(project: string): string {
-  const dir = mkdtempSync(join(tmpdir(), "method-docs-mcp-"));
+  const dir = mkdtempSync(join(tmpdir(), "stepwell-mcp-"));
   tempDirs.push(dir);
   cpSync(join(fixtures, project), dir, { recursive: true });
   return dir;

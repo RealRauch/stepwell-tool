@@ -8,10 +8,12 @@ const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..")
 
 interface Manifest {
   name: string;
+  version?: string;
   files?: string[];
   bin?: Record<string, string>;
   exports?: Record<string, unknown>;
   scripts?: Record<string, string>;
+  dependencies?: Record<string, string>;
 }
 
 function manifest(pkg: string): Manifest {
