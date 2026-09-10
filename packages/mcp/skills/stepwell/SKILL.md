@@ -1,9 +1,9 @@
 ---
 name: stepwell
-description: STEPWELL-Arbeitsweise für Projekte mit BACKLOG.md/PROGRESS.md und dem method-docs-MCP-Server (stepwell) — Session-Einstieg, Statuspflege, Archivierung und Release-Disziplin. Aktiv, wenn das Zielprojekt die vier STEPWELL-Dateien enthält oder ein solches aufgesetzt werden soll.
+description: STEPWELL-Arbeitsweise für Projekte mit BACKLOG.md/PROGRESS.md und dem stepwell-MCP-Server — Session-Einstieg, Statuspflege, Archivierung und Release-Disziplin. Aktiv, wenn das Zielprojekt die vier STEPWELL-Dateien enthält oder ein solches aufgesetzt werden soll.
 ---
 
-# STEPWELL — Arbeitsweise (method-docs)
+# STEPWELL — Arbeitsweise (stepwell)
 
 Bindende Methode: `docs/PLAYBOOK.md` im Zielprojekt (verbatim-Kopie). Checkliste:
 `docs/LESSONS.md`. Diese Skill-Datei fasst zusammen, **wann du welches Tool aufrufst** —
@@ -65,7 +65,7 @@ backlog-archive | progress-archive), danach `docs_validate` — muss fund-frei s
 
 ## Werkzeug-Alternativen
 
-Ohne MCP-Server steht dieselbe Oberfläche als CLI bereit (`npx @method-docs/mcp`):
+Ohne MCP-Server steht dieselbe Oberfläche als CLI bereit (`npx stepwell`):
 `status`/`backlog`/`progress`/`validate`/`archive`/`progress-update` — `--json`-Ausgaben
 tragen das versionierte Schema-Feld (`schema: <n>`; Breaking ⇒ Nummer hoch). Die Methode
 selbst lebt in PLAYBOOK.md — dieses Skill ist nur der Wegweiser zu den Tools.
