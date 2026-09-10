@@ -40,10 +40,47 @@ describe("packaging manifests (D3, 7.3; dist since 10.4/H1)", () => {
 
     const mcp = manifest("mcp");
     const mcpExports = mcp.exports?.["."] as Record<string, string>;
-    expect(mcpExports.import).toBe("./dist/index.js");
+expect(mcpExports.import).toBe("./dist/index.js");
     expect(mcpExports.types).toBe("./dist/index.d.ts");
-    expect(mcp.bin?.["method-docs"]).toBe("./dist/cli.js");
+    expect(mcp.bin?.["stepwell"]).toBe("./dist/cli.js");
     expect(mcp.scripts?.prepublishOnly).toContain("build");
+  });
+});
+
+describe("stepwell naming + lockstep versions (N1/13.1)", () => {
+  function rootManifest(): Manifest & { workspaces?: string[] } {
+    return JSON.parse(readFileSync(join(repoRoot, "package.json"), "utf8"));
+  }
+
+  it("root package.json is named 'stepwell' (N1 — flat primary)", () => {
+    expect(rootManifest().name).toBe("stepwell");
+  });
+
+  it("core package.json is named 'stepwell-core' (flat, kein @scope)", () => {
+    expect(manifest("core").name).toBe("stepwell-core");
+  });
+
+  it("mcp package.json is named 'stepwell' (flat, ehemals @method-docs/mcp)", () => {
+    expect(manifest("mcp").name).toBe("stepwell");
+  });
+
+  it("mcp bin key is 'stepwell' (nicht 'method-docs')", () => {
+    expect(manifest("mcp").bin?.["stepwell"]).toBe("./dist/cli.js");
+    expect(manifest("mcp").bin?.["method-docs"]).toBeUndefined();
+  });
+
+  it("mcp dependencies referenzieren 'stepwell-core' (nicht @method-docs/core)", () => {
+    const deps = manifest("mcp").dependencies as Record<string, string> | undefined;
+    expect(deps?.["stepwell-core"]).toBe("*");
+    expect(deps?.["@method-docs/core"]).toBeUndefined();
+  });
+
+  it("alle drei package.json tragen dieselbe Version (Lockstep, Decision 16)", () => {
+    const root = rootManifest().version;
+    const core = manifest("core").version;
+    const mcp = manifest("mcp").version;
+    expect(core).toBe(root);
+    expect(mcp).toBe(root);
   });
 });
 
