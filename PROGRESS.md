@@ -18,6 +18,7 @@
 - **12.3 docs_status: nextStepScope-Include (E2/1)**
 - **12.4 progress_update: Multi-Step (E2/2)**
 - **12.5 Hash-Kurzschluss: SHA256 in Read-Tools + Resources (E2/3)**
+- **12.6 Phase-Kontext-Resource: Items zur Lesezeit mergen (G5)**
 ### Phase 13 — Naming-Refactor: STEPWELL durchgängig
 
 **Umfang (Steps):**
@@ -128,3 +129,4 @@
 | 14.5 | Fixtures-README EN + gemischtsprachige Fixture (I1/5) | ⬜ |
 | 14.6 | STRUCT_LOCALE-Entscheid + CHANGELOG (I1/6) | ⬜ |
 | 15.1 | Fast-Pfad + Parallel-Reads in beiden Kopien (E3) | ⬜ |
+| 12.6 | Phase-Kontext-Resource: Items zur Lesezeit mergen (G5) | ⬜ |
