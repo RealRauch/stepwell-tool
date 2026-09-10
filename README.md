@@ -117,7 +117,7 @@ mit klarer Meldung — der Server stürzt nicht ab.
 
 | Tool | Parameter | Ergebnis |
 |------|-----------|----------|
-| `docs_status` | `root`, optional `include[]` | Aggregat: offene Items je Priorität, 🔄-Steps + zugeordnete Phasen, ✅-Quote der Tabelle, alle Funde + Warnungen; mit `include: ["nextStepScope"]` (E2) zusätzlich Ziel/Abnahme/Scope-Bullet + gemergtes Backlog-Item des nächsten Steps (1 Call statt `progress_show` + `backlog_show`) |
+| `docs_status` | `root`, optional `include[]` | Aggregat: offene Items je Priorität, 🔄-Steps + zugeordnete Phasen, ✅-Quote der Tabelle, alle Funde + Warnungen, `hashes` (SHA256 je Doku-Datei, E2); mit `include: ["nextStepScope"]` (E2) zusätzlich Ziel/Abnahme/Scope-Bullet + gemergtes Backlog-Item des nächsten Steps (1 Call statt `progress_show` + `backlog_show`) |
 | `backlog_list` | `root`, optional `priority[]`, `open`, `section`, `fields[]` | Items der BACKLOG.md **ohne `raw`** (schlanker Payload) + Parse-Warnungen; mit `fields` (z. B. `["id","title","priority","open","section"]`) sind Items auf die genannten Felder projiziert (Token-Ökonomie, E1) |
 | `backlog_show` | `root`, `id` | Merge-Sicht für eine Item-ID über offenes BACKLOG ↔ Erledigt-Index ↔ BACKLOG_ARCHIVE, inkl. `raw` + `span`; case-sensitiv |
 | `progress_list` | `root`, optional `status` | Zeilen der Fortschrittstabelle `{step, name, status}` |
@@ -169,6 +169,8 @@ enthalten `:` und `\`); der Read-Callback dekodiert ihn. Inhalt jeweils verbatim
 methoddocs://{root}/backlog          → BACKLOG.md
 methoddocs://{root}/progress         → PROGRESS.md
 methoddocs://{root}/archive/{kind}   → kind = "backlog" | "progress"
+methoddocs://{root}/hashes           → SHA256 je Doku-Datei (application/json;
+                                       Hash-Kurzschluss, E2/12.5 — Fast-Pfad-Fundament E3)
 methoddocs://templates/{kind}        → Skeletons der vier Pflichtdateien
                                        (kind = "backlog" | "progress" |
                                         "backlog-archive" | "progress-archive")

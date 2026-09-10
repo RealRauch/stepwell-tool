@@ -1,3 +1,4 @@
+import { fileHashes } from "./hashes.ts";
 import { loadProject, type ProjectDocs } from "./project.ts";
 import { backlogShow } from "./project.ts";
 import { ProjectNotInitializedError } from "./project-files.ts";
@@ -70,6 +71,7 @@ export function docsStatus(root: string, options?: DocsStatusOptions): DocsStatu
         doneQuote: { done: 0, total: 0, percent: 0 },
         nextStep: undefined,
         nextPriority: undefined,
+        hashes: {},
         warnings: [{ code: "PROJECT_NOT_INITIALIZED", file: root, message: err.message }],
       };
     }
@@ -142,6 +144,7 @@ export function docsStatus(root: string, options?: DocsStatusOptions): DocsStatu
     doneQuote: { done, total, percent },
     nextStep,
     nextPriority,
+    hashes: fileHashes(root),
     ...(nextStepScope !== undefined ? { nextStepScope } : {}),
     warnings,
   };
