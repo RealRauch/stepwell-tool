@@ -437,3 +437,13 @@
 - **Fix:** Lesson #18 in LESSONS.md ergänzen (Abschnitt D): „Exit-Codes mit der Host-Sprache messen — PowerShell `$LASTEXITCODE`, POSIX `$?`/`$status` — nie mit cmd-`%ERRORLEVEL%`-Expansion nach `&`; in cmd selbst nur mit `!ERRORLEVEL!` bei `/v:on`." Beweis: R9 (method-docs 09/2026 — Fehlalarm 🔴 → Messartefakt).
 - **Abnahme:** Lesson #18 in beiden LESSONS-Kopien textgleich (Hash-Vergleich als Beleg im Erledigt-Index); docs_validate method-docs clean; Commit je Repo.
 - **Erledigt:** Sync-Schlag 09/2026 — Lesson #18 in beiden LESSONS-Kopien textgleich (method-docs@6152eb6, stadtpfad-pwa@0e5a64c, SHA256 D40FA413…30924B); docs_validate clean; Step 11.1/Phase 11 abgeschlossen
+
+---
+
+### [x] E1 — Token-Ökonomie I: kompakte Tool-Outputs (JSON-Dedupe, Feldprojektion, Plan-Detailstufe) — 🟡
+- **Ort:** `packages/mcp/src/tools.ts` — `textResult`/`structuredResult` (`JSON.stringify(…, null, 2)` bzw. structuredContent-Duplikat), `backlog_list` (liefert volle Item-`text`-Bodies), Dry-run-Pläne der Mutations (volle Diff-Preview).
+- **Problem:** Jedes Tool-Result kostet unnötig Tokens: Pretty-Print-JSON (+25–40 %) und das `structuredContent`-Duplikat (bis ~50 % auf Mutations-Calls — dieselben Daten zweimal im Result); `backlog_list` liefert vollen Item-Body auch wenn nur Übersicht gebraucht wird; Routine-Statuspflege druckt volle Diffs.
+- **Arbeitsschritte (Entwurf):** (1) Kompakt-JSON (ohne Indent) als Default für `textResult`/`structuredResult`. (2) `structuredContent`-Dedupe: nur Text-Content by default, `structuredContent` als Opt-in — Kontrakt-Prüfung nötig (Client-Fläche gem. MCP-Spec; Removal im 0.x-Fenster zulässig, schema-Feld M6 beachten). (3) `backlog_list`: `fields`-Param oder `text: false` — schlanke Items (id/title/priority/open/section) für Übersichts-Calls. (4) Mutations: `detail: "summary" | "diff"` für Dry-run-Pläne (summary = Headline + Zeilenzahlen, diff = voll — Default diff, Sicherheitshinweis bleibt).
+- **Abnahme:** Tests je Schalter; `npm run typecheck` + `npm run test` grün; `docs_validate` clean; CHANGELOG-Eintrag (MINOR — neue Parameter, Output-Kompaktierung mit Kontrakt-Notiz); Timing: vor 1.0.0, sinnvoll vor/mit I1 (kleinere Doku-Fläche für die EN-Migration).
+- **Step-Paketierung:** Phase 12 — 12.1 (E1/1), 12.2 (E1/2).
+- **Erledigt:** Commit `8b4a800` (12.1: Kompakt-JSON + structuredContent-Opt-in, Test-Commit `ce94b7f`) + `7afed7e` (12.2: backlog_list-Feldprojektion + Plan-Detailstufe, Test-Commit `5e71c8f`) — 273/273 grün, Steps 12.1/12.2.
