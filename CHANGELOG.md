@@ -43,7 +43,9 @@ Feldtest (Decision 16); bis dahin 0.x mit Lockstep über alle drei `package.json
   geliefert — Default ist nur Text-Content (Dedupe); `backlog_list` akzeptiert
   `fields[]` zur Feldprojektion (schlanke Übersichts-Calls); Mutations akzeptieren
   `detail: "summary" | "diff"` für Dry-run-Pläne (summary = Headline + Zeilenzahlen,
-  Default bleibt `diff`). Kontrakt-Notiz: Output-Kompaktierung
+  Default bleibt `diff`); `docs_status` akzeptiert `include: ["nextStepScope"]`
+  und liefert dann Ziel/Abnahme/Scope-Bullet + das über `(X/n)` gemergte Backlog-Item
+  des nächsten Steps mit (Runden-Ersparnis: 1 Call statt 3, E2). Kontrakt-Notiz: Output-Kompaktierung
   und Removal des `structuredContent`-Defaults sind Vertragsänderungen im 0.x-Fenster
   (SemVer-0-Regel, Decision 16); das CLI-`schema`-Feld (M6) bleibt unverändert auf `1`
   — die JSON-Struktur der Daten ändert sich nicht, nur die Serialisierung.

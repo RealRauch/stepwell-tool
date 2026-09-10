@@ -89,7 +89,23 @@ export interface DocsStatus {
   nextStep: ProgressRow | undefined;
   /** Erste nicht-leere Prioritäts-Sektion (🔴→🔵) — undefined, wenn keine offenen Items. */
   nextPriority: Priority | undefined;
+  /** Nur mit `include: ["nextStepScope"]` (E2/12.3): Ziel/Abnahme/Scope + gemergtes Item des nächsten Steps. */
+  nextStepScope?: NextStepScope;
   warnings: Warning[];
+}
+
+/** Step-Kontext für den Session-Einstieg (E2/12.3) — 1 Call statt docs_status + progress_show + backlog_show. */
+export interface NextStepScope {
+  phase: string;
+  phaseTitle: string;
+  step: string;
+  name: string;
+  goal: string;
+  acceptance: string;
+  /** Scope-Bullet des Steps, verbatim aus dem Detail-Block. */
+  scope?: string;
+  /** Über `(X/n)`-Ref aufgelöstes Backlog-Item (offen bevorzugt, sonst Archiv) — undefined, wenn kein Ref oder nicht auflösbar. */
+  item?: BacklogItem;
 }
 
 export interface ValidateResult {

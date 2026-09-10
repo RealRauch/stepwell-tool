@@ -193,9 +193,9 @@ describe("docsStatus include: nextStepScope (12.3, E2/1)", () => {
       name: "U21 Fehlertexte",
       goal: "Admin-Bereich fühlt sich für Laypersonen richtig an (siehe BACKLOG U-Reihe).",
       acceptance: "typecheck + unit + e2e grün; U21/U22 abgeschlossen.",
-      scope: "- **2.2 U21 Fehlertexte migrieren**",
-      item: undefined,
+      scope: "**2.2 U21 Fehlertexte migrieren**",
     });
+    expect(status.nextStepScope!.item).toBeUndefined();
   });
 
   it("omits nextStepScope when include is not requested (contract unchanged)", () => {
