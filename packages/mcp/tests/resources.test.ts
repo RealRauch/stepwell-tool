@@ -18,6 +18,7 @@ describe("resource templates (2.4)", () => {
         "methoddocs://templates/{kind}",
         "methoddocs://{root}/archive/{kind}",
         "methoddocs://{root}/backlog",
+        "methoddocs://{root}/hashes",
         "methoddocs://{root}/progress",
       ]);
     } finally {
@@ -96,6 +97,28 @@ describe("resource templates (2.4)", () => {
         c.client.readResource({ uri: `methoddocs://${enc(projectA + "\\missing")}/backlog` }),
       ).rejects.toThrow(/BACKLOG\.md/);
       void projectDrift;
+    } finally {
+      await c.close();
+    }
+  });
+
+  it("serves a compact sha256 manifest for the fast path (12.5, E2/3)", async () => {
+    const c = await connect();
+    try {
+      const result = await c.client.readResource({
+        uri: `methoddocs://${enc(projectA)}/hashes`,
+      });
+      expect(resourceMime(result)).toBe("application/json");
+      const hashes = JSON.parse(resourceText(result)) as Record<string, string>;
+      expect(Object.keys(hashes).sort()).toEqual([
+        "BACKLOG.md",
+        "PROGRESS.md",
+        "docs/archive/BACKLOG_ARCHIVE.md",
+        "docs/archive/PROGRESS_ARCHIVE.md",
+      ]);
+      for (const hash of Object.values(hashes)) {
+        expect(hash).toMatch(/^[0-9a-f]{64}$/u);
+      }
     } finally {
       await c.close();
     }
