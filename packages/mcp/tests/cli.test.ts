@@ -302,7 +302,7 @@ describe("runCli — usage and errors", () => {
 });
 
 describe("runCli — --json schema contract (M6, 9.6)", () => {
-  it("stamps schema: 1 on every JSON payload", async () => {
+it("stamps schema: 2 on every JSON payload (13.2/N1: URI-Schema + TOOL_NAME)", async () => {
     const cases: Array<{ argv: string[]; exitCode: number }> = [
       { argv: ["status", "--root", projectA, "--json"], exitCode: 0 },
       { argv: ["backlog", "--root", projectA, "--json"], exitCode: 0 },
@@ -315,7 +315,7 @@ describe("runCli — --json schema contract (M6, 9.6)", () => {
       const code = await runCli(argv, io.io);
       expect(code, argv.join(" ")).toBe(exitCode);
       const parsed = JSON.parse(io.stdout) as { schema?: number };
-      expect(parsed.schema, argv.join(" ")).toBe(1);
+      expect(parsed.schema, argv.join(" ")).toBe(2);
     }
   });
 
@@ -324,15 +324,15 @@ describe("runCli — --json schema contract (M6, 9.6)", () => {
 
     const dry = makeIo();
     await runCli(["archive", "--root", dir, "--id", "H1", "--note", "test", "--json"], dry.io);
-    expect((JSON.parse(dry.stdout) as { schema?: number }).schema).toBe(1);
+    expect((JSON.parse(dry.stdout) as { schema?: number }).schema).toBe(2);
 
     const applied = makeIo();
     await runCli(["archive", "--root", dir, "--id", "H1", "--note", "test", "--apply", "--json"], applied.io);
-    expect((JSON.parse(applied.stdout) as { schema?: number }).schema).toBe(1);
+    expect((JSON.parse(applied.stdout) as { schema?: number }).schema).toBe(2);
 
     const plan = makeIo();
     await runCli(["progress-update", "--root", dir, "--phase", "Phase 2", "--step", "2.2", "--status", "done", "--json"], plan.io);
-    expect((JSON.parse(plan.stdout) as { schema?: number }).schema).toBe(1);
+    expect((JSON.parse(plan.stdout) as { schema?: number }).schema).toBe(2);
   });
 
   it("keeps the top-level key contract per command (schema + documented fields)", async () => {

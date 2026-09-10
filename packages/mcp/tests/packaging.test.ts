@@ -102,7 +102,7 @@ describe("stepwell skill asset (M7, 9.5)", () => {
     expect(text).toContain("progress_update");
     expect(text).toContain("archive_item");
     expect(text).toContain("Freigabe");
-    expect(text).toContain("methoddocs://templates/");
+    expect(text).toContain("stepwell://templates/");
   });
 });
 

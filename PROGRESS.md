@@ -109,7 +109,7 @@
 | 12.4 | progress_update: Multi-Step (E2/2) | ✅ |
 | 12.5 | Hash-Kurzschluss: SHA256 in Read-Tools + Resources (E2/3) | ✅ |
 | 13.1 | Manifests + Lockstep + packaging-Tests (N1/1) | ✅ |
-| 13.2 | TOOL_NAME + Resource-URI-Schema (N1/2) | ⬜ |
+| 13.2 | TOOL_NAME + Resource-URI-Schema (N1/2) | 🔄 |
 | 13.3 | Doku + Decision + CHANGELOG (N1/3) | ⬜ |
 | 13.4 | Repo-Rename — explizites Gate (N1/4) | ⬜ |
 | 14.1 | Konventions-Flip: PLAYBOOK §2/§3 + Decision 10 (I1/1) | ⬜ |

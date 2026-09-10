@@ -4,3 +4,4 @@ coverage/
 *.tsbuildinfo
 .env
 test-results/
+.zcode/
