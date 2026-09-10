@@ -1,64 +1,122 @@
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { callTool, connect, payload, tempProject } from "./helper.ts";
+import { callTool, connect, fixtures, payload, tempProject } from "./helper.ts";
+import type { ToolResultLike } from "./helper.ts";
 
-describe("structuredContent (M3, 9.7)", () => {
-  it("docs_validate delivers findings additionally as structuredContent", async () => {
+const emptyRoot = join(fixtures, "project-empty");
+
+describe("compact JSON + structuredContent opt-in (E1/1, 12.1)", () => {
+  it("tool text payloads are compact JSON (no indentation, no newlines)", async () => {
     const c = await connect();
     try {
       const result = await callTool(c, "docs_validate", { root: tempProject("project-a") });
       expect(result.isError).toBeFalsy();
-      expect(result.structuredContent).toBeDefined();
-      const structured = result.structuredContent as { ok: boolean; findings: unknown[] };
-      expect(structured.ok).toBe(true);
-      expect(structured.findings).toEqual([]);
-      // text payload stays untouched and parseable
+      const text = result.content[0]!.text;
+      expect(text).not.toContain("\n");
       expect(payload(result).ok).toBe(true);
     } finally {
       await c.close();
     }
   });
 
-  it("progress_update delivers the plan additionally as structuredContent", async () => {
+  it("structured error payloads are compact JSON, too", async () => {
     const c = await connect();
     try {
-      const result = await callTool(c, "progress_update", {
-        root: tempProject("project-a"),
+      const result = await callTool(c, "backlog_show", { root: emptyRoot, id: "H1" });
+      expect(result.isError).toBe(true);
+      const text = result.content[0]!.text;
+      expect(text).not.toContain("\n");
+      expect(payload(result).code).toBe("PROJECT_NOT_INITIALIZED");
+    } finally {
+      await c.close();
+    }
+  });
+});
+
+describe("structuredContent opt-in (E1/2 of M3 contract, 12.1)", () => {
+  it("docs_validate omits structuredContent by default and delivers it with structured: true", async () => {
+    const c = await connect();
+    try {
+      const root = tempProject("project-a");
+      const plain = await callTool(c, "docs_validate", { root });
+      expect(plain.structuredContent).toBeUndefined();
+      const structured = await callTool(c, "docs_validate", { root, structured: true });
+      expect(structured.structuredContent).toBeDefined();
+      const data = structured.structuredContent as { ok: boolean; findings: unknown[] };
+      expect(data.ok).toBe(true);
+      expect(data.findings).toEqual([]);
+      // text payload stays parseable in both modes
+      expect(payload(structured).ok).toBe(true);
+    } finally {
+      await c.close();
+    }
+  });
+
+  it("progress_update omits structuredContent by default and delivers it with structured: true", async () => {
+    const c = await connect();
+    try {
+      const root = tempProject("project-a");
+      const plain = await callTool(c, "progress_update", {
+        root,
         phase: "Phase 2",
         step: "2.2",
         status: "🔄",
       });
-      expect(result.isError).toBeFalsy();
-      const structured = result.structuredContent as {
+      expect(plain.structuredContent).toBeUndefined();
+      const structured = await callTool(c, "progress_update", {
+        root,
+        phase: "Phase 2",
+        step: "2.2",
+        status: "🔄",
+        structured: true,
+      });
+      const data = structured.structuredContent as {
         step?: string;
         completedPhase?: boolean;
         changes?: unknown[];
       };
-      expect(structured.step).toBe("2.2");
-      expect(structured.completedPhase).toBe(false);
-      expect(Array.isArray(structured.changes)).toBe(true);
+      expect(data.step).toBe("2.2");
+      expect(data.completedPhase).toBe(false);
+      expect(Array.isArray(data.changes)).toBe(true);
     } finally {
       await c.close();
     }
   });
 
-  it("archive_item delivers the plan additionally as structuredContent", async () => {
+  it("archive_item omits structuredContent by default and delivers it with structured: true", async () => {
     const c = await connect();
     try {
-      const result = await callTool(c, "archive_item", {
-        root: tempProject("project-a"),
+      const root = tempProject("project-a");
+      const plain = await callTool(c, "archive_item", { root, id: "H1", note: "test" });
+      expect(plain.structuredContent).toBeUndefined();
+      const structured = await callTool(c, "archive_item", {
+        root,
         id: "H1",
         note: "test",
+        structured: true,
       });
-      expect(result.isError).toBeFalsy();
-      const structured = result.structuredContent as { id?: string; dryRun?: boolean };
-      expect(structured.id).toBe("H1");
-      expect(structured.dryRun).toBe(true);
+      const data = structured.structuredContent as { id?: string; dryRun?: boolean };
+      expect(data.id).toBe("H1");
+      expect(data.dryRun).toBe(true);
     } finally {
       await c.close();
     }
   });
 
-  it("read tools stay plain text payloads (scope: the three candidates only)", async () => {
+  it("errors carry no structuredContent even with structured: true", async () => {
+    const c = await connect();
+    try {
+      const result: ToolResultLike = await callTool(c, "docs_validate", {
+        root: emptyRoot,
+        structured: true,
+      });
+      expect(result.structuredContent).toBeUndefined();
+    } finally {
+      await c.close();
+    }
+  });
+
+  it("read tools stay plain text payloads", async () => {
     const c = await connect();
     try {
       const status = await callTool(c, "docs_status", { root: tempProject("project-a") });
