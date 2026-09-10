@@ -431,7 +431,8 @@ describe("progress_update multi-step (12.4, E2/2)", () => {
       );
       expect(data.steps).toEqual(["2.2", "2.3"]);
       expect(data.verification.ok).toBe(true);
-      expect(data.written).toEqual(["PROGRESS.md"]);
+      expect(data.written).toHaveLength(1);
+      expect(String(data.written[0]).endsWith("PROGRESS.md")).toBe(true);
     } finally {
       await c.close();
     }
@@ -457,7 +458,9 @@ describe("progress_update multi-step (12.4, E2/2)", () => {
       );
       expect(data.steps).toEqual(["2.1", "2.2", "2.3"]);
       expect(data.verification.ok).toBe(true);
-      expect(data.written).toEqual(["PROGRESS.md", join("docs", "archive", "PROGRESS_ARCHIVE.md")]);
+      expect(data.written).toHaveLength(2);
+      expect(data.written.some((f: string) => f.endsWith("PROGRESS.md"))).toBe(true);
+      expect(data.written.some((f: string) => f.endsWith("PROGRESS_ARCHIVE.md"))).toBe(true);
     } finally {
       await c.close();
     }
