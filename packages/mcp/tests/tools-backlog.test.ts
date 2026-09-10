@@ -65,6 +65,66 @@ describe("tool backlog_list (2.2)", () => {
   });
 });
 
+describe("backlog_list field projection (12.2, E1/2)", () => {
+  it("projects items to the requested fields for overview calls", async () => {
+    const c = await connect();
+    try {
+      const data = payload(
+        await callTool(c, "backlog_list", {
+          root: projectA,
+          fields: ["id", "title", "priority", "open", "section"],
+        }),
+      );
+      expect(data.count).toBe(7);
+      for (const item of data.items) {
+        expect(Object.keys(item).sort()).toEqual(["id", "open", "priority", "section", "title"]);
+      }
+    } finally {
+      await c.close();
+    }
+  });
+
+  it("projects single fields selectively (e.g. id + text)", async () => {
+    const c = await connect();
+    try {
+      const data = payload(
+        await callTool(c, "backlog_list", { root: projectA, fields: ["id", "text"] }),
+      );
+      const h1 = data.items.find((i: { id: string }) => i.id === "H1");
+      expect(Object.keys(h1).sort()).toEqual(["id", "text"]);
+      expect(typeof h1.text).toBe("string");
+    } finally {
+      await c.close();
+    }
+  });
+
+  it("keeps the full shape (minus raw) when fields is omitted", async () => {
+    const c = await connect();
+    try {
+      const data = payload(await callTool(c, "backlog_list", { root: projectA }));
+      const h1 = data.items.find((i: { id: string }) => i.id === "H1");
+      expect(h1).not.toHaveProperty("raw");
+      expect(h1).toHaveProperty("text");
+      expect(h1).toHaveProperty("span");
+    } finally {
+      await c.close();
+    }
+  });
+
+  it("rejects unknown field names with a tool error", async () => {
+    const c = await connect();
+    try {
+      const result = await callTool(c, "backlog_list", {
+        root: projectA,
+        fields: ["id", "nope"],
+      });
+      expect(result.isError).toBe(true);
+    } finally {
+      await c.close();
+    }
+  });
+});
+
 describe("tool backlog_show (2.2)", () => {
   it("returns the merged view with raw payload for an open item", async () => {
     const c = await connect();
