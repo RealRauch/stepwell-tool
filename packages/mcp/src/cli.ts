@@ -28,7 +28,7 @@ export interface CliIo {
  * Version des JSON-Output-Kontrakts aller `--json`-Ausgaben (M6/9.6). Regel:
  * Breaking-Änderung an Feldern je Command ⇒ diese Zahl hochzählen (Decision 16).
  */
-export const JSON_SCHEMA_VERSION = 1;
+export const JSON_SCHEMA_VERSION = 2;
 
 function jsonOut(payload: Record<string, unknown>): string {
   return `${JSON.stringify({ schema: JSON_SCHEMA_VERSION, ...payload }, null, 2)}\n`;
