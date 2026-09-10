@@ -38,6 +38,10 @@ Die Reihenfolge ist immer: **Planen → Paketieren → Implementieren.**
 - **Zuordnung:** Die committete Phasenfolge lebt in `PROGRESS.md` („Laufende Phasen") — auch grob paketiert (Fein-Paketierung bei Phasenstart). Alles Offene **außerhalb** dieser Folge (Ideen, Feature-Requests, Risiken, Funde) gehört als Item ins `BACKLOG.md` — mit Fundstelle + Abnahmekriterium. Entscheidungshilfe: „Gehört es zur festgelegten Phasenfolge?" → PROGRESS; sonst → BACKLOG.
 - Es gilt: **kein Code ohne Step in `PROGRESS.md`, kein bekanntes Problem ohne Eintrag in `BACKLOG.md`.**
 
+### Language (binding, 09/2026)
+
+The structural language of the method is **English primary**: section headings, field labels (Location, Acceptance, Verification, Scope), the Done Index (was: Erledigt-Index), status words, tool descriptions, CLI help, warning messages, templates, PLAYBOOK/LESSONS/AGENTS/README/SKILL. **Content texts** (item bodies, notes, user prose) stay deliberately language-free — everyone writes them in their language. Rationale: structure/API code and prose stay congruent; non-German speakers can read the method. **Transition tolerance:** legacy DE-labels in open files are silently read by the parser (union-matching reads DE+EN); `docs_validate` reports them as `STRUCT_LOCALE` warning following the `DATE_LEGACY` pattern — **only in open files**, never in the append-only archive. Migration: open files at the next natural edit (Phase 14, Step 14.2 in `stepwell-tool`); archives never touched; new projects start directly with EN templates. Method-changes to this language convention apply synchronously in both PLAYBOOK/LESSONS copies (textually identical, SHA256-evidence per copy).
+
 ## 3. Wachstumsbegrenzung (Archiv-Muster)
 
 `BACKLOG.md` und `PROGRESS.md` enthalten nur **Offenes**:
