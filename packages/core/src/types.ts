@@ -91,6 +91,8 @@ export interface DocsStatus {
   nextPriority: Priority | undefined;
   /** Nur mit `include: ["nextStepScope"]` (E2/12.3): Ziel/Abnahme/Scope + gemergtes Item des nächsten Steps. */
   nextStepScope?: NextStepScope;
+  /** SHA256 je Doku-Datei (E2/12.5) — Grundlage des Hash-Kurzschlusses (Fast-Pfad E3). */
+  hashes: Record<string, string>;
   warnings: Warning[];
 }
 

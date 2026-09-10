@@ -1,9 +1,10 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ResourceTemplate, type McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { TEMPLATE_KINDS, projectTemplates, type TemplateKind } from "@method-docs/core";
+import { TEMPLATE_KINDS, fileHashes, projectTemplates, type TemplateKind } from "@method-docs/core";
 
 const MARKDOWN = "text/markdown";
+const JSON_MIME = "application/json";
 
 function decodeRoot(raw: string): string {
   try {
@@ -88,6 +89,28 @@ export function registerDocsResources(server: McpServer): void {
           uri: uri.href,
           text: readOrThrow(join(decodeRoot(String(root)), "PROGRESS.md")),
           mimeType: MARKDOWN,
+        },
+      ],
+    }),
+  );
+
+  server.registerResource(
+    "hashes",
+    new ResourceTemplate("methoddocs://{root}/hashes", { list: undefined }),
+    {
+      title: "Datei-Hashes",
+      description:
+        "SHA256 je Doku-Datei als JSON (E2/12.5) — Client vergleicht gegen den letzten bekannten " +
+        "Stand und überspringt Voll-Lese, wenn alles unverändert ist (Fast-Pfad E3). " +
+        "Root percent-encoded im URI.",
+      mimeType: JSON_MIME,
+    },
+    (uri, { root }) => ({
+      contents: [
+        {
+          uri: uri.href,
+          text: JSON.stringify(fileHashes(decodeRoot(String(root)))),
+          mimeType: JSON_MIME,
         },
       ],
     }),
