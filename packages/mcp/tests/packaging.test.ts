@@ -149,6 +149,19 @@ describe("doku-prosa sync (N1/13.3)", () => {
   });
 });
 
+describe("opencode.json repo-path (N1/13.4 prep, explicit Gate)", () => {
+  it("points the stepwell server command at the new repo path", () => {
+    const cfg = JSON.parse(readFileSync(join(repoRoot, "opencode.json"), "utf8")) as {
+      mcp: Record<string, { command: string[] }>;
+    };
+    const cmd = cfg.mcp.stepwell?.command;
+    expect(cmd, "stepwell server entry exists").toBeDefined();
+    const pathArg = cmd?.[cmd.length - 1] ?? "";
+    expect(pathArg, "opencode.json points at stepwell-tool").toContain("stepwell-tool");
+    expect(pathArg, "opencode.json no longer points at method-docs").not.toContain("method-docs");
+  });
+});
+
 describe("pack smoke wiring (L6, 9.8)", () => {
   it("provides the pack smoke script and wires it into CI", () => {
     expect(existsSync(join(repoRoot, "scripts", "pack-smoke.mjs"))).toBe(true);
