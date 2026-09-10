@@ -447,3 +447,13 @@
 - **Abnahme:** Tests je Schalter; `npm run typecheck` + `npm run test` grün; `docs_validate` clean; CHANGELOG-Eintrag (MINOR — neue Parameter, Output-Kompaktierung mit Kontrakt-Notiz); Timing: vor 1.0.0, sinnvoll vor/mit I1 (kleinere Doku-Fläche für die EN-Migration).
 - **Step-Paketierung:** Phase 12 — 12.1 (E1/1), 12.2 (E1/2).
 - **Erledigt:** Commit `8b4a800` (12.1: Kompakt-JSON + structuredContent-Opt-in, Test-Commit `ce94b7f`) + `7afed7e` (12.2: backlog_list-Feldprojektion + Plan-Detailstufe, Test-Commit `5e71c8f`) — 273/273 grün, Steps 12.1/12.2.
+
+---
+
+### [x] E2 — Token-Ökonomie II: Runden-Ersparnis (docs_status-Scope-Include, Multi-Step-Update, Hash-Kurzschluss) — 🟡
+- **Ort:** `packages/core/src/status.ts` + `packages/mcp/src/tools.ts` (`docs_status`, `progress_update`), `packages/mcp/src/resources.ts`; Read-Pfad des Kerns.
+- **Problem:** Ein Step-Zyklus kostet mehrere Round-Trips (`docs_status` → `progress_show` → `backlog_show`; `progress_update` je Step am Phasenende); der Session-Kickoff liest PROGRESS/BACKLOG voll, auch wenn seit der letzten Session nichts geändert hat.
+- **Arbeitsschritte (Entwurf):** (1) `docs_status`: `include`-Param (`"nextStepScope"`) — liefert Scope + Akzeptanz des nächsten Steps (aus Detail-Block bzw. zugehörigem Backlog-Item) mit → 1 Call statt 3. (2) `progress_update`: `step` als `string | string[]` — Multi-Step-Statuspflege in einem Call (Phasenabschluss). (3) Hash-Kurzschluss: Read-Tools/Resources liefern SHA256 je gelesener Datei mit; Client vergleicht gegen letzten bekannten Stand — Voll-Lesen überspringbar. Server bleibt stateless (Zero-Cache-Prinzip intakt); Grundlage für den Fast-Pfad aus E3.
+- **Abnahme:** Tests je Param; bestehende Resource-/Tool-Verträge unverändert außer neuen optionalen Feldern (MINOR gem. Decision 16); `npm run typecheck` + `npm run test` grün; CHANGELOG-Eintrag; Timing: vor 1.0.0.
+- **Step-Paketierung:** Phase 12 — 12.3 (E2/1), 12.4 (E2/2), 12.5 (E2/3).
+- **Erledigt:** Commits `9676e3c` (12.3: docs_status nextStepScope-Include, Test `42388e0`) + `153537f` (12.4: Multi-Step-Update, Test `6badfce`) + `5b18a9e` (12.5: Hash-Kurzschluss, Test `61fcba8`) — 290/290 grün, Steps 12.3–12.5.
