@@ -330,3 +330,40 @@ AGENTS Decisions 13/14, `docs_validate` beider Projekte clean).
 - **12.5 Hash-Kurzschluss: SHA256 in Read-Tools + Resources (E2/3)**
 - **12.6 Phase-Kontext-Resource: Items zur Lesezeit mergen (G5)**
 **Verifikation:** npm run typecheck && npm run test — beide grün (297/297). Test-Commit e1bd5c1 (ROT: 3), Fix-Commit f9f0e3b.
+
+---
+
+### Phase 13 — Naming-Refactor: STEPWELL durchgängig
+
+**Umfang (Steps):**
+
+- **13.1 Manifests + Lockstep + packaging-Tests (N1/1)**
+- **13.2 TOOL_NAME + Resource-URI-Schema (N1/2)**
+- **13.3 Doku + Decision + CHANGELOG (N1/3)**
+- **13.4 Repo-Rename — explizites Gate (N1/4)**
+
+**Rename-Sequenz (User-Aktionen, zwischen Sessions):**
+
+1. **Ordner moven** — `D:\Development\method-docs` → `D:\Development\stepwell-tool`
+   (in einer **frischen** PowerShell, nicht in dieser laufenden Session — der
+   Shell-CWD + alle MCP-Tool-Calls zeigen sonst ins Leere).
+2. **GitHub-Repo umbenennen** (Settings → General → Repository name).
+3. **Remote-URL aktualisieren:**
+   `git remote set-url origin <neue-url>` (im neuen Pfad).
+4. **Push verifizieren:** `git push --follow-tags` (sollte ohne Konflikte gehen,
+   weil die Inhalte gleich sind — nur der Pfad ändert sich).
+5. **Neue Session am neuen Pfad öffnen.**
+6. **Verifizieren:** `npm install && npm run typecheck && npm test` (308/308 grün),
+   `node packages/mcp/src/cli.ts validate --root .` (fund-frei).
+7. **13.4 abschließen:** `progress_update` Phase 13 Step 13.4 → ✅
+   (Checkpoint = letzter 13.4-Commit).
+8. **N1 archivieren:** `archive_item` N1 mit Note = Commit-Hashes der
+   13.1–13.4-Commits (`ff6a996`, `bdc9a74`, `f94832f`, `e077599`).
+9. **Phase 13 final abschließen:** `progress_update` mit letztem 🔄-Step der
+   Phase → Block wandert verbatim ins `PROGRESS_ARCHIVE` (Verifikations-Zeile
+   mit `checkpoint: <sha>`).
+
+**Falls Schritt 1–4 zwischen Sessions nicht durchführbar sind:** 13.4 bleibt 🔄,
+N1 bleibt 🟡, Phase 13 bleibt in „Laufende Phasen" — kein Verlust, keine
+Drift. Die nächste Session am **alten** Pfad kann den Rename dann später
+nachholen oder einen anderen Pfad wählen.
