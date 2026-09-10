@@ -414,3 +414,94 @@ describe("plan detail level summary vs diff (12.2, E1/2)", () => {
     }
   });
 });
+
+describe("progress_update multi-step (12.4, E2/2)", () => {
+  it("applies an array of steps in one call and echoes them", async () => {
+    const dir = tempProject("project-a");
+    const c = await connect();
+    try {
+      const data = payload(
+        await callTool(c, "progress_update", {
+          root: dir,
+          phase: "Phase 2",
+          step: ["2.2", "2.3"],
+          status: "✅",
+          dryRun: false,
+        }),
+      );
+      expect(data.steps).toEqual(["2.2", "2.3"]);
+      expect(data.verification.ok).toBe(true);
+      expect(data.written).toEqual(["PROGRESS.md"]);
+    } finally {
+      await c.close();
+    }
+    const progress = readFileSync(join(dir, "PROGRESS.md"), "utf8");
+    expect(progress).toContain("| 2.2 | U21 Fehlertexte | ✅ |");
+    expect(progress).toContain("| 2.3 | U22 Ladezustände | ✅ |");
+    expect(progress).toContain("| 2.1 | Strings-Modul | 🔄 |");
+    expect(progress).toContain("### Phase 2 — UI-Polish");
+  });
+
+  it("completes the phase on the last step and archives the block exactly once", async () => {
+    const dir = tempProject("project-a");
+    const c = await connect();
+    try {
+      const data = payload(
+        await callTool(c, "progress_update", {
+          root: dir,
+          phase: "Phase 2",
+          step: ["2.1", "2.2", "2.3"],
+          status: "✅",
+          dryRun: false,
+        }),
+      );
+      expect(data.steps).toEqual(["2.1", "2.2", "2.3"]);
+      expect(data.verification.ok).toBe(true);
+      expect(data.written).toEqual(["PROGRESS.md", join("docs", "archive", "PROGRESS_ARCHIVE.md")]);
+    } finally {
+      await c.close();
+    }
+    const progress = readFileSync(join(dir, "PROGRESS.md"), "utf8");
+    const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.md"), "utf8");
+    expect(progress).not.toContain("### Phase 2 — UI-Polish");
+    expect(progress).toContain("| 2.1 | Strings-Modul | ✅ |");
+    expect(archive).toContain("### Phase 2 — UI-Polish");
+    expect(archive.indexOf("### Phase 2 — UI-Polish")).toBe(
+      archive.lastIndexOf("### Phase 2 — UI-Polish"),
+    );
+  });
+
+  it("rejects multi-step arrays in dry-run mode", async () => {
+    const c = await connect();
+    try {
+      const result = await callTool(c, "progress_update", {
+        root: tempProject("project-a"),
+        phase: "Phase 2",
+        step: ["2.2", "2.3"],
+        status: "✅",
+      });
+      expect(result.isError).toBe(true);
+      expect(result.content[0]?.text).toContain("dryRun: false");
+    } finally {
+      await c.close();
+    }
+  });
+
+  it("reports an unknown step within the array as tool error", async () => {
+    const dir = tempProject("project-a");
+    const c = await connect();
+    try {
+      const result = await callTool(c, "progress_update", {
+        root: dir,
+        phase: "Phase 2",
+        step: ["2.2", "9.9"],
+        status: "✅",
+        dryRun: false,
+      });
+      expect(result.isError).toBe(true);
+      expect(result.content[0]?.text).toContain("9.9");
+    } finally {
+      await c.close();
+    }
+  });
+});
