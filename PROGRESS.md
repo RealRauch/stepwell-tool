@@ -9,6 +9,42 @@
 > wandern nach Abschluss **unverändert** in `docs/archive/PROGRESS_ARCHIVE.md`.
 
 ## Laufende Phasen
+### Phase 12 — Token-Ökonomie: kompakte Outputs + Runden-Ersparnis
+
+**Umfang (Steps):**
+
+- **12.1 Kompakt-JSON + structuredContent-Opt-in (E1/1)**
+- **12.2 backlog_list-Feldprojektion + Plan-Detailstufe (E1/2)**
+- **12.3 docs_status: nextStepScope-Include (E2/1)**
+- **12.4 progress_update: Multi-Step (E2/2)**
+- **12.5 Hash-Kurzschluss: SHA256 in Read-Tools + Resources (E2/3)**
+### Phase 13 — Naming-Refactor: STEPWELL durchgängig
+
+**Umfang (Steps):**
+
+- **13.1 Manifests + Lockstep + packaging-Tests (N1/1)**
+- **13.2 TOOL_NAME + Resource-URI-Schema (N1/2)**
+- **13.3 Doku + Decision + CHANGELOG (N1/3)**
+- **13.4 Repo-Rename — explizites Gate (N1/4)**
+### Phase 14 — Sprach-Umstellung: Englisch primär
+
+**Umfang (Steps):**
+
+- **14.1 Konventions-Flip: PLAYBOOK §2/§3 + Decision 10 (I1/1)**
+- **14.2 Offene Dateien beider Repos auf EN-Struktur (I1/2)**
+- **14.3 core: detectLocale-Gleichstand + EN-Templates (I1/3)**
+- **14.4 Messages + Tool-Beschreibungen + CLI-Help EN (I1/4)**
+- **14.5 Fixtures-README EN + gemischtsprachige Fixture (I1/5)**
+- **14.6 STRUCT_LOCALE-Entscheid + CHANGELOG (I1/6)**
+### Phase 15 — Methoden-Sync: Kickoff-Fast-Pfad
+
+**Umfang (Steps):**
+
+- **15.1 Fast-Pfad + Parallel-Reads in beiden Kopien (E3)**
+
+
+
+
 
 
 
@@ -76,3 +112,19 @@
 | 10.6 | Surface-Guardrail als Decision verankern + README (M4) | ✅ |
 | 10.7 | Coverage-Gate-Exit-Code robust stellen: Ursache klären + Gate Exit-unabhängig (R9, CI-Änderung = Gate Hoch) | ✅ |
 | 11.1 | Sync-Schlag: Lesson #18 (Exit-Codes mit Host-Sprache messen) in beiden LESSONS-Kopien (G4) | ✅ |
+| 12.1 | Kompakt-JSON + structuredContent-Opt-in (E1/1) | ⬜ |
+| 12.2 | backlog_list-Feldprojektion + Plan-Detailstufe (E1/2) | ⬜ |
+| 12.3 | docs_status: nextStepScope-Include (E2/1) | ⬜ |
+| 12.4 | progress_update: Multi-Step (E2/2) | ⬜ |
+| 12.5 | Hash-Kurzschluss: SHA256 in Read-Tools + Resources (E2/3) | ⬜ |
+| 13.1 | Manifests + Lockstep + packaging-Tests (N1/1) | ⬜ |
+| 13.2 | TOOL_NAME + Resource-URI-Schema (N1/2) | ⬜ |
+| 13.3 | Doku + Decision + CHANGELOG (N1/3) | ⬜ |
+| 13.4 | Repo-Rename — explizites Gate (N1/4) | ⬜ |
+| 14.1 | Konventions-Flip: PLAYBOOK §2/§3 + Decision 10 (I1/1) | ⬜ |
+| 14.2 | Offene Dateien beider Repos auf EN-Struktur (I1/2) | ⬜ |
+| 14.3 | core: detectLocale-Gleichstand + EN-Templates (I1/3) | ⬜ |
+| 14.4 | Messages + Tool-Beschreibungen + CLI-Help EN (I1/4) | ⬜ |
+| 14.5 | Fixtures-README EN + gemischtsprachige Fixture (I1/5) | ⬜ |
+| 14.6 | STRUCT_LOCALE-Entscheid + CHANGELOG (I1/6) | ⬜ |
+| 15.1 | Fast-Pfad + Parallel-Reads in beiden Kopien (E3) | ⬜ |
