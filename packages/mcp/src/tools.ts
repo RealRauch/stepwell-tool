@@ -29,13 +29,13 @@ import {
 } from "@method-docs/core";type ToolResult = CallToolResult;
 
 function textResult(value: unknown): ToolResult {
-  return { content: [{ type: "text", text: JSON.stringify(value, null, 2) }] };
+  return { content: [{ type: "text", text: JSON.stringify(value) }] };
 }
 
-/** Text-Payload + dieselben Daten zusätzlich maschinenlesbar als structuredContent (M3/9.7). */
+/** Text-Payload, bei Opt-in (`structured: true`) zusätzlich als structuredContent (M3/9.7, E1/12.1). */
 function structuredResult(value: Record<string, unknown>): ToolResult {
   return {
-    content: [{ type: "text", text: JSON.stringify(value, null, 2) }],
+    content: [{ type: "text", text: JSON.stringify(value) }],
     structuredContent: value,
   };
 }
@@ -50,11 +50,7 @@ function errorOrThrow(err: unknown): ToolResult {
     return {
       content: [{
         type: "text",
-        text: JSON.stringify(
-          { code: err.code, message: err.message, missing: err.missing },
-          null,
-          2,
-        ),
+        text: JSON.stringify({ code: err.code, message: err.message, missing: err.missing }),
       }],
       isError: true,
     };
@@ -70,9 +66,13 @@ async function asResult(fn: () => unknown): Promise<ToolResult> {
   }
 }
 
-async function asStructuredResult(fn: () => unknown): Promise<ToolResult> {
+async function asStructuredResult(
+  fn: () => unknown,
+  structured: boolean,
+): Promise<ToolResult> {
   try {
-    return structuredResult(fn() as Record<string, unknown>);
+    const value = fn() as Record<string, unknown>;
+    return structured ? structuredResult(value) : textResult(value);
   } catch (err) {
     return errorOrThrow(err);
   }
@@ -85,6 +85,8 @@ const TEXT_FIELD = z.string().optional()
   .describe("Item-Body als Bullets (z. B. \"- **Ort:** …\\n- **Problem:** …\") — wird verbatim übernommen.");
 const DRYRUN_FIELD = z.boolean().default(true)
   .describe("true (Default): nur Plan/Diff-Vorschau; false: Änderungen schreiben.");
+const STRUCTURED_FIELD = z.boolean().default(false)
+  .describe("true: Payload zusätzlich als structuredContent (M3); false (Default): nur Text-Content.");
 
 const ROOT_FIELD = z.string().describe("Absoluter Pfad zum Projekt-Root (mit BACKLOG.md/PROGRESS.md).");
 
@@ -252,9 +254,9 @@ export function registerDocsTools(server: McpServer): void {
       description:
         "Prüft die Querkonsistenz der vier Doku-Dateien (Erledigt-Index ↔ Archiv, Checkbox ↔ " +
         "Archivierung, 🔄 ↔ Detail-Block, ID-/Datum-Konvention) und sammelt Parse-Warnungen ein.",
-      inputSchema: { root: ROOT_FIELD },
+      inputSchema: { root: ROOT_FIELD, structured: STRUCTURED_FIELD },
     },
-    ({ root }) => asStructuredResult(() => docsValidate(root)),
+    ({ root, structured }) => asStructuredResult(() => docsValidate(root), structured),
   );
 
   server.registerTool(
@@ -273,11 +275,12 @@ export function registerDocsTools(server: McpServer): void {
         note: z.string().optional()
           .describe("Optionale Erledigt-Notiz (z. B. Commit-Hash) — landet im Archiv-Block und Index-Tail."),
         locale: LOCALE_FIELD,
+        structured: STRUCTURED_FIELD,
         dryRun: z.boolean().default(true)
           .describe("true (Default): nur Plan/Diff-Vorschau; false: Änderungen schreiben."),
       },
     },
-    ({ root, id, note, locale, dryRun }) =>
+    ({ root, id, note, locale, structured, dryRun }) =>
       asStructuredResult(() => {
         const plan = planArchiveItem(root, id, {
           dryRun,
@@ -285,7 +288,7 @@ export function registerDocsTools(server: McpServer): void {
           ...(locale !== undefined ? { locale: locale as Locale } : {}),
         });
         return plan.dryRun ? plan : applyArchivePlan(plan);
-      }),
+      }, structured),
   );
 
   server.registerTool(
@@ -310,11 +313,12 @@ export function registerDocsTools(server: McpServer): void {
         checkpoint: z.string().optional()
           .describe("Optionaler Commit-SHA der Phase (7–40 Hex) — bei Phasen-Abschluss in der Verifikations-Zeile des Archiv-Blocks."),
         locale: LOCALE_FIELD,
+        structured: STRUCTURED_FIELD,
         dryRun: z.boolean().default(true)
           .describe("true (Default): nur Plan/Diff-Vorschau; false: Änderungen schreiben."),
       },
     },
-    ({ root, phase, step, status, title, note, checkpoint, locale, dryRun }) =>
+    ({ root, phase, step, status, title, note, checkpoint, locale, structured, dryRun }) =>
       asStructuredResult(() => {
         const plan = planProgressUpdate(root, phase, step, status as Status, {
           dryRun,
@@ -324,7 +328,7 @@ export function registerDocsTools(server: McpServer): void {
           ...(locale !== undefined ? { locale: locale as Locale } : {}),
         });
         return plan.dryRun ? plan : applyProgressPlan(plan);
-      }),
+      }, structured),
   );
 
   server.registerTool(

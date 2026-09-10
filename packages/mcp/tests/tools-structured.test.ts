@@ -103,14 +103,17 @@ describe("structuredContent opt-in (E1/2 of M3 contract, 12.1)", () => {
     }
   });
 
-  it("errors carry no structuredContent even with structured: true", async () => {
+  it("isError results carry no structuredContent even with structured: true", async () => {
     const c = await connect();
     try {
-      const result: ToolResultLike = await callTool(c, "docs_validate", {
+      const result: ToolResultLike = await callTool(c, "archive_item", {
         root: emptyRoot,
+        id: "H1",
         structured: true,
       });
+      expect(result.isError).toBe(true);
       expect(result.structuredContent).toBeUndefined();
+      expect(payload(result).code).toBe("PROJECT_NOT_INITIALIZED");
     } finally {
       await c.close();
     }

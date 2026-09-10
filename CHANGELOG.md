@@ -36,6 +36,15 @@ Feldtest (Decision 16); bis dahin 0.x mit Lockstep über alle drei `package.json
 - Verifikation: Coverage-Gate je Glob in Vitest + CI; Pack-Smoke gegen die npm-Artefakte
   (statisch, dynamischer Teil blockiert durch Dist-Blocker H1).
 
+### Changed
+- **Token-Ökonomie I (E1):** Alle MCP-Tool-Text-Payloads sind **kompaktes JSON** (ohne
+  Einrückung) statt Pretty-Print; `structuredContent` wird bei `docs_validate`,
+  `progress_update` und `archive_item` **nur noch auf Opt-in** (`structured: true`)
+  geliefert — Default ist nur Text-Content (Dedupe). Kontrakt-Notiz: Output-Kompaktierung
+  und Removal des `structuredContent`-Defaults sind Vertragsänderungen im 0.x-Fenster
+  (SemVer-0-Regel, Decision 16); das CLI-`schema`-Feld (M6) bleibt unverändert auf `1`
+  — die JSON-Struktur der Daten ändert sich nicht, nur die Serialisierung.
+
 ### Fixed
 - **npm-Artefakt lauffähig aus `node_modules` (H1):** beide Workspaces shippen kompiliertes
   `dist` (js + d.ts) statt `.ts`-Source, `exports`/`bin` entsprechend umgestellt,
