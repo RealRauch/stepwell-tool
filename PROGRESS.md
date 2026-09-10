@@ -1,17 +1,17 @@
 # Projekt-Tracking: stepwell
 
-> Quellen-Methode: `docs/PLAYBOOK.md` (verbatim)
-> Fortschrittsdatei — wird nach jedem Step aktualisiert.
-> Legende: ⬜ offen · 🔄 in Arbeit · ✅ fertig · ⛔ blockiert
+> Source method: `docs/PLAYBOOK.md` (verbatim)
+> Progress file — updated after every step.
+> Legend: ⬜ open · 🔄 in progress · ✅ done · ⛔ blocked
 
-> **Struktur (Archiv-Muster):** Diese Datei enthält die **vollständige Fortschrittstabelle**
-> und Detail-Blöcke **nur für laufende/offene Phasen**. Detail-Blöcke abgeschlossener Phasen
-> wandern nach Abschluss **unverändert** in `docs/archive/PROGRESS_ARCHIVE.md`.
+> **Structure (archive pattern):** This file contains the **full progress table**
+> and detail blocks **only for active/open phases**. Detail blocks of completed phases
+> are moved to `docs/archive/PROGRESS_ARCHIVE.md` unchanged after completion.
 
-## Laufende Phasen
+## Active Phases
 ### Phase 14 — Sprach-Umstellung: Englisch primär
 
-**Umfang (Steps):**
+**Scope (Steps):**
 
 - **14.1 Konventions-Flip: PLAYBOOK §2/§3 + Decision 10 (I1/1)**
 - **14.2 Offene Dateien beider Repos auf EN-Struktur (I1/2)**
@@ -21,7 +21,7 @@
 - **14.6 STRUCT_LOCALE-Entscheid + CHANGELOG (I1/6)**
 ### Phase 15 — Methoden-Sync: Kickoff-Fast-Pfad
 
-**Umfang (Steps):**
+**Scope (Steps):**
 
 - **15.1 Fast-Pfad + Parallel-Reads in beiden Kopien (E3)**
 
@@ -34,7 +34,7 @@
 
 ---
 
-## Fortschritt
+## Progress
 
 | # | Step | Status |
 |---|----------|--------|
@@ -105,7 +105,7 @@
 | 13.3 | Doku + Decision + CHANGELOG (N1/3) | ✅ |
 | 13.4 | Repo-Rename — explizites Gate (N1/4) | ✅ |
 | 14.1 | Konventions-Flip: PLAYBOOK §2/§3 + Decision 10 (I1/1) | ✅ |
-| 14.2 | Offene Dateien beider Repos auf EN-Struktur (I1/2) | ⬜ |
+| 14.2 | Offene Dateien beider Repos auf EN-Struktur (I1/2) | 🔄 |
 | 14.3 | core: detectLocale-Gleichstand + EN-Templates (I1/3) | ⬜ |
 | 14.4 | Messages + Tool-Beschreibungen + CLI-Help EN (I1/4) | ⬜ |
 | 14.5 | Fixtures-README EN + gemischtsprachige Fixture (I1/5) | ⬜ |
