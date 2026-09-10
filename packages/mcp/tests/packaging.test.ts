@@ -106,6 +106,49 @@ describe("stepwell skill asset (M7, 9.5)", () => {
   });
 });
 
+describe("doku-prosa sync (N1/13.3)", () => {
+  it("SKILL.md uses stepwell install + server-name, no method-docs residue", () => {
+    const text = readFileSync(join(repoRoot, "packages", "mcp", "skills", "stepwell", "SKILL.md"), "utf8");
+    expect(text, "install command").toContain("npx stepwell");
+    expect(text, "server name in description").toContain("stepwell-MCP-Server");
+    expect(text, "negative: no @method-docs/mcp install").not.toContain("@method-docs/mcp");
+    expect(text, "negative: no method-docs-MCP-Server label").not.toContain("method-docs-MCP-Server");
+    expect(text, "negative: no (method-docs) suffix").not.toContain("— Arbeitsweise (method-docs)");
+  });
+
+  it("README.md points at npx stepwell install + stepwell:// resource scheme", () => {
+    const readme = readFileSync(join(repoRoot, "README.md"), "utf8");
+    expect(readme, "install command").toContain("npx stepwell");
+    expect(readme, "resource URI scheme").toContain("stepwell://");
+    expect(readme, "negative: no npx @method-docs/mcp").not.toContain("npx @method-docs/mcp");
+    expect(readme, "negative: no methoddocs://").not.toContain("methoddocs://");
+  });
+
+  it("CHANGELOG.md [Unreleased] entry names N1 + stepwell naming", () => {
+    const changelog = readFileSync(join(repoRoot, "CHANGELOG.md"), "utf8");
+    const unreleased = changelog.split("## [Unreleased]")[1]?.split("## [")[0] ?? "";
+    expect(unreleased, "Unreleased mentions N1").toContain("N1");
+    expect(unreleased, "Unreleased mentions stepwell naming").toMatch(/stepwell/i);
+  });
+
+  it("AGENTS.md Decision 16 + Decision 18 reference stepwell packages", () => {
+    const agents = readFileSync(join(repoRoot, "AGENTS.md"), "utf8");
+    // Decision 16: must list the new package names (replaces old @method-docs/* mentions)
+    const d16 = agents.match(/16\.\s+\*\*[^]*?(?=\n17\.)/u)?.[0] ?? "";
+    expect(d16, "Decision 16 names stepwell").toContain("stepwell");
+    expect(d16, "Decision 16 names stepwell-core").toContain("stepwell-core");
+    expect(d16, "Decision 16 negative: no @method-docs/core").not.toContain("@method-docs/core");
+    expect(d16, "Decision 16 negative: no @method-docs/mcp").not.toContain("@method-docs/mcp");
+    // Decision 18: endgültiges Naming — anchor for the rename
+    const d18 = agents.match(/18\.\s+\*\*[^]*?(?=\n##|$)/u)?.[0] ?? "";
+    expect(d18, "Decision 18 exists").toContain("**");
+    expect(d18, "Decision 18 mentions Naming").toMatch(/[Nn]aming/);
+    expect(d18, "Decision 18 mentions stepwell").toContain("stepwell");
+    expect(d18, "Decision 18 mentions stepwell-core").toContain("stepwell-core");
+    expect(d18, "Decision 18 mentions URI scheme").toContain("stepwell://");
+  });
+});
+
 describe("pack smoke wiring (L6, 9.8)", () => {
   it("provides the pack smoke script and wires it into CI", () => {
     expect(existsSync(join(repoRoot, "scripts", "pack-smoke.mjs"))).toBe(true);
