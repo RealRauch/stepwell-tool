@@ -74,7 +74,7 @@ describe("locale profiles — synonyms and detection (4.1)", () => {
     expect(detectLocale(readFixture("project-a", "BACKLOG.md"))).toBe("de");
     expect(detectLocale(readFixture("project-c-en", "BACKLOG.md"))).toBe("en");
     expect(detectLocale(readFixture("project-c-en", "PROGRESS.md"))).toBe("en");
-    expect(detectLocale("", "")).toBe("de");
+    expect(detectLocale("", "")).toBe("en");
   });
 
   it("exposes canonical strings per locale for generation", () => {

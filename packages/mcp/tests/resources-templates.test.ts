@@ -29,10 +29,10 @@ describe("template resources (M8/9.4)", () => {
     const c = await connect();
     try {
       const titles: Record<string, string> = {
-        backlog: "# BACKLOG.md — Offene Punkte",
-        progress: "# Projekt-Tracking:",
-        "backlog-archive": "# BACKLOG_ARCHIVE.md — Archiv erledigter Items (append-only)",
-        "progress-archive": "# PROGRESS_ARCHIVE.md — Archiv abgeschlossener Phasen (append-only)",
+        backlog: "# BACKLOG.md — Open items",
+        progress: "# Project tracking:",
+        "backlog-archive": "# BACKLOG_ARCHIVE.md — Archive of completed items (append-only)",
+        "progress-archive": "# PROGRESS_ARCHIVE.md — Archive of completed phases (append-only)",
       };
       for (const kind of TEMPLATE_KINDS) {
         const result = await c.client.readResource({ uri: `stepwell://templates/${kind}` });

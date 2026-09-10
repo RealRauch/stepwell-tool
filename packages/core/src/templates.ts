@@ -13,83 +13,81 @@ export const TEMPLATE_KINDS: readonly TemplateKind[] = [
   "progress-archive",
 ];
 
-const BACKLOG = `# BACKLOG.md — Offene Punkte (Stand: JJMMDD/HHMM)
+const BACKLOG = `# BACKLOG.md — Open items (As of: JJMMDD/HHMM)
 
-> **Diese Datei enthält nur OFFENE Items.** Erledigte Items werden nach dem Abschluss
-> **unverändert** in \`docs/archive/BACKLOG_ARCHIVE.md\` verschoben; hier bleibt je Item nur ein Einzeiler
-> im Erledigt-Index (unten). Fundstellen/Fix-Ideen/Decisions nicht löschen — ins Archiv verschieben.
-> Legende: 🔴 kritisch · 🟠 hoch · 🟡 mittel · 🟢 niedrig · 🔵 Test-Lücke
-> Abarbeitung: sequenziell nach Priorität (🔴 → 🟠 → 🟡 → 🟢 → 🔵), jedes Item test-first, Commit pro Item.
+> **This file contains only OPEN items.** Completed items are moved to \`docs/archive/BACKLOG_ARCHIVE.md\` unchanged after completion; this file keeps only a one-liner per item in the Done Index (below). Findings/fix-ideas/decisions are not deleted — moved to the archive.
+> Legend: 🔴 critical · 🟠 high · 🟡 medium · 🟢 low · 🔵 test gap
+> Working order: sequential by priority (🔴 → 🟠 → 🟡 → 🟢 → 🔵), each item test-first, commit per item.
 
 ---
 
-## 🔴 KRITISCH
+## 🔴 CRITICAL
 
-> Keine offenen Items.
-
----
-
-## 🟠 HOCH
-
-> Keine offenen Items.
+> No open items.
 
 ---
 
-## 🟡 MITTEL
+## 🟠 HIGH
 
-> Keine offenen Items.
-
----
-
-## 🟢 NIEDRIG
-
-> Keine offenen Items.
+> No open items.
 
 ---
 
-## 🔵 TEST-LÜCKEN
+## 🟡 MEDIUM
 
-> Keine offenen Items.
+> No open items.
 
 ---
 
-## ✅ Erledigt-Index
+## 🟢 LOW
 
-> (Einzeiler je abgeschlossenem Item, mit Commit-Hash; Details im Archiv.)
+> No open items.
+
+---
+
+## 🔵 TEST GAPS
+
+> No open items.
+
+---
+
+## ✅ DONE INDEX
+
+> (One line per completed item, with commit hash; details in archive.)
 `;
 
-const PROGRESS = `# Projekt-Tracking: <Projektname>
+const PROGRESS = `# Project tracking: <project name>
 
-> Quellen-Methode: \`docs/PLAYBOOK.md\` (verbatim)
-> Fortschrittsdatei — wird nach jedem Step aktualisiert.
-> Legende: ⬜ offen · 🔄 in Arbeit · ✅ fertig · ⛔ blockiert
+> Source method: \`docs/PLAYBOOK.md\` (verbatim)
+> Progress file — updated after every step.
+> Legend: ⬜ open · 🔄 in progress · ✅ done · ⛔ blocked
 
-> **Struktur (Archiv-Muster):** Diese Datei enthält die **vollständige Fortschrittstabelle**
-> und Detail-Blöcke **nur für laufende/offene Phasen**. Detail-Blöcke abgeschlossener Phasen
-> wandern nach Abschluss **unverändert** in \`docs/archive/PROGRESS_ARCHIVE.md\`.
+> **Structure (archive pattern):** This file contains the **full progress table**
+> and detail blocks **only for active/open phases**. Detail blocks of completed phases
+> are moved to \`docs/archive/PROGRESS_ARCHIVE.md\` unchanged after completion.
 
-## Laufende Phasen
+## Active Phases
 
 ---
 
-## Fortschritt
+## Progress
 
 | # | Step | Status |
 |---|------|--------|
 `;
 
-const BACKLOG_ARCHIVE = `# BACKLOG_ARCHIVE.md — Archiv erledigter Items (append-only)
+const BACKLOG_ARCHIVE = `# BACKLOG_ARCHIVE.md — Archive of completed items (append-only)
 
-> Items werden **unverändert** hierher verschoben; nachträgliche Ergänzungen nur als
-> neuer Abschnitt unterhalb des Items. Neueste Items unten anfügen.
+> Items are moved here **unchanged**; follow-up additions only as a new section
+> below the item. Newest items are appended at the bottom.
 
 ---
 `;
 
-const PROGRESS_ARCHIVE = `# PROGRESS_ARCHIVE.md — Archiv abgeschlossener Phasen (append-only)
+const PROGRESS_ARCHIVE = `# PROGRESS_ARCHIVE.md — Archive of completed phases (append-only)
 
-> Detail-Blöcke wandern **unverändert** hierher; die Fortschrittstabelle bleibt
-> vollständig in \`PROGRESS.md\` (dauerhafter Index).
+> Detail blocks are moved here **unchanged**; the progress table remains
+> complete in \`PROGRESS.md\` (durable index).
 
 ---
 `;
