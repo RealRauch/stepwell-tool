@@ -309,3 +309,108 @@ describe("tool progress_update (3.3)", () => {
     }
   });
 });
+
+describe("plan detail level summary vs diff (12.2, E1/2)", () => {
+  it("progress_update dry-run with detail:summary returns headline + line counts only", async () => {
+    const c = await connect();
+    try {
+      const data = payload(
+        await callTool(c, "progress_update", {
+          root: projectA,
+          phase: "Phase 2",
+          step: "2.2",
+          status: "🔄",
+          detail: "summary",
+        }),
+      );
+      expect(data.dryRun).toBe(true);
+      expect(data.detail).toBe("summary");
+      for (const ch of data.changes) {
+        expect(ch).not.toHaveProperty("before");
+        expect(ch).not.toHaveProperty("after");
+        expect(ch).not.toHaveProperty("diff");
+        expect(typeof ch.file).toBe("string");
+        expect(typeof ch.description).toBe("string");
+        expect(typeof ch.beforeLines).toBe("number");
+        expect(typeof ch.afterLines).toBe("number");
+      }
+    } finally {
+      await c.close();
+    }
+  });
+
+  it("archive_item supports detail:summary, too", async () => {
+    const c = await connect();
+    try {
+      const data = payload(
+        await callTool(c, "archive_item", { root: projectA, id: "H1", detail: "summary" }),
+      );
+      expect(data.detail).toBe("summary");
+      expect(data.changes[0]).not.toHaveProperty("diff");
+      expect(data.changes[0].beforeLines).toBeGreaterThan(0);
+    } finally {
+      await c.close();
+    }
+  });
+
+  it("backlog_add supports detail:summary", async () => {
+    const c = await connect();
+    try {
+      const data = payload(
+        await callTool(c, "backlog_add", {
+          root: tempProject("project-a"),
+          section: "MITTEL",
+          title: "Test-Item — Projektion",
+          priority: "🟡",
+          id: "X1",
+          detail: "summary",
+        }),
+      );
+      expect(data.detail).toBe("summary");
+      expect(data.changes[0]).not.toHaveProperty("before");
+    } finally {
+      await c.close();
+    }
+  });
+
+  it("default stays diff mode (full before/after/diff, no detail marker)", async () => {
+    const c = await connect();
+    try {
+      const data = payload(
+        await callTool(c, "progress_update", {
+          root: projectA,
+          phase: "Phase 2",
+          step: "2.2",
+          status: "🔄",
+        }),
+      );
+      expect(data.detail).toBeUndefined();
+      expect(typeof data.changes[0].diff).toBe("string");
+      expect(typeof data.changes[0].before).toBe("string");
+    } finally {
+      await c.close();
+    }
+  });
+
+  it("apply answers are unaffected by detail:summary", async () => {
+    const dir = tempProject("project-a");
+    const c = await connect();
+    try {
+      const data = payload(
+        await callTool(c, "progress_update", {
+          root: dir,
+          phase: "Phase 2",
+          step: "2.2",
+          status: "🔄",
+          detail: "summary",
+          dryRun: false,
+        }),
+      );
+      expect(data.verification.ok).toBe(true);
+      expect(data.detail).toBeUndefined();
+      expect(data.written).toHaveLength(1);
+    } finally {
+      await c.close();
+    }
+  });
+});
