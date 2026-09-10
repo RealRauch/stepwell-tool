@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to `@method-docs/mcp` / `@method-docs/core` are documented here.
+All notable changes to `stepwell` / `stepwell-core` are documented here.
 
 Format: [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/), adhering to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Documented deviation
@@ -53,12 +53,22 @@ Feldtest (Decision 16); bis dahin 0.x mit Lockstep über alle drei `package.json
   akzeptiert `step` als Array für Multi-Step-Statuspflege in einem Call
   (Phasenabschluss am letzten Step, nur mit `dryRun: false`, E2); `docs_status`
   trägt additiv `hashes` (SHA256 je Doku-Datei) und die neue Read-Only-Resource
-  `methoddocs://{root}/hashes` liefert dasselbe Manifest kompakt als JSON —
+  `stepwell://{root}/hashes` liefert dasselbe Manifest kompakt als JSON —
   Clients vergleichen gegen den letzten bekannten Stand und überspringen
   Voll-Lese (Fast-Pfad-Fundament E3). Kontrakt-Notiz: Output-Kompaktierung
   und Removal des `structuredContent`-Defaults sind Vertragsänderungen im 0.x-Fenster
   (SemVer-0-Regel, Decision 16); das CLI-`schema`-Feld (M6) bleibt unverändert auf `1`
   — die JSON-Struktur der Daten ändert sich nicht, nur die Serialisierung.
+- **Naming-Refactor N1/13 (Phase 13 abgeschlossen, Decision 18):** `method-docs`
+  → `stepwell` durchgängig.
+  - npm-Pakete: `stepwell` (ehemals `@method-docs/mcp`, flat — kein `@stepwell/*`-Scope),
+    `stepwell-core` (ehemals `@method-docs/core`, flat). Lockstep-Versionen, `prepublishOnly`-Builds.
+  - Bin: `stepwell` (ehemals `method-docs`); Install via `npx stepwell`.
+  - Resource-URI-Schema: `stepwell://…` (ehemals `methoddocs://…`) — Templates, Root-Dateien, Phase-Kontext, Hashes.
+  - TOOL_NAME: `stepwell` (ehemals `method-docs`); `serverInfo.name = "stepwell"`.
+  - JSON-Output-Kontrakt: `schema: 1` → `2` (Resource-URI-Änderung = MAJOR-Kontrakt, Decision 16).
+  - CLI-Usage-String, SKILL.md-Description, README/CHANGELOG/AGENTS-Prosa, Doku-Pfade: durchgängig `stepwell`.
+  - Repo-Pfad (`D:\Development\method-docs` → `D:\Development\stepwell-tool`) folgt in 13.4 als eigenes Gate.
 
 ### Fixed
 - **npm-Artefakt lauffähig aus `node_modules` (H1):** beide Workspaces shippen kompiliertes

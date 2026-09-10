@@ -1,4 +1,4 @@
-# method-docs
+# stepwell
 
 CLI + MCP-Server zum **Lesen, Prüfen und Verwalten** der Projekt-Doku
 (`BACKLOG.md`, `PROGRESS.md`, `docs/archive/*`) in Repos, die der
@@ -76,7 +76,7 @@ Cursor, …) das gleiche Muster:
   "mcp": {
     "stepwell": {
       "type": "local",
-      "command": ["node", "/pfad/zu/method-docs/packages/mcp/src/serve.ts"],
+      "command": ["node", "/pfad/zu/stepwell-tool/packages/mcp/src/serve.ts"],
       "enabled": true
     }
   }
@@ -94,7 +94,7 @@ Die Test-Suite deckt denselben Protokoll-Pfad automatisiert ab
 
 ### Distribution (zwei Kanäle)
 
-1. **MCP-Server:** `npx @method-docs/mcp` (bzw. `serve.ts`) — operativ, Tools wie unten.
+1. **MCP-Server:** `npx stepwell` (bzw. `serve.ts`) — operativ, Tools wie unten.
    Das veröffentlichte Package shippt **kompiliertes `dist`** (seit 10.4/H1) und ist damit
    direkt aus `node_modules` lauffähig — `prepublishOnly` baut vor dem Publish.
 2. **SKILL.md:** `packages/mcp/skills/stepwell/SKILL.md` (liegt im npm-Pack) —
@@ -166,16 +166,16 @@ enthalten `:` und `\`); der Read-Callback dekodiert ihn. Inhalt jeweils verbatim
 `text/markdown`:
 
 ```
-methoddocs://{root}/backlog          → BACKLOG.md
-methoddocs://{root}/progress         → PROGRESS.md
-methoddocs://{root}/archive/{kind}   → kind = "backlog" | "progress"
-methoddocs://{root}/phase/{phase}    → Phasen-Kontext: Phase verbatim + Tabellen-Zeilen
-                                       + gemergte Item-Bodies in Step-Reihenfolge (G5/12.6)
-methoddocs://{root}/hashes           → SHA256 je Doku-Datei (application/json;
-                                       Hash-Kurzschluss, E2/12.5 — Fast-Pfad-Fundament E3)
-methoddocs://templates/{kind}        → Skeletons der vier Pflichtdateien
-                                       (kind = "backlog" | "progress" |
-                                        "backlog-archive" | "progress-archive")
+stepwell://{root}/backlog          → BACKLOG.md
+stepwell://{root}/progress         → PROGRESS.md
+stepwell://{root}/archive/{kind}   → kind = "backlog" | "progress"
+stepwell://{root}/phase/{phase}    → Phasen-Kontext: Phase verbatim + Tabellen-Zeilen
+                                      + gemergte Backlog-Item-Bodies in Step-Reihenfolge (G5/12.6)
+stepwell://{root}/hashes           → SHA256 je Doku-Datei (application/json;
+                                      Hash-Kurzschluss, E2/12.5 — Fast-Pfad-Fundament E3)
+stepwell://templates/{kind}        → Skeletons der vier Pflichtdateien
+                                      (kind = "backlog" | "progress" |
+                                       "backlog-archive" | "progress-archive")
 ```
 
 **M4-Alternativprüfung (G5):** Resource statt Tool — der Phasen-Kontext ist reiner
@@ -183,12 +183,12 @@ Lese-Pfad, und die Komposition passiert **zur Lesezeit** statt als Duplikat in d
 Dateien (Anti-Drift): ein Subagent bekommt Phase + Item-Bodies in einem Read, ohne
 dass ein neues Tool die Surface vergrößert.
 
-Beispiel: `methoddocs://D%3A%5Cproj%5Cdemo/backlog`
+Beispiel: `stepwell://D%3A%5Cproj%5Cdemo/backlog`
 
 **Projekt-Init (M8, Variante A):** Bei neu angelegten Projekten liest der Agent die vier
-Skeletons aus `methoddocs://templates/{kind}` und legt die Dateien damit selbst an —
+Skeletons aus `stepwell://templates/{kind}` und legt die Dateien damit selbst an —
 bewusst **kein** `init_project`-Schreib-Tool (M4-Guardrail: Write-Surface klein halten);
-die Skeletons liegen kanonisch in `@method-docs/core` (`projectTemplates`) und sind an
+die Skeletons liegen kanonisch in `stepwell-core` (`projectTemplates`) und sind an
 `docs_validate` fund-frei. Die Init-Fallback-Anleitung (`PROJECT_NOT_INITIALIZED`)
 verweist auf diesen Weg.
 
@@ -198,10 +198,10 @@ verweist auf diesen Weg.
 
 `packages/mcp/src/cli.ts` — im Workspace-Repo direkt ausführbar
 (`node packages/mcp/src/cli.ts …`); aus dem installierten Package
-(`npm i -g @method-docs/mcp` bzw. `npx @method-docs/mcp`) unter dem Bin-Namen
-`method-docs`.
+(`npm i -g stepwell` bzw. `npx stepwell`) unter dem Bin-Namen
+`stepwell`.
 Menschliche Ausgabe auf stdout; `--json` liefert die core-Payloads mit vorangestelltem
-Versionsfeld `schema` (aktuell **1**). Feldkontrakt je Command:
+Versionsfeld `schema` (aktuell **2**, gebumpt mit N1/13.2 — Resource-URI-Änderung ist MAJOR-Kontrakt). Feldkontrakt je Command:
 
 | Command | Felder (neben `schema`) |
 |---------|--------------------------|
@@ -223,16 +223,16 @@ Versionsfeld `schema` (aktuell **1**). Feldkontrakt je Command:
   keine Duplikation von Erledigt-Index/BACKLOG_ARCHIVE — Item-/Commit-Historie bleibt
   in den STEPWELL-Dateien. Datumsformat `JJMMDD/HHMM` (Decision 11) statt ISO —
   dokumentierte Abweichung.
-- **Lockstep-SemVer (Decision 16):** Root, `@method-docs/core` und `@method-docs/mcp`
+- **Lockstep-SemVer (Decision 16):** Root, `stepwell` und `stepwell-core`
   tragen immer dieselbe Version. MAJOR = Breaking im Tool-/JSON-/Resource-Kontrakt
   (immer zusammen mit dem `schema`-Feld), MINOR = neue Tools/Features, PATCH = Fixes.
   0.x bis zum bestandenen Feldtest; `1.0.0` = Freigabe-Moment.
 - **Publish-Checkliste:** (1) `Unreleased` im CHANGELOG kuratieren, (2) Version in
   allen **drei** `package.json` bumpen (Lockstep), (3) CHANGELOG-Sektion `[<version>] - <JJMMDD/HHMM>`,
-  (4) Git-Tag `v<version>`, (5) **nur** `@method-docs/mcp` publizieren
+  (4) Git-Tag `v<version>`, (5) **nur** `stepwell` publizieren
   (`npm publish --otp`, dist-tag `latest`; core wird als Abhängigkeit mit verteilt),
-  (6) CI-Job `pack-smoke` muss grün sein — aktueller Stand: statische Checks, der
-  dynamische Teil ist an den Dist-Blocker H1 (Build/dist-Schritt) gekoppelt.
+  (6) CI-Job `pack-smoke` muss grün sein — dynamisch seit 10.5/H1, beweist Handshake
+  gegen das installierte Artefakt (`server stepwell`).
 
 ```bash
 # Status-Aggregat
@@ -310,7 +310,7 @@ wird still toleriert (deterministisch gestrippt, T5/9.13) — keine Warnung.
 
 ---
 
-## Typischer Workflow (Agent + method-docs)
+## Typischer Workflow (Agent + stepwell)
 
 ```text
 1. docs_status            → Wo stehen wir? Welche Prioritäten sind offen?
@@ -341,7 +341,7 @@ Tool/Resource statt neues Tool) — dokumentiert wie bei der docs_review-Entsche
 
 ```
 packages/
-├── core/                 @method-docs/core — Zero-Dependencies, keine MCP-Abhängigkeit
+├── core/                 stepwell-core — Zero-Dependencies, keine MCP-Abhängigkeit
 │   ├── src/backlog.ts    BACKLOG-Parser (Sektionen, Item-Blöcke, Erledigt-Index)
 │   ├── src/progress.ts   PROGRESS-Parser (Tabelle, Detail-Blöcke) + scopeSteps
 │   ├── src/archive.ts    Archiv-Parser (ArchiveItem = BacklogItem + doneLine)
@@ -355,12 +355,12 @@ packages/
 │   └── tests/fixtures/   project-a (sauber) + project-b-drift (Fälle D1–D15)
 │                         + project-d-tablefirst (Tabelle vor Detail-Blöcken),
 │                         README.md dort = arbeitende Spezifikation
-└── mcp/                  @method-docs/mcp — dünne Transport-Schicht über core
+└── mcp/                  stepwell — dünne Transport-Schicht über core
     ├── src/server.ts     createDocsServer (alle Tools + Resources)
     ├── src/tools.ts      Tool-Registrierung (JSON-Payloads, isError-Kapselung)
     ├── src/resources.ts  Resource-Templates (percent-encoded Root)
     ├── src/serve.ts      stdio-Einstieg
-    └── src/cli.ts        method-docs-Kommandozeile
+    └── src/cli.ts        stepwell-Kommandozeile
 ```
 
 - **Stack:** TypeScript (strict, `NodeNext`, `noUncheckedIndexedAccess`,
