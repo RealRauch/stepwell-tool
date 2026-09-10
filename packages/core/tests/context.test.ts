@@ -16,7 +16,7 @@ afterEach(() => {
 });
 
 function tempProject(): string {
-  const dir = mkdtempSync(join(tmpdir(), "method-docs-context-"));
+  const dir = mkdtempSync(join(tmpdir(), "stepwell-context-"));
   tempDirs.push(dir);
   cpSync(join(fixtures, "project-a"), dir, { recursive: true });
   return dir;

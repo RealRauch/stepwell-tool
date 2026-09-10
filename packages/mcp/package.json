@@ -1,5 +1,5 @@
 {
-  "name": "@method-docs/mcp",
+  "name": "stepwell",
   "version": "0.1.0",
   "type": "module",
   "files": [
@@ -13,10 +13,10 @@
     }
   },
   "bin": {
-    "method-docs": "./dist/cli.js"
+    "stepwell": "./dist/cli.js"
   },
   "dependencies": {
-    "@method-docs/core": "*",
+    "stepwell-core": "*",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "zod": "^3.25.0"
   },

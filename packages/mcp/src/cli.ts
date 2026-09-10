@@ -17,7 +17,7 @@ import {
   type DocsStatus,
   type PlanChange,
   type ProgressUpdatePlan,
-} from "@method-docs/core";
+} from "stepwell-core";
 
 export interface CliIo {
   stdout: NodeJS.WritableStream;
@@ -51,7 +51,7 @@ interface CliOptions {
   apply: boolean;
 }
 
-const USAGE = `usage: method-docs <command> [options]
+const USAGE = `usage: stepwell <command> [options]
 
 commands:
   status           Aggregat des Projekts (offene Items, laufende Phasen, ✅-Quote)

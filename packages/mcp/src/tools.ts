@@ -26,7 +26,7 @@ import {
   type PhaseBlock,
   type Priority,
   type Status,
-} from "@method-docs/core";type ToolResult = CallToolResult;
+} from "stepwell-core";type ToolResult = CallToolResult;
 
 function textResult(value: unknown): ToolResult {
   return { content: [{ type: "text", text: JSON.stringify(value) }] };

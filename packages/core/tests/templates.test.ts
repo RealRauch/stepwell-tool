@@ -10,7 +10,7 @@ import { TEMPLATE_KINDS, projectTemplates } from "../src/templates.ts";
 
 const tempDirs: string[] = [];
 function scaffoldFromTemplates(): string {
-  const dir = mkdtempSync(join(tmpdir(), "method-docs-templates-"));
+  const dir = mkdtempSync(join(tmpdir(), "stepwell-templates-"));
   tempDirs.push(dir);
   writeFileSync(join(dir, "BACKLOG.md"), projectTemplates.backlog, "utf8");
   writeFileSync(join(dir, "PROGRESS.md"), projectTemplates.progress, "utf8");

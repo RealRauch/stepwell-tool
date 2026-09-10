@@ -128,7 +128,7 @@ describe("docsStatus — project-empty (M5)", () => {
 
 describe("nextStep cascade (L10, option C)", () => {
   function tempProject(): string {
-    const dir = mkdtempSync(join(tmpdir(), "method-docs-status-"));
+    const dir = mkdtempSync(join(tmpdir(), "stepwell-status-"));
     tempDirs.push(dir);
     cpSync(join(fixtures, "project-a"), dir, { recursive: true });
     return dir;
@@ -178,7 +178,7 @@ describe("nextStep cascade (L10, option C)", () => {
 
 describe("docsStatus include: nextStepScope (12.3, E2/1)", () => {
   function tempProject(): string {
-    const dir = mkdtempSync(join(tmpdir(), "method-docs-status-scope-"));
+    const dir = mkdtempSync(join(tmpdir(), "stepwell-status-scope-"));
     tempDirs.push(dir);
     cpSync(join(fixtures, "project-a"), dir, { recursive: true });
     return dir;

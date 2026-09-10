@@ -6,7 +6,7 @@
     "outDir": "dist",
     "rootDir": "src",
     "paths": {
-      "@method-docs/core": ["../core/dist/index.d.ts"]
+      "stepwell-core": ["../core/dist/index.d.ts"]
     }
   },
   "include": ["src"]

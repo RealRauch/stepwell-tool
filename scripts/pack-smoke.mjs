@@ -11,7 +11,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 const repoRoot = join(import.meta.dirname, "..");
-const work = mkdtempSync(join(tmpdir(), "method-docs-pack-smoke-"));
+const work = mkdtempSync(join(tmpdir(), "stepwell-pack-smoke-"));
 const installDir = join(work, "install");
 
 const fail = (message) => {
@@ -33,6 +33,11 @@ const assertExists = (path) => {
   if (!existsSync(path)) fail(`missing from artifact: ${path}`);
 };
 
+// 0) dist sicherstellen — pack-smoke braucht frisches dist (handshake läuft gegen
+//    die gebauten .js-Dateien). Frischer Checkout oder Löschen von dist würde sonst
+//    fehlschlagen. 13.1/N1: Fragilität sichtbar — npm pack triggert KEINEN Build.
+run("npm", ["run", "build"], { cwd: repoRoot });
+
 // 1) Tarballs bauen
 run("npm", ["pack", "--pack-destination", work, "./packages/core", "./packages/mcp"], { cwd: repoRoot });
 const tarballs = readdirSync(work).filter((f) => f.endsWith(".tgz"));
@@ -42,8 +47,8 @@ if (tarballs.length !== 2) fail(`expected 2 tarballs, got: ${tarballs.join(", ")
 run("npm", ["install", "--prefix", installDir, "--no-audit", "--no-fund", ...tarballs.map((t) => join(work, t))]);
 
 // 3) Artefakt-Inhalt statisch prüfen (seit 10.4/H1: compiled dist, kein src)
-const mcpRoot = join(installDir, "node_modules", "@method-docs", "mcp");
-const coreRoot = join(installDir, "node_modules", "@method-docs", "core");
+const mcpRoot = join(installDir, "node_modules", "stepwell");
+const coreRoot = join(installDir, "node_modules", "stepwell-core");
 for (const path of [
   join(coreRoot, "dist", "index.js"),
   join(coreRoot, "dist", "index.d.ts"),
@@ -55,11 +60,11 @@ for (const path of [
   assertExists(path);
 }
 const mcpManifest = JSON.parse(readFileSync(join(mcpRoot, "package.json"), "utf8"));
-if (mcpManifest.bin?.["method-docs"] !== "./dist/cli.js") {
+if (mcpManifest.bin?.["stepwell"] !== "./dist/cli.js") {
   fail(`unexpected bin mapping: ${JSON.stringify(mcpManifest.bin)}`);
 }
-if (mcpManifest.dependencies?.["@method-docs/core"] === undefined) {
-  fail("installed mcp artifact lost its @method-docs/core dependency");
+if (mcpManifest.dependencies?.["stepwell-core"] === undefined) {
+  fail("installed mcp artifact lost its stepwell-core dependency");
 }
 
 // 4) stdio-Handshake gegen den installierten Server (H1: dist läuft aus node_modules)
@@ -116,7 +121,7 @@ console.log(`pack-smoke: handshake OK (server ${handshakeResult.detail})`);
 
 // 5) CLI-Bin-Smoke gegen das installierte Artefakt (Usage → Exit 2)
 const cli = spawnSync(process.execPath, [join(mcpRoot, "dist", "cli.js")], { encoding: "utf8" });
-if (cli.status !== 2 || !`${cli.stderr}`.includes("usage: method-docs")) {
+if (cli.status !== 2 || !`${cli.stderr}`.includes("usage: stepwell")) {
   fail(`cli smoke unexpected: exit ${cli.status}, stderr: ${cli.stderr}`);
 }
 
