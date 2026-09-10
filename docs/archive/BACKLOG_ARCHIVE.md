@@ -457,3 +457,14 @@
 - **Abnahme:** Tests je Param; bestehende Resource-/Tool-Verträge unverändert außer neuen optionalen Feldern (MINOR gem. Decision 16); `npm run typecheck` + `npm run test` grün; CHANGELOG-Eintrag; Timing: vor 1.0.0.
 - **Step-Paketierung:** Phase 12 — 12.3 (E2/1), 12.4 (E2/2), 12.5 (E2/3).
 - **Erledigt:** Commits `9676e3c` (12.3: docs_status nextStepScope-Include, Test `42388e0`) + `153537f` (12.4: Multi-Step-Update, Test `6badfce`) + `5b18a9e` (12.5: Hash-Kurzschluss, Test `61fcba8`) — 290/290 grün, Steps 12.3–12.5.
+
+---
+
+### [x] G5 — Phase-Kontext-Resource: Phase + Item-Bodies zur Lesezeit mergen (Subagent-Kontext in einem Read) — 🟡
+- **Ort:** `packages/core/src/context.ts` (neu — `phaseContext`), `packages/mcp/src/resources.ts` (Resource `methoddocs://{root}/phase/{phase}`); Phasen-Suche analog `progress_show` (`matchesPhase` + Archiv-Fallback), Item-Auflösung via `loadProject`/`backlogShow`-Muster.
+- **Problem:** Ein Subagent, der einen Step umsetzt, braucht heute Phase-Block und BACKLOG-Items als getrennte Reads; die Details leben im Item (Single Source), der Step verweist nur per `(E1/1)`-Ref im Namen. Ein zusammengesetzter Lese-Pfad spart Round-Trips, ohne Daten zu duplizieren (Anti-Drift: keine Kopie in Dateien — Merge existiert nur zur Lesezeit).
+- **Fix (Entwurf):** core: `phaseContext(root, phase) → { phase, rows, items, unresolved, markdown }` — Phase verbatim, Tabellen-Zeilen der Phase, gemergte Item-Bodies in Step-Reihenfolge (offen bevorzugt, sonst Archiv), `unresolved` toleranter als Crash (Decision 6). Generated Headings über die Locale-Maschine (`canonical(role, detectLocale(…))` aus `profile.ts`) — nach Phase 14 automatisch EN. MCP: Read-Only-Resource `methoddocs://{root}/phase/{phase}` (percent-encoded, mimeType text/markdown; URI-Schema wandert mit N1/13.2 auf `stepwell://`). Kein Schreibpfad, kein Cache (Zero-Cache bleibt).
+- **Tests (ROT→GRÜN):** project-a: Phase mit zwei Item-Refs → Block verbatim + beide Bodies in Step-Reihenfolge; unbekannter Ref → `unresolved` + Hinweiszeile im Markdown, kein Fehler; Phase im Archiv → Fallback greift; Block ohne Refs → Phase + Rows genügen.
+- **Abnahme:** `npm run typecheck` + `npm run test` grün; `docs_validate` clean; README-Resource-Zeile + CHANGELOG (MINOR — neue Resource); M4-Alternativprüfung dokumentiert (Resource statt Tool, Komposition statt Duplikat).
+- **Step-Paketierung:** Phase 12 — 12.6.
+- **Erledigt:** Commit `f9f0e3b` (12.6: phaseContext + Resource `methoddocs://{root}/phase/{phase}`, Test-Commit `e1bd5c1`) — 297/297 grün, Step 12.6; M4-Alternativprüfung im README dokumentiert.
