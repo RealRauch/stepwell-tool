@@ -19,6 +19,7 @@ describe("resource templates (2.4)", () => {
         "methoddocs://{root}/archive/{kind}",
         "methoddocs://{root}/backlog",
         "methoddocs://{root}/hashes",
+        "methoddocs://{root}/phase/{phase}",
         "methoddocs://{root}/progress",
       ]);
     } finally {
@@ -119,6 +120,34 @@ describe("resource templates (2.4)", () => {
       for (const hash of Object.values(hashes)) {
         expect(hash).toMatch(/^[0-9a-f]{64}$/u);
       }
+    } finally {
+      await c.close();
+    }
+  });
+
+  it("serves the merged phase context as markdown (12.6, G5)", async () => {
+    const c = await connect();
+    try {
+      const result = await c.client.readResource({
+        uri: `methoddocs://${enc(projectA)}/phase/${enc("Phase 2 — UI-Polish")}`,
+      });
+      expect(resourceMime(result)).toBe("text/markdown");
+      const text = resourceText(result);
+      expect(text).toContain("### Phase 2 — UI-Polish");
+      expect(text).toContain("### U21 —");
+      expect(text).toContain("### U22 —");
+      expect(text).toContain("| 2.1 | Strings-Modul | 🔄 |");
+    } finally {
+      await c.close();
+    }
+  });
+
+  it("rejects unknown phases in the phase context resource", async () => {
+    const c = await connect();
+    try {
+      await expect(
+        c.client.readResource({ uri: `methoddocs://${enc(projectA)}/phase/${enc("Phase 99")}` }),
+      ).rejects.toThrow(/Phase 99/);
     } finally {
       await c.close();
     }
