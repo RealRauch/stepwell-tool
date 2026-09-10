@@ -80,4 +80,4 @@
 | 10.5 | Dynamischer Pack-Smoke + README-Install-Verifikation (H1/3) | ✅ |
 | 10.6 | Surface-Guardrail als Decision verankern + README (M4) | ✅ |
 | 10.7 | Coverage-Gate-Exit-Code robust stellen: Ursache klären + Gate Exit-unabhängig (R9, CI-Änderung = Gate Hoch) | ✅ |
-| 11.1 | Sync-Schlag: Lesson #18 (Exit-Codes mit Host-Sprache messen) in beiden LESSONS-Kopien (G4) | ⬜ |
+| 11.1 | Sync-Schlag: Lesson #18 (Exit-Codes mit Host-Sprache messen) in beiden LESSONS-Kopien (G4) | 🔄 |
