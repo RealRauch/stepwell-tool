@@ -292,9 +292,15 @@ export function registerDocsTools(server: McpServer): void {
       description:
         "Aggregat eines STEPWELL-Projekts: offene Items je Priorität, laufende Steps/Phasen, " +
         "✅-Quote und sämtliche Validierungs-/Parse-Warnungen.",
-      inputSchema: { root: ROOT_FIELD },
+      inputSchema: {
+        root: ROOT_FIELD,
+        include: z.array(z.enum(["nextStepScope"])).optional()
+          .describe('Zusatz-Kontext: "nextStepScope" liefert Ziel/Abnahme/Scope-Bullet + ' +
+            "gemergtes Backlog-Item des nächsten Steps (1 Call statt 3, E2/12.3)."),
+      },
     },
-    ({ root }) => asResult(() => docsStatus(root)),
+    ({ root, include }) =>
+      asResult(() => docsStatus(root, include ? { include } : undefined)),
   );
 
   server.registerTool(

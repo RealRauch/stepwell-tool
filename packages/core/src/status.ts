@@ -1,10 +1,62 @@
 import { loadProject, type ProjectDocs } from "./project.ts";
+import { backlogShow } from "./project.ts";
 import { ProjectNotInitializedError } from "./project-files.ts";
 import { scopeSteps } from "./progress.ts";
 import { docsValidate } from "./validate.ts";
-import type { DocsStatus, Priority, ProgressRow } from "./types.ts";
+import type {
+  BacklogItem,
+  DocsStatus,
+  NextStepScope,
+  Priority,
+  ProgressRow,
+} from "./types.ts";
 
-export function docsStatus(root: string): DocsStatus {
+export interface DocsStatusOptions {
+  /** Zusatz-Kontext: `"nextStepScope"` liefert Ziel/Abnahme/Scope + gemergtes Backlog-Item des nächsten Steps (E2/12.3). */
+  include?: ReadonlyArray<"nextStepScope">;
+}
+
+const ITEM_REF = /\(([A-Z]+[0-9]+)\/[0-9]+\)/u;
+
+function resolveNextStepScope(
+  root: string,
+  docs: ProjectDocs,
+  row: ProgressRow,
+): NextStepScope | undefined {
+  const block = docs.progress().value.phases.find((b) => scopeSteps(b).includes(row.step));
+  if (block === undefined) return undefined;
+  const scopeEntry = block.scope.find((s) => scopeStepsLike(s) === row.step);
+  const refSource = `${row.name} ${scopeEntry ?? ""}`;
+  const match = ITEM_REF.exec(refSource);
+  let item: BacklogItem | undefined;
+  if (match !== null) {
+    const id = match[1]!;
+    const open = docs.backlog().value.items.find((i) => i.id === id);
+    if (open !== undefined) {
+      item = open;
+    } else {
+      const entry = backlogShow(root, id);
+      item = entry?.item ?? entry?.archive;
+    }
+  }
+  return {
+    phase: block.name,
+    phaseTitle: block.title,
+    step: row.step,
+    name: row.name,
+    goal: block.goal,
+    acceptance: block.acceptance,
+    ...(scopeEntry !== undefined ? { scope: scopeEntry } : {}),
+    ...(item !== undefined ? { item } : {}),
+  };
+}
+
+function scopeStepsLike(entry: string): string | undefined {
+  const m = /^\*{0,2}\s*(\d+(?:\.\d+)?)\b/u.exec(entry);
+  return m?.[1];
+}
+
+export function docsStatus(root: string, options?: DocsStatusOptions): DocsStatus {
   let docs: ProjectDocs;
   try {
     docs = loadProject(root);
@@ -77,6 +129,11 @@ export function docsStatus(root: string): DocsStatus {
   const validation = docsValidate(root);
   const warnings = [...validation.findings, ...validation.warnings];
 
+  const nextStepScope =
+    options?.include?.includes("nextStepScope") === true && nextStep !== undefined
+      ? resolveNextStepScope(root, docs, nextStep)
+      : undefined;
+
   return {
     openByPriority,
     openTotal,
@@ -85,6 +142,7 @@ export function docsStatus(root: string): DocsStatus {
     doneQuote: { done, total, percent },
     nextStep,
     nextPriority,
+    ...(nextStepScope !== undefined ? { nextStepScope } : {}),
     warnings,
   };
 }
