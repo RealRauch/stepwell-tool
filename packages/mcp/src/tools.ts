@@ -387,26 +387,50 @@ export function registerDocsTools(server: McpServer): void {
             `multi-step (${steps.join(", ")}) requires dryRun: false — dry-run previews are only defined for a single step`,
           );
         }
+        if (steps.length > 1 && detail === "summary") {
+          throw new Error(
+            `multi-step (${steps.join(", ")}) returns the aggregate result — detail: "summary" is only defined for a single step`,
+          );
+        }
+        const planOptions = {
+          dryRun,
+          ...(title !== undefined ? { title } : {}),
+          ...(note !== undefined ? { note } : {}),
+          ...(checkpoint !== undefined ? { checkpoint } : {}),
+          ...(locale !== undefined ? { locale: locale as Locale } : {}),
+        };
         const runSingle = (oneStep: string): unknown => {
-          const plan = planProgressUpdate(root, phase, oneStep, status as Status, {
-            dryRun,
-            ...(title !== undefined ? { title } : {}),
-            ...(note !== undefined ? { note } : {}),
-            ...(checkpoint !== undefined ? { checkpoint } : {}),
-            ...(locale !== undefined ? { locale: locale as Locale } : {}),
-          });
+          const plan = planProgressUpdate(root, phase, oneStep, status as Status, planOptions);
           const result = plan.dryRun ? plan : applyProgressPlan(plan);
           return detail === "summary" ? summarizePlan(result) : result;
         };
         if (steps.length === 1) return runSingle(steps[0]!);
-        const results = steps.map(runSingle) as Array<{
-          written: string[];
-          verification: { ok: boolean; messages: string[] };
-        }>;
-        const written = [...new Set(results.flatMap((r) => r.written))];
-        const messages = results.flatMap((r) => r.verification.messages);
-        const allOk = results.every((r) => r.verification.ok);
-        return { written, steps, verification: { ok: allOk, messages } };
+        // M9/18.1: validate every step up-front (planning is read-only) so a bad
+        // step fails before the first write; residual apply-time failures report
+        // what was already persisted.
+        steps.map((oneStep) => planProgressUpdate(root, phase, oneStep, status as Status, planOptions));
+        const writtenSoFar: string[] = [];
+        try {
+          const results = steps.map((oneStep) => {
+            const result = runSingle(oneStep) as {
+              written: string[];
+              verification: { ok: boolean; messages: string[] };
+            };
+            writtenSoFar.push(...result.written);
+            return result;
+          });
+          const written = [...new Set(results.flatMap((r) => r.written))];
+          const messages = results.flatMap((r) => r.verification.messages);
+          const allOk = results.every((r) => r.verification.ok);
+          return { written, steps, verification: { ok: allOk, messages } };
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          throw new Error(
+            `multi-step (${steps.join(", ")}) failed after partially applying — ` +
+              `already written: ${writtenSoFar.length > 0 ? writtenSoFar.join(", ") : "(none)"} — ` +
+              `cause: ${message}`,
+          );
+        }
       }, structured),
   );
 
