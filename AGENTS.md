@@ -43,6 +43,10 @@ alles andere (Prosa) editiert der Agent direkt in den Dateien.
 ## Kickoff für neue Sessions (in dieser Reihenfolge)
 
 1. `docs/PLAYBOOK.md` (Methode) + `docs/LESSONS.md` (Checkliste) lesen — beide bindend.
+   Fast-Pfad (PLAYBOOK §0.9): Stimmen die von `docs_status`/Read-Tools/Resources gelieferten
+   Hashes mit dem letzten bekannten Stand überein, genügt das Lesen des Step-Scopes —
+   PLAYBOOK/LESSONS müssen nicht erneut voll gelesen werden; unabhängige Read-Calls
+   parallel stellen.
 2. `PROGRESS.md` → „Laufende Phasen": nächster offener Step in definierter Reihenfolge
    (Phasen 1–12 sind abgeschlossen und archiviert — 11 „Methoden-Sync: Mess-Lesson" (G4),
    12 „Token-Ökonomie" (E1/E2/G5); Phase 13 „Naming-Refactor" ist vorausgeplant.
