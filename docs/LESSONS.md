@@ -1,39 +1,39 @@
-# LESSONS.md — Lessons Learned als Review-Checkliste (projektunabhängig)
+# LESSONS.md — Lessons learned as a review checklist (project-independent)
 
-> Jede Regel entstand aus einem **echten, gefundenen Fehler** — die Fundstelle in Klammern
-> verweist auf das Backlog-Archiv des Ursprungsprojekts (Beweis, nicht Voraussetzung).
+> Every rule originated from a **real, found bug** — the reference in brackets
+> points to the backlog archive of the origin project (evidence, not prerequisite).
 >
-> **Verwendung:** Vor jedem Review, vor jedem Phasenabschluss und beim Anlegen neuer
-> Routen/Endpunkte/Caches diese Checkliste durcharbeiten. Ziel: nie zweimal machen.
+> **Usage:** before every review, before every phase completion and when creating new
+> routes/endpoints/caches, work through this checklist. Goal: never make the same mistake twice.
 
-## A. Sicherheit & Mandantentrennung
+## A. Security & tenant separation
 
-1. **Parameterisierte Werte schützen nicht die Keys.** Dynamisches SQL (SET/ORDER-BY über Objekt-Keys) braucht eine **Column-Whitelist**. *(Beweis: K1)*
-   - Check: Jedes Repo-Update, das Body-Keys in SQL interpoliert → Whitelist oder 400.
-2. **Jede `:id`-Route prüft Ownership, nicht nur die Rolle.** Muster: Objekt laden → Eigentümer vergleichen → sonst 403/404. Gilt auch für Sub-Ressourcen. *(K2)*
-   - Check: Test-Matrix „fremder Mandant → 403/404" für jede `:id`-Route inkl. Sub-Ressourcen.
-3. **Schutz durch Reihenfolge ist kein Schutz.** Eine Route, die nur sicher ist, weil ein anderer Handler vorher registriert wurde, ist eine latente Lücke — Guard an die Ressource selbst, Unabhängigkeit per Test beweisen. *(H2)*
-4. **Secrets failen hart, nicht warnen.** In Produktion mit Default-Geheimnissen/Passwörtern: Prozessabbruch mit klarer Meldung; `${VAR:?…}` statt `:-default` in Compose. *(K4)*
-5. **Öffentliche Auth-Endpunkte werden gedrosselt.** Login, Recovery, anonyme Anlage: einfache Rate-Limits — sonst sind große Keyspaces und teile Hashes kein Zeitproblem für Angreifer. *(H3)*
+1. **Parameterized values do not protect the keys.** Dynamic SQL (SET/ORDER-BY over object keys) needs a **column whitelist**. *(Evidence: K1)*
+   - Check: every repo update that interpolates body keys into SQL → whitelist or 400.
+2. **Every `:id` route checks ownership, not only the role.** Pattern: load object → compare owner → otherwise 403/404. Applies to sub-resources too. *(K2)*
+   - Check: test matrix "foreign tenant → 403/404" for every `:id` route including sub-resources.
+3. **Protection by registration order is not protection.** A route that is only secure because another handler was registered earlier is a latent gap — guard at the resource itself, prove independence with a test. *(H2)*
+4. **Secrets fail hard, not with a warning.** In production with default secrets/passwords: process abort with a clear message; `${VAR:?…}` instead of `:-default` in compose. *(K4)*
+5. **Public auth endpoints get throttled.** Login, recovery, anonymous creation: simple rate limits — otherwise large keyspaces and partial hashes are no time problem for attackers. *(H3)*
 
-## B. Tests, die etwas finden
+## B. Tests that find something
 
-6. **Tests dürfen nicht die eigene Implementierung spiegeln.** „Glatte" Fixtures bestätigen den Code, statt ihn zu prüfen. Immer auch **realistische/böse** Varianten: gemischte Schreibweisen, fremde Keys, Riesen-Payloads, fremd-Mandanten-IDs. *(K3, K1, K2 — alle drei hätten einfache Tests gefunden)*
-7. **Kontrakte testschnittpunktweise absichern.** Wo zwei Schichten dieselbe Konvention teilen (Code-Case, Längen, Payload-Felder), gehört ein Test auf **beiden** Seiten mit **gemeinsamer** Fixture-Quelle — sonst „errät" eine Seite die andere. *(K3, T3)*
-8. **In-Memory-Clients (inject/Mocks) verstecken Host- und Umgebungslogik.** IP-/Host-basierte Auflösung sieht im Integrationstest korrekt aus und bricht im echten HTTP — Host-Logik immer mit echten Requests testen. *(Phase-4-Fund: 127.0.0.1 als „Subdomain")*
-9. **Stille Catches sind Diagnose-Gift.** `catch(() => {})` ohne Log verwandelt Fehler in „funktioniert mysteriös nicht". Minimal: Warn-Log mit Kontext. *(SW-Registrierungs-Fund)*
+6. **Tests must not mirror their own implementation.** "Smooth" fixtures confirm the code instead of checking it. Always include **realistic/evil** variants: mixed spellings, foreign keys, giant payloads, foreign tenant IDs. *(K3, K1, K2 — simple tests would have found all three)*
+7. **Secure contracts at the test seam, from both sides.** Where two layers share the same convention (code case, lengths, payload fields), there must be a test on **both** sides with a **shared** fixture source — otherwise one side "guesses" the other. *(K3, T3)*
+8. **In-memory clients (inject/mocks) hide host and environment logic.** IP/host-based resolution looks correct in the integration test and breaks in real HTTP — always test host logic with real requests. *(Phase-4 finding: 127.0.0.1 as "subdomain")*
+9. **Silent catches are diagnostic poison.** `catch(() => {})` without logging turns errors into "mysteriously does not work". Minimum: a warn log with context. *(SW registration finding)*
 
-## C. Frontend & Browser-Realität
+## C. Frontend & browser reality
 
-10. **URL-keyed Caches speichern keine personalisierten Responses.** Enthält eine Antwort nutzerspezifische Daten, darf ein Service-Worker sie nicht unter der nackten URL cachen — Key um Session ergänzen oder Antwort aufspalten. *(H1)*
-11. **Router remounted bei Param-Wechsel nicht.** `useRef(searchParams.get(…))` friert den ersten Wert ein — Refs nachführen oder Remount-Komponentengrenzen setzen. *(M2)*
-12. **Geräte-Realität einplanen.** iOS braucht `requestPermission()` in einer Nutzer-Geste; headless-Browser kennen teils keine Service Worker. Geräte-Features immer mit Permission-Flow + Fallback bauen; E2E mit passendem Browser-Channel. *(M4, E2E-Erfahrung)*
-13. **Umweltabhängige Werte (Build-IDs, Pfade) müssen deterministisch sein ODER har failen.** Stille Fallbacks („Paketversion") führen zu Altfehlern, die nie auffallen. Muster: Env-Override erlauben, aber fehlende Bestimmbarkeit = Buildfehler. *(M5, Phase-5-Fund)*
+10. **URL-keyed caches must not store personalized responses.** If a response contains user-specific data, a service worker must not cache it under the bare URL — extend the key with the session or split the response. *(H1)*
+11. **The router does not remount on param change.** `useRef(searchParams.get(…))` freezes the first value — keep refs in sync or set remount component boundaries. *(M2)*
+12. **Plan for device reality.** iOS needs `requestPermission()` inside a user gesture; headless browsers sometimes do not know service workers. Always build device features with a permission flow + fallback; E2E with a suitable browser channel. *(M4, E2E experience)*
+13. **Environment-dependent values (build IDs, paths) must be deterministic OR fail hard.** Silent fallbacks ("package version") lead to old bugs that never surface. Pattern: allow an env override, but indeterminacy = build error. *(M5, phase-5 finding)*
 
-## D. Build & Prozess
+## D. Build & process
 
-14. **Bundler-`define`-Werte sind Ausdrücke, keine Werte.** `JSON.stringify` genau einmal für Strings/Arrays — doppeltes Stringify erzeugt Strings statt Arrays und schlägt zur Laufzeit still fehl. *(SW-`addAll(String)`-Fund)*
-15. **Security-Selbstreview vor „fertig".** Gezielt die eigene Angriffsfläche durchgehen: „Was kann ein *anderer* Mandant? Ein nicht-Authentifizierter? Ein Admin mit bösem Body?" — die reguläre Test-Suite prüft überwiegend Happy Paths. *(R1-Protokoll)*
-16. **Mechanische Massen-Ersetzungen mit Platzhaltern sind gefährlich.** Replace nur mit exakten, eindeutigen Strings; Platzhalter dürfen niemals mit echtem Inhalt kollidieren; danach immer Diff-/Anomalie-Check. *(Beweis: Archivierungs-Slip 09/2026 — ein `.Replace('X', …)` zerschoss alle „X" in drei Dateien)*
-17. **Struktur-Operationen gehören dem Tool.** Statuspflege in der Fortschrittstabelle, Detail-Block-, Erledigt-Index- und Archiv-Änderungen laufen immer über die dafür gebauten Tools (`progress_update`, `archive_item`) — manuelle Edits an diesen Strukturen erzeugen genau die Drift, die die Tools verhindern sollen. Direkt in den Dateien editiert wird nur die Prosa, die das Tool bewusst nicht verwaltet (Ziel-/Abnahme-Texte, Item-Inhalte, neue BACKLOG-Items). *(Beweis: method-docs 09/2026 — Status-Edits von Hand in PROGRESS.md trotz verfügbarer Tools, aufgedeckt beim nächsten validate.)*
-18. **Exit-Codes mit der Host-Sprache messen.** PowerShell `$LASTEXITCODE`, POSIX `$?`/`$status` — nie mit cmd-`%ERRORLEVEL%`-Expansion nach `&` (wird zur Parse-Zeit expandiert und zeigt den Wert vor dem Lauf); in cmd selbst nur mit `!ERRORLEVEL!` bei `/v:on`. *(Beweis: R9 — method-docs 09/2026, Fehlalarm 🔴 → Messartefakt)*
+14. **Bundler `define` values are expressions, not values.** `JSON.stringify` exactly once for strings/arrays — double stringify produces strings instead of arrays and fails silently at runtime. *(SW `addAll(String)` finding)*
+15. **Security self-review before "done".** Deliberately walk through your own attack surface: "What can a *different* tenant do? An unauthenticated one? An admin with an evil body?" — the regular test suite mostly checks happy paths. *(R1 protocol)*
+16. **Mechanical mass replacements with placeholders are dangerous.** Replace only with exact, unique strings; placeholders must never collide with real content; always run a diff/anomaly check afterwards. *(Evidence: archival slip 09/2026 — a `.Replace('X', …)` destroyed every "X" in three files)*
+17. **Structure operations belong to the tool.** Status maintenance in the progress table, detail-block, Done-Index and archive changes always run through the tools built for it (`progress_update`, `archive_item`) — manual edits to these structures create exactly the drift the tools are meant to prevent. Only the prose that the tool deliberately does not manage (goal/acceptance texts, item content, new BACKLOG items) is edited directly in the files. *(Evidence: method-docs 09/2026 — status edits by hand in PROGRESS.md despite available tools, uncovered at the next validate.)*
+18. **Measure exit codes in the host language.** PowerShell `$LASTEXITCODE`, POSIX `$?`/`$status` — never cmd `%ERRORLEVEL%` expansion after `&` (expanded at parse time, shows the value from before the run); inside cmd itself only with `!ERRORLEVEL!` under `/v:on`. *(Evidence: R9 — method-docs 09/2026, false alarm 🔴 → measurement artefact)*
