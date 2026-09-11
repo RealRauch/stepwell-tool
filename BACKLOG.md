@@ -20,13 +20,6 @@
 
 ## 🟡 MEDIUM
 
-### [ ] M9 — progress_update multi-step: Teilanwendung unsichtbar bei Fehler + detail-Parameter ignoriert — 🟡
-- **Location:** `packages/mcp/src/tools.ts:387-405` (Multi-Step-Apply-Pfad); Regressionstest `packages/mcp/tests/tools-mutate.test.ts:493-509` (assertet Teilzustand nicht).
-- **Problem:** Bei `step: ["2.2", "9.9"]` wird 2.2 geschrieben (PROGRESS.md persistiert), bevor 9.9 validiert wird. Schlägt 9.9 fehl, meldet der Fehler nur `unknown step: 9.9` — die bereits angewandte Änderung ist für den Caller unsichtbar; ein Retry der „fehlgeschlagenen" Call kann nicht erkennen, was schon erledigt ist. `dryRun` wird für Multi-Step abgelehnt, also gibt es auch keine Vorschau des Gesamteffekts. Weiter: `detail: "summary"` wird im Multi-Step-Pfad still ignoriert (Schema nimmt den Parameter an, tut nichts damit).
-- **Fix:** Entweder (a) Vorab-Validierung des gesamten Arrays (jeder Step existiert, Phase/Block vorhanden), bevor der erste Write läuft — Fehlerfall = keine Änderung; oder (b) das Fehlerergebnis listet die bereits geschriebenen Steps/Dateien. `detail` im Multi-Step-Pfad entweder unterstützen oder aus dem Schema auslassen.
-- **Acceptance:** Fehlerfall bei ungültigem Step im Array: entweder gar keine persistierte Änderung oder Fehlermeldung nennt explizit die bereits geschriebenen Steps/Dateien; Regressionstest für beide Fälle; `npm run typecheck && npm run test` grün.
-- **Fundstelle:** Code-Review 09/2026 (`6ee018d..HEAD`, Findings 1+2, Severity Medium/Low).
-
 ---
 
 ## 🟢 LOW
@@ -45,20 +38,6 @@
 - **Fix:** nicht in unserem Scope. Phase-16-Step-Notes tragen den Hinweis „Sync-Schlag ausgegliedert"; das hier ist der zentrale Beleg dafür.
 - **Acceptance:** Eintrag steht in method-docs-BACKLOG; kein Sync-Versuch nach stadtpfad-pwa durch unsere Steps; Phase-16-Step-Notes verweisen auf S1.
 - **Verification:** BACKLOG enthält S1; `docs_status` zeigt Item; `docs_validate` method-docs clean.
-
-### [ ] L11 — EN-Surface-Lücken: DE-Reste in Warnungen, zod-Feldtexten, Resources + veralteter detectLocale-Kommentar — 🟢
-- **Location:** `packages/core/src/progress.ts:173,182` (DE-Warnungen „Unbekanntes Status-Icon…", „Tabellenzeile… ohne Status-Spalte"); `packages/mcp/src/tools.ts:84-94,115,136-138` (zod-Feldbeschreibungen DE — sichtbar in MCP-Tool-Introspection); `packages/mcp/src/resources.ts` (Titel/Descriptions DE: „Datei-Hashes", „Phasen-Kontext", …); `packages/core/src/profile.ts:56-58` (Kommentar behauptet Gleichstand→`de`, Code liefert `en` seit 14.3); `README.md:375` („316 tests" → 317 seit 17.1); CHANGELOG: E1/12.1-Notiz („schema bleibt 1") vs. N1/13.2 (bump auf 2) im selben Unreleased-Abschnitt.
-- **Problem:** Decision 10/16.3 macht EN für die Tool-Fläche verbindlich (Tool-Beschreibungen, CLI-Help, Warning-Messages); die Reste widersprechen der CHANGELOG-Aussage der Phase 14 („warning message texts are English"). Keine Funktionslücke — Decision 10 toleriert DE `message`-Inhalte — aber Konsistenz-Drift zwischen Doku-Claim und Code.
-- **Fix:** Reste auf EN drehen (Warnungstexte, zod-Descriptions, Resource-Titel/Descriptions), `detectLocale`-Kommentar korrigieren, README-Testzahl nachführen, CHANGELOG-E1-Notiz präzisieren. Kontrakt-Notiz pflegen: `message`-Texte ändern sich, `schema` bleibt unverändert (wie bei Phase 14 dokumentiert).
-- **Acceptance:** keine DE-Strings mehr in den genannten Flächen (bzw. bewusste Ausnahmen dokumentiert); `docs_validate` clean; Tests grün; Fixture `project-g-mixed` bleibt fund-frei.
-- **Fundstelle:** Code-Review 09/2026 (`6ee018d..HEAD`, Findings 3+4+6-Teile).
-
-### [ ] L12 — Konsolidierung: 4 Kopien der Step-Präfix-Regex + phaseContext re-parsed BACKLOG je Item-Ref — 🟢
-- **Location:** Step-Präfix-Regex in 4 Varianten: `status.ts:116-118` (scopeStepsLike), `progress.ts:210` (scopeSteps), `mutations.ts:361`; Re-Parsing: `context.ts:56-61` (resolveItem → `backlogShow` je Ref → `loadProject` fresh), gleiche Resolve-Logik doppelt in `context.ts` und `status.ts` (resolveNextStepScope); doppelte Imports `status.ts:2-3`, `context.test.ts:5-6`.
-- **Problem:** Weiche Smells (Duplikation, Feature Envy) — gem. PLAYBOOK §5 Funde, nie Gates. Das Step-Präfix-Parsing existiert in vier Varianten mit Divergenz-Risiko, falls sich das Scope-Bullet-Format ändert; `phaseContext` liest+parsed bei N Item-Refs N+1× BACKLOG/Archive in einem Call, obwohl eine memoized `docs`-Instanz vorliegt.
-- **Fix:** Eine zentrale Step-Präfix-Hilfsfunktion in core, von allen vier Stellen genutzt; `resolveItem` über die memoized `docs`-Instanz (`docs.backlog()`/`docs.backlogArchive()`) statt `backlogShow` je Ref; doppelte Imports aufräumen. Reiner Refactor — kein Verhaltenswechsel, keine API-Änderung.
-- **Acceptance:** eine einzige Regex-Quelle für das Step-Präfix; `phaseContext` mit mehreren Refs liest jede Datei höchstens 1× je Call; Tests unverändert grün; `npm run typecheck && npm run test` grün.
-- **Fundstelle:** Code-Review 09/2026 (`6ee018d..HEAD`, Findings 5+6-Teile).
 
 ---
 
@@ -124,5 +103,8 @@
 - I3 — Method-Docs EN Migration (PLAYBOOK/LESSONS/AGENTS/BRAINSTORM/CHANGELOG) — done (Phase 16 complete: 16.1@dfc271c (PLAYBOOK EN + snapshot), 16.2@6ee2d34 (LESSONS EN + snapshot), 16.3@b339f94 (Decision 10 sharpened), 16.5 BRAINSTORM EN + CHANGELOG trailing (archive commit))
 - I2 — README.md EN-Migration (aus 14.4 extrahiert — Scope zu groß für einen Step) — done (Commit 36b8ea4 — README fully EN; stale status line (phases 1–15), test count 316 and locale tie-break (en, since 14.3) refreshed during migration)
 - B1 — Build-Cross-Platform: Linux-CI kaputt — tsconfig `paths` ohne `baseUrl` (CI-Rot seit 13.4-Close) — done (Phase 17/17.1 — real root cause: pack-smoke CI job had no install step (fallback tsc 6 + missing @types/node); fixed with npm ci in both jobs (e3c4e49). Guard test for paths/baseUrl (5408c3b), BUILD.md documentation (c65f9db). CI green: run 34624130478, verify + pack-smoke both success. Original TS2307 diagnosis was a symptom of the same missing-install problem.)
+- M9 — progress_update multi-step: Teilanwendung unsichtbar bei Fehler + detail-Parameter ignoriert — done (Phase 18/18.1 — Commits: 95e534c (RED tests) + de70733 (validate-before-write, partial-apply error reporting, detail rejection for multi-step, README contract). 318/318 green.)
+- L11 — EN-Surface-Lücken: DE-Reste in Warnungen, zod-Feldtexten, Resources + veralteter detectLocale-Kommentar — done (Phase 18/18.2 — Commit eda4f6e: EN warnings (progress.ts), zod field descriptions + resource texts (tools.ts/resources.ts/server.ts), detectLocale comment corrected, README 318 tests, CHANGELOG E1 note clarified. 318/318 green.)
+- L12 — Konsolidierung: 4 Kopien der Step-Präfix-Regex + phaseContext re-parsed BACKLOG je Item-Ref — done (Phase 18/18.3 — Commit 6aa8c5f: scopeStepOf/scopeEntryFor as single regex source (replaced scopeStepsLike + 3 inline variants), resolveItem via memoized ProjectDocs (no N+1 parse per call), duplicate imports merged. 318/318 green, behavior-identical.)
 
 ---

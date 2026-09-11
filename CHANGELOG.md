@@ -13,6 +13,27 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
 
 ## [Unreleased]
 
+### Phase 18 — Review follow-ups (260911)
+
+#### Fixed
+- **Multi-step `progress_update` no longer persists before validating (M9/18.1):**
+  all steps of a `step` array are planned up-front (read-only) — an invalid step
+  fails before the first write; residual apply-time failures report the
+  already-written files and the failing step. `detail: "summary"` is now
+  rejected for multi-step instead of being silently ignored.
+- **EN tool surface completed (L11/18.2):** residual German strings migrated —
+  `STATUS_UNKNOWN`/`ROW_INCOMPLETE` warning messages, shared zod field
+  descriptions (visible in MCP tool introspection), resource titles/descriptions
+  and error strings, echo tool description. Stale `detectLocale` comment
+  corrected (tie → `en` since 14.3). README test count refreshed. Message/
+  description texts change; `schema` unchanged.
+
+#### Changed
+- **Core consolidation (L12/18.3):** `scopeStepOf`/`scopeEntryFor` in
+  `stepwell-core` replace four copies of the scope-step-prefix regex;
+  `phaseContext`/`resolveNextStepScope` resolve items via the memoized
+  `ProjectDocs` instead of re-parsing per item ref. Behavior-identical.
+
 ### Phase 17 — CI: Linux build fix (260911)
 
 #### Fixed
