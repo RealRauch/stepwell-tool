@@ -36,10 +36,6 @@ const assertExists = (path) => {
 // 0) dist sicherstellen — pack-smoke braucht frisches dist (handshake läuft gegen
 //    die gebauten .js-Dateien). Frischer Checkout oder Löschen von dist würde sonst
 //    fehlschlagen. 13.1/N1: Fragilität sichtbar — npm pack triggert KEINEN Build.
-// B1/17.1-Diagnose: tsc-Version + @types/node vor dem Build sichtbar machen.
-const diag = spawnSync("npx", ["tsc", "--version"], { cwd: repoRoot, encoding: "utf8", shell });
-console.log(`pack-smoke diag: tsc=${((diag.stdout ?? "") + (diag.stderr ?? "")).trim()}`);
-console.log(`pack-smoke diag: @types/node present=${existsSync(join(repoRoot, "node_modules", "@types", "node"))}`);
 run("npm", ["run", "build"], { cwd: repoRoot });
 
 // 1) Tarballs bauen
