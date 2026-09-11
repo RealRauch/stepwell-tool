@@ -46,6 +46,50 @@ As of 09/2026: deliberately **not** implemented, no item created.
 
 ---
 
+## ZooKeeper integration — STEPWELL viewer (parked)
+
+Concept discussion 09/2026 with the sibling repo `../ZooKeeper` (Tauri-2 desktop
+dashboard: Rust scanner + React frontend, pnpm/Vite). "Option B" — STEPWELL as a
+**product feature** there, not a method adoption. Parked until the tool is stable
+(1.0-near); this section is the reminder + fleshed-out draft (former item Z1).
+
+**Idea:** ZooKeeper scans local projects and shows metadata — STEPWELL projects
+(BACKLOG.md + PROGRESS.md at the root) could be detected and displayed
+(progress tab, dashboard aggregation, health-score factor).
+
+**Concept:**
+1. **Rust scanner:** detection via root markers + mini aggregates
+   (checkbox/priority/phase counts) for snapshots/DB/health — deliberately **no**
+   full parser port (drift risk).
+2. **"Progress" detail tab (React):** file contents via the existing
+   `read_md_file` → `stepwell-core` in the WebView bundle
+   (parseBacklog/parseProgress/archive parsers/validate — pure, zero-dep).
+3. **Markdown editor** for the four structure files read-only (LESSONS 17:
+   structure edits only via tools; a later write lane at most via a spawned
+   stepwell CLI, never via a mutations import).
+4. **Deliberately not:** embedding the MCP server (stdio transport is for
+   agents, worthless in a UI).
+
+**Interop contract:** the Rust mini aggregates are tested against the same
+fixtures (`packages/core/tests/fixtures` + the README spec there) as core —
+shared fixtures as the contract between the two repos.
+
+**Prerequisites (in this repo, before starting):** (a) pure/I-O split in core —
+`node:fs` imports at module level (backlog/progress/status/validate/project.ts)
+break the browser bundle; (b) add a LICENSE file (missing); (c) consumption via
+pnpm `file:`/git link with an exactly pinned version (0.x lockstep, breaking
+changes possible within MINORs); (d) warning codes documented as stable
+identifiers for ZooKeeper i18n (messages stay human-readable, Decision 10).
+
+**Reactivation criterion:** core field-tested (1.0-near) and prerequisites
+(a)–(d) done → ZooKeeper track (conductor format) in three steps: scan
+detection → progress tab → dashboard aggregation, dogfooded: ZooKeeper shows
+its own status.
+
+As of 09/2026: brainstorming only, no implementation.
+
+---
+
 ## Obsidian integration
 
 Obsidian + stepwell fit surprisingly well — both local, both Markdown,

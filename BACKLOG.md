@@ -1,4 +1,4 @@
-# BACKLOG.md — Open items (As of: 260911/1910
+# BACKLOG.md — Open items (As of: 260911/1930
 
 > **This file contains only OPEN items.** Completed items are moved to `docs/archive/BACKLOG_ARCHIVE.md` unchanged after completion; this file keeps only a one-liner per item in the Done Index (below). Findings/fix-ideas/decisions are not deleted — moved to the archive.
 > Legend: 🔴 critical · 🟠 high · 🟡 medium · 🟢 low · 🔵 test gap
@@ -23,14 +23,6 @@
 ---
 
 ## 🟢 LOW
-
-### [ ] Z1 — ZooKeeper-Integration als STEPWELL-Viewer (Option B — geparkt bis Tool stabil) — 🟢
-- **Location:** Geschwister-Repo `../ZooKeeper` (Tauri-2-Desktop-Dashboard: Rust-Scanner + React-Frontend, pnpm/Vite; Konzeptdiskussion 09/2026 — Option B „STEPWELL als Produkt-Feature", nicht Methoden-Adoption).
-- **Problem:** ZooKeeper scannt lokale Projekte und zeigt Metadaten — STEPWELL-Projekte (BACKLOG.md + PROGRESS.md am Root) könnten erkannt und angezeigt werden (Progress-Tab, Dashboard-Aggregation, Health-Score-Faktor). Kein akuter Bedarf: Tool ist in 0.x-Bewegung, Integration startet erst nach Stabilisierung — Item dient als Erinnerung + ausformulierter Entwurf.
-- **Konzept:** (1) Rust-Scanner: Detection über Root-Marker + Mini-Aggregate (Checkbox-/Prioritäts-/Phasen-Zahlen) für Snapshots/DB/Health — bewusst KEIN Vollport des Parsers (Drift-Risiko). (2) Detail-Tab „Progress" (React): Dateiinhalte via bestehendes `read_md_file` → `@method-docs/core` im WebView-Bundle (parseBacklog/parseProgress/Archive-Parser/Validate — pure, zero-dep). (3) Markdown-Editor für die vier Struktur-Dateien read-only (LESSONS 17: Struktur-Edits nur über Tools; spätere Write-Lane maximal per stepwell-CLI-Spawn, nie via mutations-Import). (4) Bewusst nicht: MCP-Server einbetten (stdio-Transport für Agenten, im UI wertlos).
-- **Interop-Vertrag:** Rust-Mini-Aggregate gegen dieselben Fixtures (`packages/core/tests/fixtures` + README-Spec) testen wie core — geteilte Fixtures als Vertrag zwischen den Repos.
-- **Voraussetzungen (vor Start in method-docs):** (a) Pure/I-O-Split in core — `node:fs`-Imports auf Modulebene (backlog/progress/status/validate/project.ts) brechen das Browser-Bundle; (b) LICENSE-Datei ergänzen (fehlt); (c) Konsum via pnpm `file:`/git-Link mit exakt gepinnter Version (0.x-Lockstep, Breaking in MINORs möglich); (d) Warn-Codes als stabile Identifier für ZooKeeper-i18n dokumentieren (messages sind menschenlesbar/deutsch, Decision 10).
-- **Abnahme (Reaktivierungskriterium):** core feldtesterprobt (1.0-nah) und Voraussetzungen (a)–(d) erledigt → ZooKeeper-Track (conductor-Format) in drei Schritten: Scan-Detection → Progress-Tab → Dashboard-Aggregation, mit Dogfooding: ZooKeeper zeigt seinen eigenen Status.
 
 ### [ ] S1 — Drift: PLAYBOOK/LESSONS in stadtpfad-pwa-DE — Sync pending (anderer Agent) — 🟢
 - **Location:** method-docs-BACKLOG führt die Drift; **nicht** stadtpfad-pwa-Dateien (Entscheidung 09/2026 — deren Nutzdaten nicht anfassen).
@@ -106,5 +98,6 @@
 - M9 — progress_update multi-step: Teilanwendung unsichtbar bei Fehler + detail-Parameter ignoriert — done (Phase 18/18.1 — Commits: 95e534c (RED tests) + de70733 (validate-before-write, partial-apply error reporting, detail rejection for multi-step, README contract). 318/318 green.)
 - L11 — EN-Surface-Lücken: DE-Reste in Warnungen, zod-Feldtexten, Resources + veralteter detectLocale-Kommentar — done (Phase 18/18.2 — Commit eda4f6e: EN warnings (progress.ts), zod field descriptions + resource texts (tools.ts/resources.ts/server.ts), detectLocale comment corrected, README 318 tests, CHANGELOG E1 note clarified. 318/318 green.)
 - L12 — Konsolidierung: 4 Kopien der Step-Präfix-Regex + phaseContext re-parsed BACKLOG je Item-Ref — done (Phase 18/18.3 — Commit 6aa8c5f: scopeStepOf/scopeEntryFor as single regex source (replaced scopeStepsLike + 3 inline variants), resolveItem via memoized ProjectDocs (no N+1 parse per call), duplicate imports merged. 318/318 green, behavior-identical.)
+- Z1 — ZooKeeper-Integration als STEPWELL-Viewer (Option B — geparkt bis Tool stabil) — removed (moved to BRAINSTORM.md (parked idea, no backlog-worthy work yet))
 
 ---

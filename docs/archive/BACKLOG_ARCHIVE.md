@@ -564,3 +564,14 @@
 - **Acceptance:** eine einzige Regex-Quelle für das Step-Präfix; `phaseContext` mit mehreren Refs liest jede Datei höchstens 1× je Call; Tests unverändert grün; `npm run typecheck && npm run test` grün.
 - **Fundstelle:** Code-Review 09/2026 (`6ee018d..HEAD`, Findings 5+6-Teile).
 - **Done:** Phase 18/18.3 — Commit 6aa8c5f: scopeStepOf/scopeEntryFor as single regex source (replaced scopeStepsLike + 3 inline variants), resolveItem via memoized ProjectDocs (no N+1 parse per call), duplicate imports merged. 318/318 green, behavior-identical.
+
+---
+
+### [ ] Z1 — ZooKeeper-Integration als STEPWELL-Viewer (Option B — geparkt bis Tool stabil) — 🟢
+- **Location:** Geschwister-Repo `../ZooKeeper` (Tauri-2-Desktop-Dashboard: Rust-Scanner + React-Frontend, pnpm/Vite; Konzeptdiskussion 09/2026 — Option B „STEPWELL als Produkt-Feature", nicht Methoden-Adoption).
+- **Problem:** ZooKeeper scannt lokale Projekte und zeigt Metadaten — STEPWELL-Projekte (BACKLOG.md + PROGRESS.md am Root) könnten erkannt und angezeigt werden (Progress-Tab, Dashboard-Aggregation, Health-Score-Faktor). Kein akuter Bedarf: Tool ist in 0.x-Bewegung, Integration startet erst nach Stabilisierung — Item dient als Erinnerung + ausformulierter Entwurf.
+- **Konzept:** (1) Rust-Scanner: Detection über Root-Marker + Mini-Aggregate (Checkbox-/Prioritäts-/Phasen-Zahlen) für Snapshots/DB/Health — bewusst KEIN Vollport des Parsers (Drift-Risiko). (2) Detail-Tab „Progress" (React): Dateiinhalte via bestehendes `read_md_file` → `@method-docs/core` im WebView-Bundle (parseBacklog/parseProgress/Archive-Parser/Validate — pure, zero-dep). (3) Markdown-Editor für die vier Struktur-Dateien read-only (LESSONS 17: Struktur-Edits nur über Tools; spätere Write-Lane maximal per stepwell-CLI-Spawn, nie via mutations-Import). (4) Bewusst nicht: MCP-Server einbetten (stdio-Transport für Agenten, im UI wertlos).
+- **Interop-Vertrag:** Rust-Mini-Aggregate gegen dieselben Fixtures (`packages/core/tests/fixtures` + README-Spec) testen wie core — geteilte Fixtures als Vertrag zwischen den Repos.
+- **Voraussetzungen (vor Start in method-docs):** (a) Pure/I-O-Split in core — `node:fs`-Imports auf Modulebene (backlog/progress/status/validate/project.ts) brechen das Browser-Bundle; (b) LICENSE-Datei ergänzen (fehlt); (c) Konsum via pnpm `file:`/git-Link mit exakt gepinnter Version (0.x-Lockstep, Breaking in MINORs möglich); (d) Warn-Codes als stabile Identifier für ZooKeeper-i18n dokumentieren (messages sind menschenlesbar/deutsch, Decision 10).
+- **Abnahme (Reaktivierungskriterium):** core feldtesterprobt (1.0-nah) und Voraussetzungen (a)–(d) erledigt → ZooKeeper-Track (conductor-Format) in drei Schritten: Scan-Detection → Progress-Tab → Dashboard-Aggregation, mit Dogfooding: ZooKeeper zeigt seinen eigenen Status.
+- **Removed:** moved to BRAINSTORM.md (parked idea, no backlog-worthy work yet)
