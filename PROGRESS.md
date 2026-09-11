@@ -9,6 +9,12 @@
 > are moved to `docs/archive/PROGRESS_ARCHIVE.md` unchanged after completion.
 
 ## Active Phases
+### Phase 17 — B1 Linux build fix
+
+**Umfang (Steps):**
+
+- **17.1 baseUrl for paths in both MCP-tsconfigs + guard test + BUILD doc (B1)**
+
 
 
 
@@ -103,3 +109,4 @@
 | 16.3 | AGENTS Decision 10 wording schärfen (I3) | ✅ |
 | 16.4 | README.md DE → EN (I2) | ✅ |
 | 16.5 | BRAINSTORM.md → EN + CHANGELOG trailing (I3) | ✅ |
+| 17.1 | baseUrl for paths in both MCP-tsconfigs + guard test + BUILD doc (B1) | 🔄 |

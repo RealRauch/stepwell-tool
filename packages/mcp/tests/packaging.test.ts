@@ -214,3 +214,23 @@ describe("build pipeline (H1/1, 10.3)", () => {
     expect(projectJs).not.toContain('from "./backlog.ts"');
   }, 150_000);
 });
+
+describe("cross-workspace tsconfig resolution (B1/17.1)", () => {
+  it("every paths mapping declares baseUrl (Linux tsc rejects bare paths with TS2307)", () => {
+    for (const pkg of ["core", "mcp"]) {
+      for (const name of ["tsconfig.json", "tsconfig.build.json"]) {
+        const file = join(repoRoot, "packages", pkg, name);
+        if (!existsSync(file)) continue;
+        const cfg = JSON.parse(readFileSync(file, "utf8")) as {
+          compilerOptions?: { paths?: Record<string, unknown>; baseUrl?: string };
+        };
+        if (cfg.compilerOptions?.paths) {
+          expect(
+            cfg.compilerOptions.baseUrl,
+            `${pkg}/${name}: paths without baseUrl breaks Linux builds`,
+          ).toBeDefined();
+        }
+      }
+    }
+  });
+});
