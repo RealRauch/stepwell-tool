@@ -24,6 +24,7 @@ backlog-archive | progress-archive), then run `docs_validate` — must be clean.
 1. `docs_status` (root) — aggregate + validation findings.
 2. `progress_show` (root, phase) — detail block of the active phase.
 3. Next open step = first ⬜ row of the active phase. Work sequentially, never skip steps.
+4. Fast path (PLAYBOOK §0.9): when the hashes delivered by `docs_status`/Read-Tools/resources match the last known state, skip re-reading PLAYBOOK/LESSONS in full — the step scope suffices. Place independent read calls in parallel.
 
 ## Status maintenance — always via the tools, never by hand (LESSONS 17)
 

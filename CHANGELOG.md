@@ -13,6 +13,16 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
 
 ## [Unreleased]
 
+### Phase 15 — Method sync: kickoff fast path (260911)
+
+#### Added
+- **Kickoff fast path as PLAYBOOK §0.9 (E3/15.1):** when the file hashes delivered by
+  `docs_status`, the Read-Tools or resources match the last known state, re-reading
+  PLAYBOOK/LESSONS in full is not required — reading the current step scope suffices.
+  Includes the parallel-reads rule of thumb. Synced textually identical into both
+  method copies (stepwell-tool, stadtpfad-pwa); SKILL.md session entry and AGENTS.md
+  kickoff updated to reference the fast path.
+
 ### Phase 14 — Language switch: English primary (260911)
 
 #### Added
