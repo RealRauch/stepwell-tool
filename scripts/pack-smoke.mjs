@@ -26,7 +26,7 @@ const quoteForShell = (arg) => (shell && /[\s"]/u.test(arg) ? `"${arg.replaceAll
 const run = (cmd, args, opts = {}) => {
   const r = spawnSync(cmd, args.map(quoteForShell), { stdio: "pipe", encoding: "utf8", shell, ...opts });
   if (r.error) fail(`${cmd} ${args.join(" ")} spawn error: ${r.error}`);
-  if (r.status !== 0) fail(`${cmd} ${args.join(" ")} exited ${r.status}\n${r.stderr}`);
+  if (r.status !== 0) fail(`${cmd} ${args.join(" ")} exited ${r.status}\n--- stdout ---\n${r.stdout}\n--- stderr ---\n${r.stderr}`);
   return r.stdout;
 };
 const assertExists = (path) => {
