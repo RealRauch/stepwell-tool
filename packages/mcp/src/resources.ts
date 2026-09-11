@@ -36,23 +36,23 @@ export function registerDocsResources(server: McpServer): void {
         resources: TEMPLATE_KINDS.map((kind) => ({
           uri: `stepwell://templates/${kind}`,
           name: `template: ${kind}`,
-          description: "Kanonisches Skeleton einer Pflichtdatei (M8) — unverändert übernehmen.",
+          description: "Canonical skeleton of a mandatory file (M8) — adopt unchanged.",
           mimeType: MARKDOWN,
         })),
       }),
     }),
     {
-      title: "Projekt-Vorlagen",
+      title: "Project templates",
       description:
-        "Kanonische Skeletons der vier Pflichtdateien (M8): kind = \"backlog\" | \"progress\" | " +
-        "\"backlog-archive\" | \"progress-archive\" — Agent legt daraus die Dateien an " +
-        "(Variante A: Read-Only, kein init_project).",
+        "Canonical skeletons of the four mandatory files (M8): kind = \"backlog\" | \"progress\" | " +
+        "\"backlog-archive\" | \"progress-archive\" — the agent creates the files from these " +
+        "(variant A: read-only, no init_project).",
       mimeType: MARKDOWN,
     },
     (uri, { kind }) => {
       const k = String(kind) as TemplateKind;
       if (!TEMPLATE_KINDS.includes(k)) {
-        throw new Error(`unknown template kind: ${String(kind)} (erlaubt: ${TEMPLATE_KINDS.join(" | ")})`);
+        throw new Error(`unknown template kind: ${String(kind)} (allowed: ${TEMPLATE_KINDS.join(" | ")})`);
       }
       return {
         contents: [
@@ -67,7 +67,7 @@ export function registerDocsResources(server: McpServer): void {
     new ResourceTemplate("stepwell://{root}/backlog", { list: undefined }),
     {
       title: "BACKLOG.md",
-      description: "Offene Items eines STEPWELL-Projekts (verbatim; Root percent-encoded im URI).",
+      description: "Open items of a STEPWELL project (verbatim; root percent-encoded in the URI).",
       mimeType: MARKDOWN,
     },
     (uri, { root }) => ({
@@ -86,7 +86,7 @@ export function registerDocsResources(server: McpServer): void {
     new ResourceTemplate("stepwell://{root}/progress", { list: undefined }),
     {
       title: "PROGRESS.md",
-      description: "Fortschrittstabelle + laufende Phasen (verbatim; Root percent-encoded im URI).",
+      description: "Progress table + active phases (verbatim; root percent-encoded in the URI).",
       mimeType: MARKDOWN,
     },
     (uri, { root }) => ({
@@ -104,11 +104,11 @@ export function registerDocsResources(server: McpServer): void {
     "hashes",
     new ResourceTemplate("stepwell://{root}/hashes", { list: undefined }),
     {
-      title: "Datei-Hashes",
+      title: "File hashes",
       description:
-        "SHA256 je Doku-Datei als JSON (E2/12.5) — Client vergleicht gegen den letzten bekannten " +
-        "Stand und überspringt Voll-Lese, wenn alles unverändert ist (Fast-Pfad E3). " +
-        "Root percent-encoded im URI.",
+        "SHA256 per doc file as JSON (E2/12.5) — the client compares against the last known " +
+        "state and skips full reads when everything is unchanged (fast path E3). " +
+        "Root percent-encoded in the URI.",
       mimeType: JSON_MIME,
     },
     (uri, { root }) => ({
@@ -126,11 +126,11 @@ export function registerDocsResources(server: McpServer): void {
     "phase",
     new ResourceTemplate("stepwell://{root}/phase/{phase}", { list: undefined }),
     {
-      title: "Phasen-Kontext",
+      title: "Phase context",
       description:
-        "Phase verbatim + Tabellen-Zeilen + gemergte Backlog-Item-Bodies in Step-Reihenfolge " +
-        "(G5/12.6 — Komposition zur Lesezeit, kein Duplikat in den Dateien). Suche über laufende " +
-        "Phasen und Archiv; Root und Phase percent-encoded im URI.",
+        "Phase verbatim + table rows + merged backlog item bodies in step order " +
+        "(G5/12.6 — composition at read time, no duplicate in the files). Search across active " +
+        "phases and archive; root and phase percent-encoded in the URI.",
       mimeType: MARKDOWN,
     },
     (uri, { root, phase }) => ({
@@ -148,10 +148,10 @@ export function registerDocsResources(server: McpServer): void {
     "archive",
     new ResourceTemplate("stepwell://{root}/archive/{kind}", { list: undefined }),
     {
-      title: "Archiv",
+      title: "Archive",
       description:
-        "Append-only-Archive: kind = \"backlog\" (BACKLOG_ARCHIVE.md) oder \"progress\" " +
-        "(PROGRESS_ARCHIVE.md); Root percent-encoded im URI.",
+        "Append-only archives: kind = \"backlog\" (BACKLOG_ARCHIVE.md) or \"progress\" " +
+        "(PROGRESS_ARCHIVE.md); root percent-encoded in the URI.",
       mimeType: MARKDOWN,
     },
     (uri, { root, kind }) => {
@@ -163,7 +163,7 @@ export function registerDocsResources(server: McpServer): void {
             : undefined;
       const rel = archivePath(String(kind));
       if (rel === undefined) {
-        throw new Error(`unknown archive kind: ${String(kind)} (erlaubt: backlog | progress)`);
+        throw new Error(`unknown archive kind: ${String(kind)} (allowed: backlog | progress)`);
       }
       return {
         contents: [

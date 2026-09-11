@@ -159,8 +159,10 @@ Feldtest (Decision 16); bis dahin 0.x mit Lockstep über alle drei `package.json
   Clients vergleichen gegen den letzten bekannten Stand und überspringen
   Voll-Lese (Fast-Pfad-Fundament E3). Kontrakt-Notiz: Output-Kompaktierung
   und Removal des `structuredContent`-Defaults sind Vertragsänderungen im 0.x-Fenster
-  (SemVer-0-Regel, Decision 16); das CLI-`schema`-Feld (M6) bleibt unverändert auf `1`
-  — die JSON-Struktur der Daten ändert sich nicht, nur die Serialisierung.
+  (SemVer-0-Regel, Decision 16); das CLI-`schema`-Feld (M6) bleibt dabei unverändert —
+  die JSON-Struktur der Daten ändert sich nicht, nur die Serialisierung
+  *(Stand 09/2026: `schema` wurde zwischenzeitlich durch N1/13.2 auf `2` gebumpt —
+  siehe unten; zum Zeitpunkt dieses Eintrags war `1` korrekt)*.
 - **Naming-Refactor N1/13 (Phase 13 abgeschlossen, Decision 18):** `method-docs`
   → `stepwell` durchgängig.
   - npm-Pakete: `stepwell` (ehemals `@method-docs/mcp`, flat — kein `@stepwell/*`-Scope),

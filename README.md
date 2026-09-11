@@ -372,7 +372,7 @@ packages/
 - **Data model:** `ParseResult<T> = { value, warnings[] }`,
   `Warning = { code, file, line?, message }` — item blocks carry `span` (lines)
   and `raw` (verbatim) as the basis of the verbatim move.
-- **Tests:** 316 tests, developed test-first (RED → GREEN). Mutations in tests run
+- **Tests:** 318 tests, developed test-first (RED → GREEN). Mutations in tests run
   **exclusively** against temp copies of the fixtures — the originals are
   read-only and protected by a test.
 
