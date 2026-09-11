@@ -1,388 +1,389 @@
 # stepwell
 
-CLI + MCP-Server zum **Lesen, Prüfen und Verwalten** der Projekt-Doku
-(`BACKLOG.md`, `PROGRESS.md`, `docs/archive/*`) in Repos, die der
-[STEPWELL-Methode](docs/PLAYBOOK.md) folgen — Steps, Archiv-Muster, Test-First.
+CLI + MCP server for **reading, checking and managing** the project docs
+(`BACKLOG.md`, `PROGRESS.md`, `docs/archive/*`) in repos following the
+[STEPWELL method](docs/PLAYBOOK.md) — steps, archive pattern, test-first.
 
-**Status:** Sechs Phasen fertig. Phase 1 — Core-Library (fehlertolerante Parser,
-Status-/Validierungs-Reports) · Phase 2 — MCP-Server + CLI (Read-Tools, Resources) ·
-Phase 3 — Mutation (`archive_item`, `progress_update`, jeweils Dry-run + Apply) ·
-Phase 4 — Locale-Profile (de/en, test-first) · Phase 5 — Server-Name `stepwell` ·
-Phase 6 — Review-Fixes (Stale-Span, Synonym-Regexes, CRLF-Roundtrip, Stale-Check,
-`STEP_DUPLICATE`) + Tool-CRUD (`backlog_add/update/remove`, `progress_plan_phase`,
-CLI-ASCII-Aliase, `title`-Parameter).
-Aktueller Stand und Step-Historie: [`PROGRESS.md`](PROGRESS.md).
+**Status:** fifteen phases complete. Phase 1 — core library (fault-tolerant parsers,
+status/validation reports) · Phase 2 — MCP server + CLI (read tools, resources) ·
+Phase 3 — mutations (`archive_item`, `progress_update`, each dry-run + apply) ·
+Phase 4 — locale profiles (de/en, test-first) · Phase 5 — server name `stepwell` ·
+Phase 6 — review fixes (stale span, synonym regexes, CRLF roundtrip, stale check,
+`STEP_DUPLICATE`) + tool CRUD (`backlog_add/update/remove`, `progress_plan_phase`,
+CLI ASCII aliases, `title` parameter). Phases 7–15: CI + field test + packaging,
+archive/index hardening, coverage gate, annotations, init/templates, JSON schema
+versioning, token economy, STEPWELL naming, language switch to English primary.
+Current state and step history: [`PROGRESS.md`](PROGRESS.md).
 
 ---
 
-## Prinzip
+## Principles
 
-1. **Markdown bleibt Source of Truth.** Das Tool liest, validiert und assistiert —
-   es ersetzt die Doku nicht. Geht die Doku verloren, sind keine Daten verloren.
-2. **Fehlertoleranz statt Abbruch.** Projekte folgen der Methode, nicht byte-genau:
-   Struktur-Drift wird als **strukturierte Warnung** gemeldet (`ParseResult<T>` mit
-   `warnings[]`), nie als Crash. Jedes Teil-Ergebnis bleibt abfragbar.
-3. **Dry-run zuerst.** Die beiden schreibenden Tools (`archive_item`,
-   `progress_update`) liefern standardmäßig einen **Plan mit Diff-Vorschau**;
-   geschrieben wird erst mit `dryRun: false` bzw. `--apply` — danach wird das
-   Ergebnis frisch geparst und verifiziert.
-4. **Enge Grenze für Schreibzugriffe.** Die fehleranfälligen, strukturellen
-   Operationen automatisiert das Tool (verbatim-Verschiebung, Erledigt-Index,
-   Statuszellen, Item-CRUD, Phasen-Planung). Alles andere (Prosa, Ziel-/Abnahme-
-   Texte) editieren Menschen/Agenten direkt in den Markdown-Dateien.
-5. **Multi-Projekt.** Der Projekt-Root wird **je Tool-Call bzw. CLI-Aufruf**
-   übergeben — eine Server-Instanz bedient beliebig viele STEPWELL-Projekte.
+1. **Markdown stays the source of truth.** The tool reads, validates and assists —
+   it does not replace the docs. If the docs are lost, no data is lost.
+2. **Fault tolerance instead of abort.** Projects follow the method, not byte-exact:
+   structure drift is reported as a **structured warning** (`ParseResult<T>` with
+   `warnings[]`), never as a crash. Every partial result stays queryable.
+3. **Dry-run first.** The two write tools (`archive_item`, `progress_update`)
+   return a **plan with a diff preview** by default; writing happens only with
+   `dryRun: false` / `--apply` — afterwards the result is freshly parsed and verified.
+4. **Narrow write surface.** The error-prone structural operations are automated by
+   the tool (verbatim move, Done Index, status cells, item CRUD, phase planning).
+   Everything else (prose, goal/acceptance texts) is edited directly in the
+   Markdown files by humans/agents.
+5. **Multi-project.** The project root is passed **per tool call / CLI invocation** —
+   one server instance serves any number of STEPWELL projects.
 
-**Datei-Pflicht:** Alle vier Dateien sind Pflicht —
+**File requirement:** all four files are mandatory —
 `BACKLOG.md`, `PROGRESS.md`, `docs/archive/BACKLOG_ARCHIVE.md`,
-`docs/archive/PROGRESS_ARCHIVE.md`. Fehlt eine, lädt das Projekt nicht
-(harter Fehler mit klarer Meldung).
+`docs/archive/PROGRESS_ARCHIVE.md`. If one is missing, the project does not
+load (hard error with a clear message).
 
-**Format-Legende** (kanonisch: [PLAYBOOK](docs/PLAYBOOK.md) §3 + §7):
+**Format legend** (canonical: [PLAYBOOK](docs/PLAYBOOK.md) §3 + §7):
 
-| Symbol | Bedeutung | ID-Serie |
+| Symbol | Meaning | ID series |
 |--------|-----------|----------|
-| 🔴 kritisch · 🟠 hoch · 🟡 mittel · 🟢 niedrig | Backlog-Priorität = Sektion | `K`/`H`/`M`/`L` (Auto-Nummerierung) |
-| 🔵 Test-Lücke | Backlog-Priorität = Sektion | keine Serie — explizite ID Pflicht |
-| ⬜ offen · 🔄 in Arbeit · ✅ fertig · ⛔ blockiert | Step-Status in `PROGRESS.md` | Steps `<Phase>.<x>` (z. B. `7.2`) |
-| weitere Serienbuchstaben (`R`, `T`, `D`, …) | thematische Serien, nicht prioritätsgebunden | fortlaufend, nie wiederverwendet |
+| 🔴 critical · 🟠 high · 🟡 medium · 🟢 low | backlog priority = section | `K`/`H`/`M`/`L` (auto numbering) |
+| 🔵 test gap | backlog priority = section | no series — explicit ID required |
+| ⬜ open · 🔄 in progress · ✅ done · ⛔ blocked | step status in `PROGRESS.md` | steps `<Phase>.<x>` (e.g. `7.2`) |
+| other series letters (`R`, `T`, `D`, …) | thematic series, not priority-bound | consecutive, never reused |
 
 ---
 
-## Anforderungen & Setup
+## Requirements & setup
 
-- **Node.js ≥ 22.18** — das Repo verteilt TypeScript-Source und nutzt das native
-  Type-Stripping von Node (kein Build-Schritt).
+- **Node.js ≥ 22.18** — the repo ships TypeScript source and uses Node's native
+  type stripping (no build step).
 
 ```bash
 npm install
-npm run typecheck   # strict, deckt src UND tests ab
-npm run test        # Vitest, protokollecht gegen die Fixtures
+npm run typecheck   # strict, covers src AND tests
+npm run test        # Vitest, protocol-faithful against the fixtures
 npm run test:watch
 ```
 
 ---
 
-## MCP-Server
+## MCP server
 
-Server-Name `stepwell` (Transport **stdio**, Entry `packages/mcp/src/serve.ts`).
+Server name `stepwell` (transport **stdio**, entry `packages/mcp/src/serve.ts`).
 
-Dieses Repo bindet den Server bereits in `opencode.json` ein (nach Änderungen an
-der Config opencode **neu starten**). Für andere MCP-Clients (Claude Desktop,
-Cursor, …) das gleiche Muster:
+This repo already wires the server into `opencode.json` (restart opencode after
+config changes). Other MCP clients (Claude Desktop, Cursor, …) follow the same
+pattern:
 
 ```json
 {
   "mcp": {
     "stepwell": {
       "type": "local",
-      "command": ["node", "/pfad/zu/stepwell-tool/packages/mcp/src/serve.ts"],
+      "command": ["node", "/path/to/stepwell-tool/packages/mcp/src/serve.ts"],
       "enabled": true
     }
   }
 }
 ```
 
-Manuelle Verifikation mit dem Inspector:
+Manual verification with the inspector:
 
 ```bash
 npx @modelcontextprotocol/inspector node packages/mcp/src/serve.ts
 ```
 
-Die Test-Suite deckt denselben Protokoll-Pfad automatisiert ab
-(`InMemoryTransport` + Client, plus ein echter stdio-Handshake-Test).
+The test suite covers the same protocol path automatically
+(`InMemoryTransport` + client, plus a real stdio handshake test).
 
-### Distribution (zwei Kanäle)
+### Distribution (two channels)
 
-1. **MCP-Server:** `npx stepwell` (bzw. `serve.ts`) — operativ, Tools wie unten.
-   Das veröffentlichte Package shippt **kompiliertes `dist`** (seit 10.4/H1) und ist damit
-   direkt aus `node_modules` lauffähig — `prepublishOnly` baut vor dem Publish.
-2. **SKILL.md:** `packages/mcp/skills/stepwell/SKILL.md` (liegt im npm-Pack) —
-   portabler Wegweiser für Skill-Ökosysteme (Claude Skills, Gemini CLI, …): wann
-   welches Tool, Gates (Freigabe/Content), Test-First, Statuspflege nur via Tools.
-   Er ersetzt weder MCP-Server noch PLAYBOOK.md — beides bleibt bindend.
+1. **MCP server:** `npx stepwell` (or `serve.ts`) — operational, tools as below.
+   The published package ships **compiled `dist`** (since 10.4/H1) and therefore
+   runs directly from `node_modules` — `prepublishOnly` builds before publishing.
+2. **SKILL.md:** `packages/mcp/skills/stepwell/SKILL.md` (included in the npm pack) —
+   portable signpost for skill ecosystems (Claude Skills, Gemini CLI, …): which tool
+   when, gates (release/content), test-first, status maintenance only via tools.
+   It replaces neither the MCP server nor PLAYBOOK.md — both remain binding.
 
 ### Tools
 
-Alle Tools nehmen `root` (absoluter Pfad zum Projekt-Root) **pro Call**. Alle JSON-Text-Payloads
-sind **kompakt** (ohne Einrückung — Token-Ökonomie, E1). `docs_validate`,
-`progress_update` und `archive_item` liefern ihre Daten **zusätzlich** als
-`structuredContent` nur auf Opt-in mit `structured: true` (M3/9.7, Dedupe seit E1 —
-Default ist nur Text); Fehlerantworten (`isError: true`, inkl. `PROJECT_NOT_INITIALIZED`)
-tragen kein `structuredContent`.
-Fehler (fehlende Pflichtdatei, unbekannte ID/Phase) liefern `isError: true`
-mit klarer Meldung — der Server stürzt nicht ab.
+All tools take `root` (absolute path to the project root) **per call**. All JSON text
+payloads are **compact** (no indentation — token economy, E1). `docs_validate`,
+`progress_update` and `archive_item` also deliver their data as
+`structuredContent` only on opt-in with `structured: true` (M3/9.7, dedupe since
+E1 — default is text only); error responses (`isError: true`, including
+`PROJECT_NOT_INITIALIZED`) carry no `structuredContent`.
+Errors (missing mandatory file, unknown ID/phase) return `isError: true`
+with a clear message — the server does not crash.
 
-#### Lesen
+#### Read
 
-| Tool | Parameter | Ergebnis |
-|------|-----------|----------|
-| `docs_status` | `root`, optional `include[]` | Aggregat: offene Items je Priorität, 🔄-Steps + zugeordnete Phasen, ✅-Quote der Tabelle, alle Funde + Warnungen, `hashes` (SHA256 je Doku-Datei, E2); mit `include: ["nextStepScope"]` (E2) zusätzlich Ziel/Abnahme/Scope-Bullet + gemergtes Backlog-Item des nächsten Steps (1 Call statt `progress_show` + `backlog_show`) |
-| `backlog_list` | `root`, optional `priority[]`, `open`, `section`, `fields[]` | Items der BACKLOG.md **ohne `raw`** (schlanker Payload) + Parse-Warnungen; mit `fields` (z. B. `["id","title","priority","open","section"]`) sind Items auf die genannten Felder projiziert (Token-Ökonomie, E1) |
-| `backlog_show` | `root`, `id` | Merge-Sicht für eine Item-ID über offenes BACKLOG ↔ Erledigt-Index ↔ BACKLOG_ARCHIVE, inkl. `raw` + `span`; case-sensitiv |
-| `progress_list` | `root`, optional `status` | Zeilen der Fortschrittstabelle `{step, name, status}` |
-| `progress_show` | `root`, `phase` | Detail-Block inkl. `raw` — Suche über laufende Phasen **und** Archiv (Name, Titel oder `Name — Titel`) |
-| `docs_validate` | `root`, optional `structured` | Validate-Funde (Konsistenzregeln) + eingesammelte Parse-Warnungen, `ok` |
+| Tool | Parameters | Result |
+|------|-----------|--------|
+| `docs_status` | `root`, optional `include[]` | Aggregate: open items per priority, 🔄 steps + assigned phases, ✅ quote of the table, all findings + warnings, `hashes` (SHA256 per doc file, E2); with `include: ["nextStepScope"]` (E2) additionally goal/acceptance/scope bullet + merged backlog item of the next step (1 call instead of `progress_show` + `backlog_show`) |
+| `backlog_list` | `root`, optional `priority[]`, `open`, `section`, `fields[]` | Items of BACKLOG.md **without `raw`** (lean payload) + parse warnings; with `fields` (e.g. `["id","title","priority","open","section"]`) items are projected onto the listed fields (token economy, E1) |
+| `backlog_show` | `root`, `id` | Merge view for one item ID across open BACKLOG ↔ Done Index ↔ BACKLOG_ARCHIVE, including `raw` + `span`; case-sensitive |
+| `progress_list` | `root`, optional `status` | Rows of the progress table `{step, name, status}` |
+| `progress_show` | `root`, `phase` | Detail block including `raw` — search across running phases **and** archive (name, title or `name — title`) |
+| `docs_validate` | `root`, optional `structured` | Validate findings (consistency rules) + collected parse warnings, `ok` |
 
-#### Schreiben (Dry-run + Apply)
+#### Write (dry-run + apply)
 
-| Tool | Parameter | Verhalten |
+| Tool | Parameters | Behaviour |
 |------|-----------|-----------|
-| `archive_item` | `root`, `id`, optional `note`, `locale`, `structured`, `detail`, `dryRun` (**Default `true`**) | Plant die **verbatim-Verschiebung** eines Items: Block (span-basiert) aus BACKLOG.md entfernen, im Archiv-Exemplar Checkbox → `[x]`, optionaler `note` wird Erledigt-Zeile; dazu Einzeiler `- <ID> — <Titel> — erledigt (note?)` am Ende des Erledigt-Index. Apply verifiziert frisch: ID weg aus offen, im Archiv + Index, keine Funde mehr. Das ist das Gegenmittel zum Validate-Fund `NOT_ARCHIVED` (D2). |
-| `progress_update` | `root`, `phase`, `step` (String **oder String[]** für Multi-Step in einem Call, nur mit `dryRun: false`), `status` (`⬜🔄✅⛔`), optional `title`, `note`, `checkpoint` (Commit-SHA, 7–40 Hex), `locale`, `structured`, `detail`, `dryRun` (**Default `true`**) | Setzt die Statuszelle(n) der Steps (fehlende Zeilen werden ergänzt, Name aus dem Scope-Bullet abgeleitet); legt bei 🔄 ein Detail-Block-Skelett unter „Laufende Phasen" an (`### Phase …` + `**Umfang (Steps):**` + Step-Bullet — **keine** erfundenen Ziel-/Abnahme-Texte); `title` benennt den Block-Heading konsistent um (Rename → Archivierung im selben Call ist definiert); ist danach kein Step der Phase mehr 🔄/⬜, wandert der Block **verbatim** ins PROGRESS_ARCHIVE (`note`/`checkpoint` → Verifikations-Zeile, Antwort enthält den Doku-Sync-Reminder) — bei Step-Arrays wird der Abschluss automatisch am letzten Step erkannt. Apply verifiziert Zeile, Block-Wanderung und `docs_validate`. |
-| `backlog_add` | `root`, `section`, `title`, `priority` (`🔴🟠🟡🟢🔵`), optional `id`, `text`, `detail`, `dryRun` | Legt ein offenes Item am **Ende der Ziel-Sektion** an: ID mit Konventionsprüfung (`^[A-Z][0-9]+$`), Auto-Vergabe = nächste freie Nummer der Prioritäts-Serie (K/H/M/L; 🔵 erfordert explizite ID), `text`-Bullets verbatim, `Stand:`-Zeitstempel im Heading wird aktualisiert. |
-| `backlog_update` | `root`, `id`, optional `title`, `priority`, `section`, `text`, `detail`, `dryRun` | Ändert Titel/Priorität/Text/Sektion im Block-Format (Span-Neuberechnung, Checkbox- und `*(…)*`-Suffix bleiben erhalten). Prioritätswechsel verschiebt den Block in die passende Prioritäts-Sektion. |
-| `backlog_remove` | `root`, `id`, optional `note`, `locale`, `detail`, `dryRun` | **Kein Hard-Delete:** Block wandert verbatim ins BACKLOG_ARCHIVE (Checkbox bleibt `[ ]`, optional `note` → `**Entfernt:**`-Zeile), im Erledigt-Index erscheint ein Tail ohne Erledigt-Marker (`- <ID> — <Titel> — entfernt (note?)`). `docs_validate` meldet Checkbox-`[ ]`-Blöcke bewusst **nicht** als `ARCHIVE_WITHOUT_INDEX`. |
-| `progress_plan_phase` | `root`, `phase` (`"Phase <N>[ — Titel]"`), `steps: [{step, name}]`, optional `detail`, `dryRun` | Plant eine Phase **voraus**: Tabellen-Zeilen für alle Steps (`⬜`, mit Namen) + Detail-Block-Skelett mit vollständigem Scope. Validiert Step-Präfix (`Phase 7` → `7.x`), Duplikate und belegte Phasen/Steps. `PLAN_WITHOUT_WIP` ist bis zum ersten 🔄 der definierte Zustand. |
+| `archive_item` | `root`, `id`, optional `note`, `locale`, `structured`, `detail`, `dryRun` (**default `true`**) | Plans the **verbatim move** of an item: remove the block (span-based) from BACKLOG.md, in the archive copy flip the checkbox → `[x]`, optional `note` becomes the done line; plus a one-liner `- <ID> — <title> — done (note?)` at the end of the Done Index. Apply verifies freshly: ID gone from open, present in archive + index, no findings left. This is the antidote to the `NOT_ARCHIVED` (D2) validate finding. |
+| `progress_update` | `root`, `phase`, `step` (string **or string[]** for multi-step in one call, only with `dryRun: false`), `status` (`⬜🔄✅⛔`), optional `title`, `note`, `checkpoint` (commit SHA, 7–40 hex), `locale`, `structured`, `detail`, `dryRun` (**default `true`**) | Sets the status cell(s) of the steps (missing rows are added, name derived from the scope bullet); on 🔄 creates a detail-block skeleton under "Active Phases" (`### Phase …` + `**Scope (Steps):**` + step bullet — **no** invented goal/acceptance texts); `title` renames the block heading consistently (rename → archival in the same call is defined); if afterwards no step of the phase is still 🔄/⬜, the block moves **verbatim** into PROGRESS_ARCHIVE (`note`/`checkpoint` → verification line, response contains the doc-sync reminder) — with step arrays completion is detected automatically at the last step. Apply verifies row, block move and `docs_validate`. |
+| `backlog_add` | `root`, `section`, `title`, `priority` (`🔴🟠🟡🟢🔵`), optional `id`, `text`, `detail`, `dryRun` | Creates an open item at the **end of the target section**: ID with convention check (`^[A-Z][0-9]+$`), auto-assignment = next free number of the priority series (K/H/M/L; 🔵 requires an explicit ID), `text` bullets verbatim, `As of:` timestamp in the heading is updated. |
+| `backlog_update` | `root`, `id`, optional `title`, `priority`, `section`, `text`, `detail`, `dryRun` | Changes title/priority/text/section in the block format (span recomputation, checkbox and `*(…)*` suffix are preserved). A priority change moves the block into the matching priority section. |
+| `backlog_remove` | `root`, `id`, optional `note`, `locale`, `detail`, `dryRun` | **No hard delete:** block moves verbatim into BACKLOG_ARCHIVE (checkbox stays `[ ]`, optional `note` → `**Removed:**` line), the Done Index gets a tail without a done marker (`- <ID> — <title> — removed (note?)`). `docs_validate` deliberately does **not** report checkbox-`[ ]` blocks as `ARCHIVE_WITHOUT_INDEX`. |
+| `progress_plan_phase` | `root`, `phase` (`"Phase <N>[ — Title]"`), `steps: [{step, name}]`, optional `detail`, `dryRun` | Plans a phase **ahead**: table rows for all steps (`⬜`, with names) + detail-block skeleton with the full scope. Validates the step prefix (`Phase 7` → `7.x`), duplicates and occupied phases/steps. `PLAN_WITHOUT_WIP` is the defined state until the first 🔄. |
 
-**Antwortformate:** Dry-run liefert den Plan `{dryRun, changes:[{file, description,
-before, after, diff}]}`; Apply liefert `{written, verification:{ok, messages}}`.
-Mit `detail: "summary"` (E1) werden Dry-run-`changes` auf `{file, description,
-beforeLines, afterLines}` + Top-Level-Marker `detail: "summary"` projiziert —
-Default bleibt `"diff"` mit voller Vorschau (Sicherheitshinweis unangetastet).
+**Response formats:** dry-run returns the plan `{dryRun, changes:[{file, description,
+before, after, diff}]}`; apply returns `{written, verification:{ok, messages}}`.
+With `detail: "summary"` (E1) dry-run `changes` are projected onto `{file, description,
+beforeLines, afterLines}` + top-level marker `detail: "summary"` —
+the default stays `"diff"` with the full preview (safety note unchanged).
 
-### Mehrsprachigkeit (Locale-Profile)
+### Locale profiles
 
-Die Doku-Dateien können **deutsch oder englisch** formatiert sein — gemischt im
-gleichen Repo ist verboten, pro Projekt gilt eine Sprache. Das Tool trennt dabei:
+The doc files may be formatted **in German or English** — mixed within the same
+repo is forbidden; one language per project. The tool separates:
 
-- **Lesen: immer sprachtolerant (zero-config).** Parser und Validator erkennen die
-  Rollen-Marker beider Sprachen per Union-Matching — `Erledigt-Index|Done Index`,
+- **Reading: always language-tolerant (zero-config).** Parser and validator
+  recognise the role markers of both languages via union matching — `Erledigt-Index|Done Index`,
   `Ort|Location`, `erledigt|done`, `Ziel|Goal`, `Abnahme|Acceptance`,
   `Verifikation|Verification`, `Umfang|Scope`, `Fortschritt|Progress`,
   `Laufende Phasen|Active Phases`, `abgeschlossen|completed`, `Stand:|As of:`.
-- **Schreiben: `locale`-Option** auf `archive_item` und `progress_update`/
-  `backlog_remove` (`"de" | "en"`; Default = **Auto-Erkennung** aus dem
-  Datei-Kontext, Gleichstand → `de`). Generierte Texte (Index-Zeile,
-  Erledigt-/Verifikations-/Entfernt-Marker, Skeletons) folgen der Ziel-Sprache;
-  CLI-Äquivalent: `--locale de|en`.
-- **Weitere Sprachen:** `packages/core/src/profile.ts` hält die Rollen-Synonyme —
-  eine neue Sprache ist ein neuer Schlüssel je Rolle, kein Parser-Umbau.
+- **Writing: the `locale` option** on `archive_item` and `progress_update`/
+  `backlog_remove` (`"de" | "en"`; default = **auto-detection** from the
+  file context, tie → `en` since 14.3). Generated texts (index line,
+  done/verification/removed markers, skeletons) follow the target language;
+  CLI equivalent: `--locale de|en`.
+- **More languages:** `packages/core/src/profile.ts` holds the role synonyms —
+  a new language is a new key per role, no parser rebuild.
 
-### Resources (Resource-Templates)
+### Resources (resource templates)
 
-Der Root wird **percent-encoded** als URI-Segment eingesetzt (Windows-Pfade
-enthalten `:` und `\`); der Read-Callback dekodiert ihn. Inhalt jeweils verbatim,
+The root is **percent-encoded** into the URI segment (Windows paths
+contain `:` and `\`); the read callback decodes it. Content verbatim,
 `text/markdown`:
 
 ```
 stepwell://{root}/backlog          → BACKLOG.md
 stepwell://{root}/progress         → PROGRESS.md
 stepwell://{root}/archive/{kind}   → kind = "backlog" | "progress"
-stepwell://{root}/phase/{phase}    → Phasen-Kontext: Phase verbatim + Tabellen-Zeilen
-                                      + gemergte Backlog-Item-Bodies in Step-Reihenfolge (G5/12.6)
-stepwell://{root}/hashes           → SHA256 je Doku-Datei (application/json;
-                                      Hash-Kurzschluss, E2/12.5 — Fast-Pfad-Fundament E3)
-stepwell://templates/{kind}        → Skeletons der vier Pflichtdateien
-                                      (kind = "backlog" | "progress" |
-                                       "backlog-archive" | "progress-archive")
+stepwell://{root}/phase/{phase}    → phase context: phase verbatim + table rows
+                                     + merged backlog item bodies in step order (G5/12.6)
+stepwell://{root}/hashes           → SHA256 per doc file (application/json;
+                                     hash short-circuit, E2/12.5 — fast-path foundation E3)
+stepwell://templates/{kind}        → skeletons of the four mandatory files
+                                     (kind = "backlog" | "progress" |
+                                      "backlog-archive" | "progress-archive")
 ```
 
-**M4-Alternativprüfung (G5):** Resource statt Tool — der Phasen-Kontext ist reiner
-Lese-Pfad, und die Komposition passiert **zur Lesezeit** statt als Duplikat in den
-Dateien (Anti-Drift): ein Subagent bekommt Phase + Item-Bodies in einem Read, ohne
-dass ein neues Tool die Surface vergrößert.
+**M4 alternative check (G5):** resource instead of tool — the phase context is a pure
+read path, and the composition happens **at read time** instead of as a duplicate in the
+files (anti-drift): a subagent gets phase + item bodies in one read, without a new tool
+growing the surface.
 
-Beispiel: `stepwell://D%3A%5Cproj%5Cdemo/backlog`
+Example: `stepwell://D%3A%5Cproj%5Cdemo/backlog`
 
-**Projekt-Init (M8, Variante A):** Bei neu angelegten Projekten liest der Agent die vier
-Skeletons aus `stepwell://templates/{kind}` und legt die Dateien damit selbst an —
-bewusst **kein** `init_project`-Schreib-Tool (M4-Guardrail: Write-Surface klein halten);
-die Skeletons liegen kanonisch in `stepwell-core` (`projectTemplates`) und sind an
-`docs_validate` fund-frei. Die Init-Fallback-Anleitung (`PROJECT_NOT_INITIALIZED`)
-verweist auf diesen Weg.
+**Project init (M8, variant A):** for newly created projects the agent reads the four
+skeletons from `stepwell://templates/{kind}` and creates the files itself —
+deliberately **no** `init_project` write tool (M4 guardrail: keep the write surface
+small); the skeletons live canonically in `stepwell-core` (`projectTemplates`) and are
+finding-free under `docs_validate`. The init-fallback guidance (`PROJECT_NOT_INITIALIZED`)
+points to this path.
 
 ---
 
 ## CLI
 
-`packages/mcp/src/cli.ts` — im Workspace-Repo direkt ausführbar
-(`node packages/mcp/src/cli.ts …`); aus dem installierten Package
-(`npm i -g stepwell` bzw. `npx stepwell`) unter dem Bin-Namen
+`packages/mcp/src/cli.ts` — runnable directly in the workspace repo
+(`node packages/mcp/src/cli.ts …`); from the installed package
+(`npm i -g stepwell` or `npx stepwell`) under the bin name
 `stepwell`.
-Menschliche Ausgabe auf stdout; `--json` liefert die core-Payloads mit vorangestelltem
-Versionsfeld `schema` (aktuell **2**, gebumpt mit N1/13.2 — Resource-URI-Änderung ist MAJOR-Kontrakt). Feldkontrakt je Command:
+Human output on stdout; `--json` returns the core payloads with a leading
+`schema` version field (currently **2**, bumped with N1/13.2 — a resource-URI change is a MAJOR contract). Field contract per command:
 
-| Command | Felder (neben `schema`) |
+| Command | Fields (besides `schema`) |
 |---------|--------------------------|
 | `status` | `openByPriority`, `openTotal`, `runningSteps`, `runningPhases`, `doneQuote`, `nextStep`, `nextPriority`, `warnings` |
-| `backlog` | `count`, `items[]` (ohne `raw`), `warnings` |
+| `backlog` | `count`, `items[]` (without `raw`), `warnings` |
 | `progress` | `count`, `rows[]`, `warnings` |
 | `validate` | `findings[]`, `warnings[]`, `ok` |
-| `archive` (Dry-run) | `root`, `id`, `dryRun`, `note`, `changes[]` |
+| `archive` (dry-run) | `root`, `id`, `dryRun`, `note`, `changes[]` |
 | `archive --apply` | `written[]`, `verification{ok, messages[]}` |
-| `progress-update` | wie `archive` plus `phase`, `step`, `status`, `title`, `completedPhase`, `checkpoint?` |
+| `progress-update` | like `archive` plus `phase`, `step`, `status`, `title`, `completedPhase`, `checkpoint?` |
 
-**Kontrakt-Regel (M6/Decision 16):** Breaking-Änderung an diesem Feldbestand ⇒
-`schema` hochzählen (in Lockstep mit dem npm-MAJOR).
+**Contract rule (M6/Decision 16):** a breaking change to this field set ⇒
+bump `schema` (in lockstep with the npm MAJOR).
 
-### Releases (Versionspolitik, L6)
+### Releases (version policy, L6)
 
-- **Format:** [`CHANGELOG.md`](CHANGELOG.md) nach Keep a Changelog 1.1.0, `[Unreleased]`
-  oben, kuratierte nutzerrelevante Aggregate. **Redundanz-Regel:** kein Git-Log-Dump,
-  keine Duplikation von Erledigt-Index/BACKLOG_ARCHIVE — Item-/Commit-Historie bleibt
-  in den STEPWELL-Dateien. Datumsformat `JJMMDD/HHMM` (Decision 11) statt ISO —
-  dokumentierte Abweichung.
-- **Lockstep-SemVer (Decision 16):** Root, `stepwell` und `stepwell-core`
-  tragen immer dieselbe Version. MAJOR = Breaking im Tool-/JSON-/Resource-Kontrakt
-  (immer zusammen mit dem `schema`-Feld), MINOR = neue Tools/Features, PATCH = Fixes.
-  0.x bis zum bestandenen Feldtest; `1.0.0` = Freigabe-Moment.
-- **Publish-Checkliste:** (1) `Unreleased` im CHANGELOG kuratieren, (2) Version in
-  allen **drei** `package.json` bumpen (Lockstep), (3) CHANGELOG-Sektion `[<version>] - <JJMMDD/HHMM>`,
-  (4) Git-Tag `v<version>`, (5) **nur** `stepwell` publizieren
-  (`npm publish --otp`, dist-tag `latest`; core wird als Abhängigkeit mit verteilt),
-  (6) CI-Job `pack-smoke` muss grün sein — dynamisch seit 10.5/H1, beweist Handshake
-  gegen das installierte Artefakt (`server stepwell`).
+- **Format:** [`CHANGELOG.md`](CHANGELOG.md) per Keep a Changelog 1.1.0, `[Unreleased]`
+  on top, curated user-relevant aggregates. **Redundancy rule:** no git-log dump,
+  no duplication of Done Index/BACKLOG_ARCHIVE — item/commit history stays
+  in the STEPWELL files. Date format `YYMMDD/HHMM` (Decision 11) instead of ISO —
+  documented deviation.
+- **Lockstep SemVer (Decision 16):** root, `stepwell` and `stepwell-core`
+  always carry the same version. MAJOR = breaking in the tool/JSON/resource contract
+  (always together with the `schema` field), MINOR = new tools/features, PATCH = fixes.
+  0.x until the passed field test; `1.0.0` = release moment.
+- **Publish checklist:** (1) curate `Unreleased` in the CHANGELOG, (2) bump the version in
+  all **three** `package.json` (lockstep), (3) CHANGELOG section `[<version>] - <YYMMDD/HHMM>`,
+  (4) git tag `v<version>`, (5) publish **only** `stepwell`
+  (`npm publish --otp`, dist-tag `latest`; core is distributed as a dependency),
+  (6) CI job `pack-smoke` must be green — dynamic since 10.5/H1, proves the handshake
+  against the installed artefact (`server stepwell`).
 
 ```bash
-# Status-Aggregat
-node packages/mcp/src/cli.ts status --root <projekt> [--json]
+# Status aggregate
+node packages/mcp/src/cli.ts status --root <project> [--json]
 
-# Backlog listen/filtern — Icons oder ASCII-Aliase (red/kritisch/p1, hoch/p2, mittel/p3, niedrig/p4, blue/test/p5)
-node packages/mcp/src/cli.ts backlog --root <projekt> [--priority red,yellow] [--open false] [--section HOCH] [--json]
+# List/filter backlog — icons or ASCII aliases (red/kritisch/p1, hoch/p2, mittel/p3, niedrig/p4, blue/test/p5)
+node packages/mcp/src/cli.ts backlog --root <project> [--priority red,yellow] [--open false] [--section HIGH] [--json]
 
-# Fortschrittstabelle — Status als Icon oder Alias (open, running/wip, done, blocked)
-node packages/mcp/src/cli.ts progress --root <projekt> [--status done] [--json]
+# Progress table — status as icon or alias (open, running/wip, done, blocked)
+node packages/mcp/src/cli.ts progress --root <project> [--status done] [--json]
 
-# Konsistenzprüfung (Exit 1 bei Funden — CI-tauglich)
-node packages/mcp/src/cli.ts validate --root <projekt> [--json]
+# Consistency check (exit 1 on findings — CI-suitable)
+node packages/mcp/src/cli.ts validate --root <project> [--json]
 
-# Erledigtes Item archivieren (Dry-run-Vorschau, dann --apply)
-node packages/mcp/src/cli.ts archive --root <projekt> --id H1 [--note "Commit abc1234"] [--locale en] [--apply]
+# Archive a completed item (dry-run preview, then --apply)
+node packages/mcp/src/cli.ts archive --root <project> --id H1 [--note "Commit abc1234"] [--locale en] [--apply]
 
-# Step-Status pflegen (Dry-run-Vorschau, dann --apply) — --title benennt den Block-Heading um
-node packages/mcp/src/cli.ts progress-update --root <projekt> --phase "Phase 2" --step 2.2 --status running [--title "Neuer Titel"] [--note "…"] [--checkpoint <sha>] [--locale en] [--apply]
+# Maintain step status (dry-run preview, then --apply) — --title renames the block heading
+node packages/mcp/src/cli.ts progress-update --root <project> --phase "Phase 2" --step 2.2 --status running [--title "New title"] [--note "…"] [--checkpoint <sha>] [--locale en] [--apply]
 ```
 
-Ungültige Werte liefern Exit 2 mit der Liste der erlaubten Aliase (z. B.
+Invalid values exit with code 2 and the list of allowed aliases (e.g.
 `🔴=red/kritisch/p1, …`, `⬜=open, 🔄=running/wip, ✅=done, ⛔=blocked`).
 
-**Exit-Codes:** `0` Erfolg (bzw. keine Validate-Funde) · `1` Fehler bzw.
-Validate-Funde · `2` Usage-Fehler (unbekanntes Kommando, fehlende Pflicht-Option).
+**Exit codes:** `0` success (or no validate findings) · `1` error or
+validate findings · `2` usage error (unknown command, missing required option).
 
 ---
 
 ## CI (optional)
 
-Dieses Repo nutzt GitHub Actions (`.github/workflows/ci.yml`): install → typecheck
-→ test (JUnit- + Coverage-Report als Artefakt) → `validate --root .` (Exit 1 bei
-Doku-Funden schlägt den Job um).
+This repo uses GitHub Actions (`.github/workflows/ci.yml`): install → typecheck
+→ test (JUnit + coverage report as artefact) → `validate --root .` (exit 1 on
+doc findings flips the job).
 
-**Für kleinere Projekte genügt der lokale Lauf** — die Pipeline ist Kanonen auf
-Spatzen, wenn niemand auf sie schaut:
+**For smaller projects the local run suffices** — the pipeline is overkill when
+nobody looks at it:
 
 ```bash
 npm install && npm run typecheck && npm run test && node packages/mcp/src/cli.ts validate --root .
 ```
 
-STEPWELL-Projekte können `ci.yml` als Vorlage kopieren; die Methode (PLAYBOOK)
-verlangt keine CI.
+STEPWELL projects may copy `ci.yml` as a template; the method (PLAYBOOK) does not
+require CI.
 
 ---
 
-## Warnungs-Codes
+## Warning codes
 
-**Parse-Warnungen** entstehen beim Parsen einzelner Dateien (Drift-Toleranz),
-**Validate-Funde** prüfen Querkonsistenz über Dateien hinweg (`docs_validate`
-sammelt beides). Konventions-Warnungen betreffen **nur offene Dateien** — Archive
-sind append-only und werden nie beanstandet. Ein UTF-8-BOM (U+FEFF) am Dateianfang
-wird still toleriert (deterministisch gestrippt, T5/9.13) — keine Warnung.
+**Parse warnings** arise when parsing individual files (drift tolerance),
+**validate findings** check cross-file consistency (`docs_validate`
+collects both). Convention warnings affect **only open files** — archives
+are append-only and never flagged. A UTF-8 BOM (U+FEFF) at the start of a file
+is silently tolerated (stripped deterministically, T5/9.13) — no warning.
 
-| Code | Ebene | Bedeutung |
+| Code | Level | Meaning |
 |------|-------|-----------|
-| `PRIO_MISSING` | Parse | Kein Prioritäts-Suffix im Titel — Priorität aus dem Sektions-Emoji übernommen |
-| `PRIO_DUPLICATE` | Parse | Mehrere Prioritäts-Marker im Titel — einer wird erfasst |
-| `PRIO_UNKNOWN` | Parse | Unbekanntes Prioritäts-Emoji (z. B. 🟣) — `priority: "unknown"` |
-| `BLOCK_UNSTRUCTURED` | Parse | Item ohne `**Label:**`-Bullets — Freitext als `text` erfasst |
-| `TITLE_EMPTY` | Parse | Item-ID ohne Titel nach dem Trenner |
-| `STATUS_UNKNOWN` | Parse | Unbekanntes Status-Icon in der Tabelle — `status: "unknown"` |
-| `ROW_INCOMPLETE` | Parse | Tabellenzeile ohne Status-Spalte |
-| `NOT_ARCHIVED` (D2) | Validate | `[x]`-Checkbox hängt noch im offenen BACKLOG → `archive_item` |
-| `ID_DUPLICATE` (D5) | Validate | Item-ID kommt doppelt vor |
-| `ID_CONVENTION` (D14) | Validate | ID verletzt `^[A-Z][0-9]+$` (Serienbuchstabe + Nummer) — Warnung, Item bleibt gelistet |
-| `INDEX_WITHOUT_ARCHIVE` (D8) | Validate | Erledigt-Index-Eintrag ohne Archiv-Block |
-| `ARCHIVE_WITHOUT_INDEX` (D13) | Validate | Erledigter Archiv-Block (`[x]`) ohne Erledigt-Index-Eintrag; entfernte Blöcke (Checkbox `[ ]`, via `backlog_remove`) sind bewusst indexlos |
-| `WIP_WITHOUT_PLAN` (D11) | Validate | 🔄-Zeile ohne passenden Detail-Block |
-| `PLAN_WITHOUT_WIP` (D12) | Validate | Detail-Block ohne 🔄-Step (verwaist oder via `progress_plan_phase` vorausgeplant) |
-| `STEP_DUPLICATE` (R6) | Validate | Step-Nummer kommt doppelt in der Fortschrittstabelle vor — `progress_update` pflegt nur die erste Zeile |
-| `DATE_LEGACY` (D15) | Validate | `MM/JJJJ`-Datum in offenen Dateien — kanonisch ist `JJMMDD/HHMM` (z. B. `260907/1523`) |
-| `PROJECT_NOT_INITIALIZED` (M5) | Validate | Root ohne STEPWELL-Projekt (alle vier Dateien fehlen) — genau ein Fund mit Anleitung statt Fehler-Wüste; `docs_status` liefert den Zero-Aggregate + diesen Fund, Read-/Mutation-Tools eine strukturierte Fehlerantwort (`code`/`message`/`missing`). Teilbestand (einzelne Datei fehlt) bleibt harter Fehler pro Datei. Kontrakt-Ausnahme: `file` trägt hier den Projekt-Root (Verzeichnis), nicht einen Dateipfad |
+| `PRIO_MISSING` | parse | no priority suffix in the title — priority taken from the section emoji |
+| `PRIO_DUPLICATE` | parse | several priority markers in the title — one is captured |
+| `PRIO_UNKNOWN` | parse | unknown priority emoji (e.g. 🟣) — `priority: "unknown"` |
+| `BLOCK_UNSTRUCTURED` | parse | item without `**Label:**` bullets — free text captured as `text` |
+| `TITLE_EMPTY` | parse | item ID without a title after the separator |
+| `STATUS_UNKNOWN` | parse | unknown status icon in the table — `status: "unknown"` |
+| `ROW_INCOMPLETE` | parse | table row without a status column |
+| `NOT_ARCHIVED` (D2) | validate | `[x]` checkbox still hangs in the open BACKLOG → `archive_item` |
+| `ID_DUPLICATE` (D5) | validate | item ID appears twice |
+| `ID_CONVENTION` (D14) | validate | ID violates `^[A-Z][0-9]+$` (series letter + number) — warning, item stays listed |
+| `INDEX_WITHOUT_ARCHIVE` (D8) | validate | Done Index entry without an archive block |
+| `ARCHIVE_WITHOUT_INDEX` (D13) | validate | completed archive block (`[x]`) without a Done Index entry; removed blocks (checkbox `[ ]`, via `backlog_remove`) are deliberately indexless |
+| `WIP_WITHOUT_PLAN` (D11) | validate | 🔄 row without a matching detail block |
+| `PLAN_WITHOUT_WIP` (D12) | validate | detail block without a 🔄 step (orphaned or planned ahead via `progress_plan_phase`) |
+| `STEP_DUPLICATE` (R6) | validate | step number appears twice in the progress table — `progress_update` maintains only the first row |
+| `DATE_LEGACY` (D15) | validate | legacy `MM/YYYY` date in open files — canonical is `YYMMDD/HHMM` (e.g. `260907/1523`) |
+| `PROJECT_NOT_INITIALIZED` (M5) | validate | root without a STEPWELL project (all four files missing) — exactly one finding with guidance instead of an error desert; `docs_status` returns the zero aggregate + this finding, read/mutation tools a structured error response (`code`/`message`/`missing`). Partial stock (a single file missing) stays a hard error per file. Contract exception: `file` carries the project root (directory) here, not a file path |
 
 ---
 
-## Typischer Workflow (Agent + stepwell)
+## Typical workflow (agent + stepwell)
 
 ```text
-1. docs_status            → Wo stehen wir? Welche Prioritäten sind offen?
-2. backlog_list --open    → Was ist als nächstes dran? (BINDEND: sequenziell nach Prio)
-3. (Arbeit am Code, test-first — Prosa editiert der Agent direkt)
-4. progress_plan_phase    → neue Phase vorausplanen (Zeilen + Scope-Skelett)
-5. progress_update (🔄)   → Step begonnen: Tabelle + Detail-Block sauber halten
-6. progress_update (✅)   → Step fertig; ist die Phase komplett, wandert der Block ins Archiv
-7. backlog_add/update     → Items format-sicher anlegen/ändern (statt Hand-Edit)
-8. archive_item           → erledigtes Item verbatim archivieren + Erledigt-Index
-9. backlog_remove         → obsoletes Item ins Archiv verschieben (ohne Erledigt-Marker)
-10. docs_validate         → muss clean sein, bevor committed wird
+1. docs_status            → where do we stand? Which priorities are open?
+2. backlog_list --open    → what is next? (BINDING: sequential by priority)
+3. (work on the code, test-first — the agent edits prose directly)
+4. progress_plan_phase    → plan a new phase ahead (rows + scope skeleton)
+5. progress_update (🔄)   → step started: keep table + detail block clean
+6. progress_update (✅)   → step done; if the phase is complete, the block moves into the archive
+7. backlog_add/update     → create/change items format-safe (instead of hand-editing)
+8. archive_item           → archive the completed item verbatim + Done Index
+9. backlog_remove         → move an obsolete item into the archive (without a done marker)
+10. docs_validate         → must be clean before committing
 ```
 
-Die PLAYBOOK-Regeln (Sequenz, Test-First, Commit-Diskiplin, Archiv-Muster) stehen
-in [`docs/PLAYBOOK.md`](docs/PLAYBOOK.md); die Review-Checkliste in
+The PLAYBOOK rules (sequence, test-first, commit discipline, archive pattern) live in
+[`docs/PLAYBOOK.md`](docs/PLAYBOOK.md); the review checklist in
 [`docs/LESSONS.md`](docs/LESSONS.md).
 
 ---
 
-## Architektur
+## Architecture
 
-**Entwurfs-Regel (M4/Decision 17):** Die Tool-Oberfläche bleibt klein — Tools nur für
-konkrete Struktur-/Lese-Operationen, keine Guide-/Meta-Tools; Methoden-Wissen lebt in
-PLAYBOOK.md, SKILL.md und den Resources. Jedes neue Tool (oder neue Parameter-Fläche)
-begründet den Surface-Zuwachs per **Alternativprüfung** (Parameter an ein existierendes
-Tool/Resource statt neues Tool) — dokumentiert wie bei der docs_review-Entscheidung (L5).
+**Design rule (M4/Decision 17):** the tool surface stays small — tools only for
+concrete structure/read operations, no guide/meta tools; method knowledge lives in
+PLAYBOOK.md, SKILL.md and the resources. Every new tool (or new parameter surface)
+justifies the surface growth via the **alternative check** (parameter on an existing
+tool/resource instead of a new tool) — documented like the docs_review decision (L5).
 
 ```
 packages/
-├── core/                 stepwell-core — Zero-Dependencies, keine MCP-Abhängigkeit
-│   ├── src/backlog.ts    BACKLOG-Parser (Sektionen, Item-Blöcke, Erledigt-Index)
-│   ├── src/progress.ts   PROGRESS-Parser (Tabelle, Detail-Blöcke) + scopeSteps
-│   ├── src/archive.ts    Archiv-Parser (ArchiveItem = BacklogItem + doneLine)
-│   ├── src/project.ts    loadProject (4-Datei-Pflicht, lazy + memoized), backlogShow
-│   ├── src/status.ts     docsStatus (Aggregat)
-│   ├── src/validate.ts   docsValidate (Konsistenzregeln + Parse-Warnungen)
-│   ├── src/mutations.ts  plan/apply: archive_item, progress_update, backlog-CRUD, planPhase
-│   ├── src/aliases.ts    ASCII-Aliase für Prioritäts-Emojis und Status-Icons (CLI)
-│   ├── src/diff.ts       zeilenbasierter Mini-Diff für die Plan-Vorschau
-│   ├── src/profile.ts    Locale-Profile: Rollen-Synonyme de/en (Lesen union, Schreiben kanonisch)
-│   └── tests/fixtures/   project-a (sauber) + project-b-drift (Fälle D1–D15)
-│                         + project-d-tablefirst (Tabelle vor Detail-Blöcken),
-│                         README.md dort = arbeitende Spezifikation
-└── mcp/                  stepwell — dünne Transport-Schicht über core
-    ├── src/server.ts     createDocsServer (alle Tools + Resources)
-    ├── src/tools.ts      Tool-Registrierung (JSON-Payloads, isError-Kapselung)
-    ├── src/resources.ts  Resource-Templates (percent-encoded Root)
-    ├── src/serve.ts      stdio-Einstieg
-    └── src/cli.ts        stepwell-Kommandozeile
+├── core/                 stepwell-core — zero dependencies, no MCP dependency
+│   ├── src/backlog.ts    BACKLOG parser (sections, item blocks, Done Index)
+│   ├── src/progress.ts   PROGRESS parser (table, detail blocks) + scopeSteps
+│   ├── src/archive.ts    archive parser (ArchiveItem = BacklogItem + doneLine)
+│   ├── src/project.ts    loadProject (4-file requirement, lazy + memoized), backlogShow
+│   ├── src/status.ts     docsStatus (aggregate)
+│   ├── src/validate.ts   docsValidate (consistency rules + parse warnings)
+│   ├── src/mutations.ts  plan/apply: archive_item, progress_update, backlog CRUD, planPhase
+│   ├── src/aliases.ts    ASCII aliases for priority emojis and status icons (CLI)
+│   ├── src/diff.ts       line-based mini diff for the plan preview
+│   ├── src/profile.ts    locale profiles: role synonyms de/en (read union, write canonical)
+│   └── tests/fixtures/   project-a (clean) + project-b-drift (cases D1–D15)
+│                         + project-d-tablefirst (table before detail blocks),
+│                         README there = working specification
+└── mcp/                  stepwell — thin transport layer over core
+    ├── src/server.ts     createDocsServer (all tools + resources)
+    ├── src/tools.ts      tool registration (JSON payloads, isError wrapping)
+    ├── src/resources.ts  resource templates (percent-encoded root)
+    ├── src/serve.ts      stdio entry
+    └── src/cli.ts        stepwell command line
 ```
 
 - **Stack:** TypeScript (strict, `NodeNext`, `noUncheckedIndexedAccess`,
-  `exactOptionalPropertyTypes`), npm workspaces, Vitest, MCP-SDK **v1.x stabil**
-  (`^1.30.0`) + zod v3. Bewusst gegen Build-/Bundle-Schritte entschieden:
-  Node ≥ 22.18 führt die TS-Source direkt aus (Type-Stripping), Import-Specifiers
-  enden deshalb auf `.ts`.
-- **Datenmodell:** `ParseResult<T> = { value, warnings[] }`,
-  `Warning = { code, file, line?, message }` — Item-Blöcke tragen `span` (Zeilen)
-  und `raw` (verbatim) als Basis der verbatim-Verschiebung.
-- **Tests:** 188 Tests, Test-First entwickelt (ROT → GRÜN). Mutationen laufen in
-  Tests **ausschließlich** gegen Temp-Kopien der Fixtures — die Originale sind
-  read-only und werden per Test abgesichert.
+  `exactOptionalPropertyTypes`), npm workspaces, Vitest, MCP SDK **v1.x stable**
+  (`^1.30.0`) + zod v3. Deliberately decided against build/bundle steps:
+  Node ≥ 22.18 executes the TS source directly (type stripping), import specifiers
+  therefore end on `.ts`.
+- **Data model:** `ParseResult<T> = { value, warnings[] }`,
+  `Warning = { code, file, line?, message }` — item blocks carry `span` (lines)
+  and `raw` (verbatim) as the basis of the verbatim move.
+- **Tests:** 316 tests, developed test-first (RED → GREEN). Mutations in tests run
+  **exclusively** against temp copies of the fixtures — the originals are
+  read-only and protected by a test.
 
-## Entwicklung
+## Development
 
 ```bash
-npm install && npm run typecheck && npm run test   # Abnahme vor jedem Abschluss
-npx vitest run packages/core                       # nur core
-npx vitest run packages/mcp                        # nur MCP/CLI
+npm install && npm run typecheck && npm run test   # acceptance before every completion
+npx vitest run packages/core                       # core only
+npx vitest run packages/mcp                        # MCP/CLI only
 ```
 
-Neue Features folgen der STEPWELL-Methode: Planen → in `PROGRESS.md` paketieren →
-test-first implementieren → Verifikation → Commit → Status pflegen. Details:
+New features follow the STEPWELL method: plan → package in `PROGRESS.md` →
+implement test-first → verification → commit → maintain status. Details:
 [`AGENTS.md`](AGENTS.md).
