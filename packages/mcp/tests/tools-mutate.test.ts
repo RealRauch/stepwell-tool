@@ -490,8 +490,9 @@ describe("progress_update multi-step (12.4, E2/2)", () => {
     }
   });
 
-  it("reports an unknown step within the array as tool error", async () => {
+  it("leaves files untouched when a later step in the array fails (M9/18.1)", async () => {
     const dir = tempProject("project-a");
+    const before = readFileSync(join(dir, "PROGRESS.md"), "utf8");
     const c = await connect();
     try {
       const result = await callTool(c, "progress_update", {
@@ -503,6 +504,25 @@ describe("progress_update multi-step (12.4, E2/2)", () => {
       });
       expect(result.isError).toBe(true);
       expect(result.content[0]?.text).toContain("9.9");
+    } finally {
+      await c.close();
+    }
+    expect(readFileSync(join(dir, "PROGRESS.md"), "utf8")).toBe(before);
+  });
+
+  it("rejects detail: summary for multi-step arrays (M9/18.1)", async () => {
+    const c = await connect();
+    try {
+      const result = await callTool(c, "progress_update", {
+        root: tempProject("project-a"),
+        phase: "Phase 2",
+        step: ["2.2", "2.3"],
+        status: "✅",
+        detail: "summary",
+        dryRun: false,
+      });
+      expect(result.isError).toBe(true);
+      expect(result.content[0]?.text).toContain("detail");
     } finally {
       await c.close();
     }
