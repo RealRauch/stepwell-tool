@@ -109,6 +109,6 @@
 | 12.6 | Phase-Kontext-Resource: Items zur Lesezeit mergen (G5) | ✅ |
 | 16.1 | PLAYBOOK.md DE → EN + Snapshot (I3) | ✅ |
 | 16.2 | LESSONS.md DE → EN + Snapshot (I3) | ✅ |
-| 16.3 | AGENTS Decision 10 wording schärfen (I3) | ⬜ |
+| 16.3 | AGENTS Decision 10 wording schärfen (I3) | ✅ |
 | 16.4 | README.md DE → EN (I2) | ⬜ |
 | 16.5 | BRAINSTORM.md → EN + CHANGELOG trailing (I3) | ⬜ |
