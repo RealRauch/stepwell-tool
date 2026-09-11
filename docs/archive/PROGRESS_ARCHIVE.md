@@ -412,3 +412,14 @@ nachholen oder einen anderen Pfad wählen.
 
 - **17.1 baseUrl for paths in both MCP-tsconfigs + guard test + BUILD doc (B1)**
 **Verification:** Verification: npm run typecheck && npm run test — 317/317 green (incl. guard test, RED evidence in 5408c3b) · CI run 34624130478 (commit e3c4e49): verify ✅ + pack-smoke ✅ on ubuntu-latest Node 24 · Commits: 5408c3b (RED test), 9b4262f (baseUrl), c65f9db (BUILD.md), 0a3c4b8+bd2aad4 (diagnosis), e3c4e49 (npm ci fix, gate approved) (checkpoint: e3c4e49)
+
+---
+
+### Phase 18 — Review follow-ups
+
+**Umfang (Steps):**
+
+- **18.1 M9: multi-step progress_update — validate-before-write + detail handling (Review Findings 1+2)**
+- **18.2 L11: EN surface gaps — warnings, zod descriptions, resources, stale comment, README count, CHANGELOG note (Review Findings 3+4+6)**
+- **18.3 L12: consolidate step-prefix regex + phaseContext re-parse + duplicate imports (Review Findings 5+6)**
+**Verification:** Verification: npm run typecheck && npm run test — 318/318 green (260911/1923) · Refactor behavior-identical, tests unchanged · scopeStepOf/scopeEntryFor as single regex source (4 variants removed); resolveItem via memoized ProjectDocs; duplicate imports merged. (checkpoint: de70733)

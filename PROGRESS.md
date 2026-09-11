@@ -19,6 +19,7 @@
 
 
 
+
 ---
 
 ## Progress
@@ -105,3 +106,6 @@
 | 16.4 | README.md DE → EN (I2) | ✅ |
 | 16.5 | BRAINSTORM.md → EN + CHANGELOG trailing (I3) | ✅ |
 | 17.1 | baseUrl for paths in both MCP-tsconfigs + guard test + BUILD doc (B1) | ✅ |
+| 18.1 | M9: multi-step progress_update — validate-before-write + detail handling (Review Findings 1+2) | ✅ |
+| 18.2 | L11: EN surface gaps — warnings, zod descriptions, resources, stale comment, README count, CHANGELOG note (Review Findings 3+4+6) | ✅ |
+| 18.3 | L12: consolidate step-prefix regex + phaseContext re-parse + duplicate imports (Review Findings 5+6) | ✅ |
