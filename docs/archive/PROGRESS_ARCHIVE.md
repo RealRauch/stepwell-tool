@@ -390,3 +390,16 @@ nachholen oder einen anderen Pfad wählen.
 
 - **15.1 Fast-Pfad + Parallel-Reads in beiden Kopien (E3)**
 **Verifikation:** Verifikation: npm run typecheck && npm run test — 316/316 grün · SHA256-Beleg: PLAYBOOK beider Kopien 6273d4fd643256fb9159603bc4b2dd7f7c327a5edaf781a8f1836826245a73c4, LESSONS beider Kopien d40fa413f3a4f42d7bef2806b5ba6fb5ceed0c70fee86ae03b8351133530924b (unverändert textgleich) · docs_validate: keine neuen Funde (stadtpfad-pwa nur dokumentierte Alt-Funde L1–L11/DATE_LEGACY/PRIO_MISSING) (checkpoint: 255f0b3)
+
+---
+
+### Phase 16 — Method-Docs EN Migration
+
+**Umfang (Steps):**
+
+- **16.1 PLAYBOOK.md DE → EN + Snapshot (I3)**
+- **16.2 LESSONS.md DE → EN + Snapshot (I3)**
+- **16.3 AGENTS Decision 10 wording schärfen (I3)**
+- **16.4 README.md DE → EN (I2)**
+- **16.5 BRAINSTORM.md → EN + CHANGELOG trailing (I3)**
+**Verification:** Verification: npm run typecheck && npm run test — 316/316 green (260911/1823) · docs_validate: no new findings in any step · Phase commits: 16.1@dfc271c, 16.2@6ee2d34, 16.3@b339f94, 16.4@36b8ea4, 16.5 BRAINSTORM EN + CHANGELOG trailing with the archive commit · no stadtpfad-pwa sync by design (S1 documents the drift). (checkpoint: 36b8ea4)

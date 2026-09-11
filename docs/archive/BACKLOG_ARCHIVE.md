@@ -501,3 +501,24 @@
 - **Acceptance:** Beide PLAYBOOK-/LESSONS-Kopien textgleich (SHA256-Beleg wie L8/G4 im Erledigt-Index); `docs_validate` je Repo clean; Commit je Repo.
 - **Step-Paketierung:** Phase 15 — 15.1; bewusst **nach** Phase 14 gelegt (Sync-Schlag schreibt direkt auf der EN-Fläche, keine Doppel-Übersetzung), technische Voraussetzung ist E2/12.5 (Hash-Lieferung).
 - **Erledigt:** Commits: 255f0b3 (stepwell-tool: PLAYBOOK §0.9 + SKILL.md + AGENTS.md + CHANGELOG) + 366ce4a (stadtpfad-pwa: PLAYBOOK §0.9)
+
+---
+
+### [x] I3 — Method-Docs EN Migration (PLAYBOOK/LESSONS/AGENTS/BRAINSTORM/CHANGELOG) — 🟡
+- **Location:** `docs/PLAYBOOK.md`, `docs/LESSONS.md`, `AGENTS.md`, `BRAINSTORM.md`, `CHANGELOG.md` in method-docs (kein Touch in stadtpfad-pwa — siehe S1).
+- **Problem:** Nach I1-Close (Phase 14, 14.6 ✅) bleiben vier Methoden-Doku-Dateien mit DE-Prosa — der „English only for method docs"-Schritt aus Decision 10 ist konzeptuell beschlossen, an diesen Dateien aber noch nicht umgesetzt. I2 übernimmt README separat; diese Dateien sind der Rest.
+- **Fix:** Schritt-für-Schritt-Migration: 16.1 PLAYBOOK, 16.2 LESSONS, 16.3 AGENTS-Wording schärfen (D10: „English only for method docs; tolerance layer stays for project files"), 16.4 README (eigenes Item I2), 16.5 BRAINSTORM + CHANGELOG-trailing. DE-Snapshots in `docs/archive/PLAYBOOK-2026-09-snapshot.md` und `docs/archive/LESSONS-2026-09-snapshot.md` mit Header „historische DE-Fassung, vor 16.1/16.2, nicht mehr gepflegt". CHANGELOG: neue Einträge EN, alte DE bleiben (Append-only). Kein Sync-Schlag nach stadtpfad-pwa — dort übernimmt deren Agent (S1 dokumentiert die Drift).
+- **Acceptance:** alle fünf Dateien in method-docs auf EN-Struktur; `docs_validate` clean; kein DE-Schatten mehr in Method-Doku; S1 dokumentiert die stadtpfad-pwa-Drift zentral.
+- **Verification:** Phase 16 Steps 16.1–16.5 ✅; Done-Index-Eintrag mit Commit-Hash; CHANGELOG-Eintrag für I3-Abschluss; Backlog-Wurzel intakt.
+- **Done:** Phase 16 complete: 16.1@dfc271c (PLAYBOOK EN + snapshot), 16.2@6ee2d34 (LESSONS EN + snapshot), 16.3@b339f94 (Decision 10 sharpened), 16.5 BRAINSTORM EN + CHANGELOG trailing (archive commit)
+
+---
+
+### [x] I2 — README.md EN-Migration (aus 14.4 extrahiert — Scope zu groß für einen Step) — 🟢
+- **Location:** `README.md` (stepwell-tool) + README in stadtpfad-pwa.
+- **Problem:** 14.4 hat core Warning-Messages, MCP Tool-Descriptions, CLI-Help und SKILL.md auf EN migriert (Commit `7b22635`). README.md ist nach Decision 10 ebenfalls strukturelle Sprache — sie wurde aus 14.4 ausgegliedert, weil der Schritt sonst zu groß geworden wäre (10+ Sektionen mit ~150 Zeilen Prosa, Tool-Reference-Tabelle, Architektur-Abschnitt). Backlog-Item I1 erwähnt README explizit; nur die Migration wurde verschoben.
+- **Current state (good):** Parser ist zweisprachig, Union-Matching liest DE+EN weiter still. Tools/SKILL/CLI sind auf EN. Verbleibende DE-Inhalte in README sind Inhalts-Prosa (User-content, sprachfrei laut Decision 10) UND Strukturen, die mit den anderen Phase-14-Migrationen identisch sind.
+- **Acceptance:** No remaining structural DE labels in README headers/tool-reference-table; SKILL.md/CLI/Tools bleiben EN; npm run test 308/308; README-Tool-Reference-Tabelle-Tests optional analog cli.test.ts.
+- **Reihenfolge:** Nach 14.6 (Phase 14 abgeschlossen). Vor 1.0.0 (Freigabe-Moment = englische öffentliche Fläche).
+- **Aufwand:** ~30 Min, mehrere Edit-Aufrufe pro Sektion.
+- **Done:** Commit 36b8ea4 — README fully EN; stale status line (phases 1–15), test count 316 and locale tie-break (en, since 14.3) refreshed during migration

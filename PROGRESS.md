@@ -9,15 +9,6 @@
 > are moved to `docs/archive/PROGRESS_ARCHIVE.md` unchanged after completion.
 
 ## Active Phases
-### Phase 16 — Method-Docs EN Migration
-
-**Umfang (Steps):**
-
-- **16.1 PLAYBOOK.md DE → EN + Snapshot (I3)**
-- **16.2 LESSONS.md DE → EN + Snapshot (I3)**
-- **16.3 AGENTS Decision 10 wording schärfen (I3)**
-- **16.4 README.md DE → EN (I2)**
-- **16.5 BRAINSTORM.md → EN + CHANGELOG trailing (I3)**
 
 
 
@@ -111,4 +102,4 @@
 | 16.2 | LESSONS.md DE → EN + Snapshot (I3) | ✅ |
 | 16.3 | AGENTS Decision 10 wording schärfen (I3) | ✅ |
 | 16.4 | README.md DE → EN (I2) | ✅ |
-| 16.5 | BRAINSTORM.md → EN + CHANGELOG trailing (I3) | ⬜ |
+| 16.5 | BRAINSTORM.md → EN + CHANGELOG trailing (I3) | ✅ |

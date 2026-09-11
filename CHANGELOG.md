@@ -13,6 +13,20 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
 
 ## [Unreleased]
 
+### Phase 16 — Method-docs EN migration (260911)
+
+#### Changed
+- **Method docs fully English (I3/16.1–16.5):** `docs/PLAYBOOK.md` and
+  `docs/LESSONS.md` migrated DE → EN; historical German versions preserved
+  verbatim as snapshots (`docs/archive/PLAYBOOK-2026-09-snapshot.md`,
+  `docs/archive/LESSONS-2026-09-snapshot.md`, treated append-only).
+  `AGENTS.md` Decision 10 sharpened: English is binding for the method docs and
+  the tool surface; the tolerance layer stays for project files (AGENTS prose,
+  READMEs, project-specific files). `README.md` and `BRAINSTORM.md` migrated to
+  English (stale status line, test count and locale tie-break refreshed during
+  the README migration). No sync to the stadtpfad-pwa copies — that drift is
+  documented centrally as item S1 and carried by their agent.
+
 ### Phase 15 — Method sync: kickoff fast path (260911)
 
 #### Added
