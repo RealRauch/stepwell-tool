@@ -1,96 +1,96 @@
-# BRAINSTORM.md — Angedachte zukünftige Erweiterungen (außerhalb Parser-Scope)
+# BRAINSTORM.md — Considered future extensions (outside parser scope)
 
-> Diese Datei liegt bewusst **außerhalb** des stepwell-Parser-Scopes. Sie wird
-> von `BACKLOG.md`/`PROGRESS.md`/`docs/archive/*` und von `docs_status`,
-> `docs_validate`, `backlog_list` etc. **nicht** gelesen oder geparst.
+> This file deliberately lives **outside** the stepwell parser scope. It is
+> **not** read or parsed by `BACKLOG.md`/`PROGRESS.md`/`docs/archive/*` or by
+> `docs_status`, `docs_validate`, `backlog_list`, etc.
 >
-> **Zweck:** Freie Prosa für Brainstorming, Halb-Ideen, „angedachte zukünftige
-> Erweiterungen" — Dinge, die (noch) kein offizielles Backlog-Item sind.
-> Sobald etwas commit-fähig wird: als Item (z. B. mit `backlog_add`) ins
-> `BACKLOG.md` heben.
+> **Purpose:** free prose for brainstorming, half-ideas, "considered future
+> extensions" — things that are (not yet) an official backlog item.
+> As soon as something becomes commit-worthy: lift it as an item (e.g. via
+> `backlog_add`) into `BACKLOG.md`.
 >
-> **Konventionen:**
-> - Freie Markdown-Prosa — keine Struktur-Vorgaben
-> - Wiki-Links auf Obsidian-Vault-Notizen sind erlaubt und erwünscht
-> - Keine Item-IDs, keine Step-Nummern, keine Sektions-Headings nötig
-> - Diese Datei wird **nicht** ins Archiv verschoben
+> **Conventions:**
+> - Free Markdown prose — no structure requirements
+> - Wiki links to Obsidian vault notes are allowed and encouraged
+> - No item IDs, no step numbers, no section headings needed
+> - This file is **not** moved into the archive
 
 ---
 
-## MCP remote (HTTP-Transport)
+## MCP remote (HTTP transport)
 
-stepwell-MCP läuft aktuell als stdio-Subprozess pro Editor/Agent. Könnte man auf
-Streamable-HTTP / SSE (MCP-Spec 2025-03-26) umstellen — SDK 1.30 unterstützt es
-offiziell.
+stepwell-MCP currently runs as a stdio subprocess per editor/agent. It could be
+switched to Streamable-HTTP / SSE (MCP spec 2025-03-26) — SDK 1.30 supports it
+officially.
 
-**Pro:** mehrere Agents/Editoren teilen sich einen Server, Index-Cache einmal warm,
-Lese-Requests aggregieren besser.
+**Pro:** several agents/editors share one server, index cache warms once,
+read requests aggregate better.
 
-**Contra:** Hauptnutzen ist Schreiben (`archive_item`/`progress_update`/
-`backlog_*`) — gleicher Repo-Mount + Netz = Race-Conditions + Sicherheitsrisiko.
-Aktueller Use-Case ist Single-User/Single-Repo lokal — kein Skalierungsdruck.
-HTTP-Transport hat Auth/Authz/CORS als Pflicht. Latenz: stdio ≈ 0 ms lokal vs.
-HTTP-Round-Trip + Reverse-Proxy drückt jedes `docs_status` um Faktor 10–50.
+**Contra:** the main use is writing (`archive_item`/`progress_update`/
+`backlog_*`) — same repo mount + network = race conditions + security risk.
+The current use case is single-user/single-repo local — no scaling pressure.
+HTTP transport makes auth/authz/CORS mandatory. Latency: stdio ≈ 0 ms locally vs.
+HTTP round trip + reverse proxy slows every `docs_status` by a factor of 10–50.
 
-**Sinnvoller wäre remote eher wenn:** Multi-Repo-Aggregation (eigenes
-`stepwell-hub`-Produkt), Read-only-Mirror für CI-Dashboards, Shared Index über
-mehrere Workspaces für Team-Status.
+**Remote makes more sense for:** multi-repo aggregation (a dedicated
+`stepwell-hub` product), a read-only mirror for CI dashboards, a shared index across
+several workspaces for team status.
 
-**Falls doch:** BACKLOG-Item (R10?) anlegen, M4-Guardrail wahren (nur Read-Tools
-+ expliziter `mutation`-namespace mit Auth-Tokens pro Tool), eigener `serve-http`-
-Entrypoint im Bin (Lockstep Decision 16: neuer Bin = kein API-Bruch), strikte
-Tests gegen echten HTTP-Client. Phase nach B1 (Build-Cross-Platform) und I2
-(README) — als 1.x-Feature, nicht vor 1.0.0.
+**If ever:** create a BACKLOG item (R10?), uphold the M4 guardrail (read tools only
++ an explicit `mutation` namespace with auth tokens per tool), a dedicated `serve-http`
+entry point in the bin (lockstep Decision 16: new bin = no API break), strict
+tests against a real HTTP client. Phase after B1 (build cross-platform) and I2
+(README) — as a 1.x feature, not before 1.0.0.
 
-Stand 09/2026: bewusst **nicht** umgesetzt, kein Item angelegt.
+As of 09/2026: deliberately **not** implemented, no item created.
 
 ---
 
-## Obsidian-Integration
+## Obsidian integration
 
-Obsidian + stepwell passt überraschend gut — beides lokal, beides Markdown,
-beides Files-on-Disk. Vier bis fünf Integrationsrichtungen, priorisiert nach
-Aufwand/Wert:
+Obsidian + stepwell fit surprisingly well — both local, both Markdown,
+both files-on-disk. Four to five integration directions, prioritized by
+effort/value:
 
-### Variante 1 — Daily-Note mit Status-Block (Templater + CLI)
+### Variant 1 — daily note with status block (Templater + CLI)
 
-Templater-Snippet `<% tp.user.statusBlock() %>` ruft `npx stepwell status --root
-<projekt> --json` auf. Beim Erstellen der Daily Note steht der aktuelle
-Projekt-Status oben drin. Kein Plugin nötig, nur Templater + Bash-Snippet
-(~30 Zeilen Templater-User-Script). Schwelle: 1–2 Std.
+A Templater snippet `<% tp.user.statusBlock() %>` calls `npx stepwell status --root
+<project> --json`. When the daily note is created, the current
+project status sits at the top. No plugin needed, just Templater + a bash snippet
+(~30 lines of Templater user script). Threshold: 1–2 h.
 
-### Variante 2 — Item → Vault-Note Verlinkung (Parser-Erweiterung)
+### Variant 2 — item → vault-note linking (parser extension)
 
-`Location:`-Feld in BACKLOG-Items akzeptiert `[[notes/projekt-research]]`
-Wiki-Link-Syntax. Parser macht die Links im Tool-Output sichtbar (klickbar
-via `obsidian://` URI in der Konsole). BACKLOG wird zum Index, Vault-Notizen
-halten Research/Diskussion/Bilder/Code-Snippets. Schwelle: 4–6 Std (Parser +
-ein Test-Fixture).
+The `Location:` field in BACKLOG items accepts `[[notes/project-research]]`
+wiki-link syntax. The parser surfaces the links in tool output (clickable
+via an `obsidian://` URI in the console). BACKLOG becomes the index; vault notes
+hold research/discussion/images/code snippets. Threshold: 4–6 h (parser +
+one test fixture).
 
-### Variante 3 — Obsidian-Plugin „STEPWELL Sidebar"
+### Variant 3 — Obsidian plugin "STEPWELL sidebar"
 
-Eigenes Community-Plugin das `docs_status`/`backlog_list` direkt anzeigt.
-View-Option „Switch project root" für Multi-Projekt-Tracking. Live-Update via
-File-Watcher (chokidar) oder Polling alle 30s. Nutzt den MCP-Server per stdio
-oder direkt `stepwell-core` als Library. Schwelle: 1–2 Tage (Plugin-Boilerplate,
-dann View-Code).
+A dedicated community plugin that displays `docs_status`/`backlog_list` directly.
+View option "Switch project root" for multi-project tracking. Live updates via
+a file watcher (chokidar) or polling every 30 s. Uses the MCP server over stdio
+or `stepwell-core` directly as a library. Threshold: 1–2 days (plugin boilerplate,
+then view code).
 
-### Variante 4 — Daily-Note-Generator im Vault-Format
+### Variant 4 — daily-note generator in vault format
 
-`npx stepwell daily --root <projekt> --vault <vault-path> --date 2026-09-12`
-erzeugt `Daily/2026-09-12.md` mit: Datums-Header, Status-Aggregat, offene
-Items, nächster Schritt, Commit-Hinweise. Nutzt Vault-Konventionen (Frontmatter,
-Dataview-kompatible Felder, Wiki-Links auf Item-Notizen). Lässt sich per
-Templater oder als Cron-Hook in den Workflow hängen. Schwelle: 1 Tag.
+`npx stepwell daily --root <project> --vault <vault-path> --date 2026-09-12`
+generates `Daily/2026-09-12.md` with: date header, status aggregate, open
+items, next step, commit notes. Uses vault conventions (frontmatter,
+Dataview-compatible fields, wiki links to item notes). Can be hooked into the
+workflow via Templater or as a cron hook. Threshold: 1 day.
 
-### Variante 5 — Bidirektionaler Sync Vault↔BACKLOG (groß)
+### Variant 5 — bidirectional sync vault↔BACKLOG (big)
 
-Vault-Note ist kanonische Source, BACKLOG.md wird generiert. Komplex:
-Konflikt-Handling, Write-Order, Schema-Mapping. Eher ein eigenes Produkt
-(`stepwell-vault`) als Feature. 2.x-Version.
+The vault note is the canonical source; BACKLOG.md is generated. Complex:
+conflict handling, write order, schema mapping. Rather a dedicated product
+(`stepwell-vault`) than a feature. 2.x version.
 
-**Bauchgefühl:** #1 + #2 sind das beste Aufwand/Nutzen-Paar. #1 in 1–2 Stunden
-als Quick-Win, #2 gibt der Methode den „Research-Anker" im Vault. #3 ist
-nice-to-have wenn stepwell intensiv genutzt wird.
+**Gut feeling:** #1 + #2 are the best effort/value pair. #1 in 1–2 hours as a
+quick win; #2 gives the method its "research anchor" in the vault. #3 is
+nice-to-have once stepwell is used intensively.
 
-Stand 09/2026: nur Brainstorming, keine Umsetzung.
+As of 09/2026: brainstorming only, no implementation.
