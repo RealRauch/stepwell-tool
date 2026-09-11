@@ -48,13 +48,6 @@
 - **Voraussetzungen (vor Start in method-docs):** (a) Pure/I-O-Split in core — `node:fs`-Imports auf Modulebene (backlog/progress/status/validate/project.ts) brechen das Browser-Bundle; (b) LICENSE-Datei ergänzen (fehlt); (c) Konsum via pnpm `file:`/git-Link mit exakt gepinnter Version (0.x-Lockstep, Breaking in MINORs möglich); (d) Warn-Codes als stabile Identifier für ZooKeeper-i18n dokumentieren (messages sind menschenlesbar/deutsch, Decision 10).
 - **Abnahme (Reaktivierungskriterium):** core feldtesterprobt (1.0-nah) und Voraussetzungen (a)–(d) erledigt → ZooKeeper-Track (conductor-Format) in drei Schritten: Scan-Detection → Progress-Tab → Dashboard-Aggregation, mit Dogfooding: ZooKeeper zeigt seinen eigenen Status.
 
-### [ ] E3 — Methoden-Fast-Pfad: Kickoff-Token sparen (Hash-gestützte Überspringbarkeit, Parallel-Reads) — 🟢
-- **Location:** `docs/PLAYBOOK.md` + `docs/LESSONS.md` in **beiden** Repos (method-docs + stadtpfad-pwa) — Sync-Schlag nach D4/G4-Muster, Commit je Repo, Hash-Beleg; zusätzlich SKILL.md und AGENTS.md (Kickoff-Abschnitt).
-- **Problem:** Der Session-Kickoff (PLAYBOOK + LESSONS + PROGRESS + Backlog voll lesen) ist der größte fixe Token-Block pro Session — auch wenn sich seit der letzten Session nichts geändert hat. E2 (Hash-Lieferung) ist die technische Voraussetzung; der Fast-Pfad selbst ist Methoden-Prosa.
-- **Fix:** PLAYBOOK-Kickoff-Abschnitt um Fast-Pfad ergänzen: „Stimmt der von `docs_status`/Resources gelieferte Datei-Hash mit dem letzten bekannten Stand überein, genügt das Lesen des Step-Scopes; PLAYBOOK/LESSONS müssen nicht erneut voll gelesen werden" + Merksatz: unabhängige Read-Calls parallel stellen. Reihenfolge zu E2 im Item dokumentieren (Prosa nach/vor Code-Fähigkeit — Toleranz: Fast-Pfad erst nutzen, wenn Hash geliefert wird).
-- **Acceptance:** Beide PLAYBOOK-/LESSONS-Kopien textgleich (SHA256-Beleg wie L8/G4 im Erledigt-Index); `docs_validate` je Repo clean; Commit je Repo.
-- **Step-Paketierung:** Phase 15 — 15.1; bewusst **nach** Phase 14 gelegt (Sync-Schlag schreibt direkt auf der EN-Fläche, keine Doppel-Übersetzung), technische Voraussetzung ist E2/12.5 (Hash-Lieferung).
-
 ### [ ] I2 — README.md EN-Migration (aus 14.4 extrahiert — Scope zu groß für einen Step) — 🟢
 - **Location:** `README.md` (stepwell-tool) + README in stadtpfad-pwa.
 - **Problem:** 14.4 hat core Warning-Messages, MCP Tool-Descriptions, CLI-Help und SKILL.md auf EN migriert (Commit `7b22635`). README.md ist nach Decision 10 ebenfalls strukturelle Sprache — sie wurde aus 14.4 ausgegliedert, weil der Schritt sonst zu groß geworden wäre (10+ Sektionen mit ~150 Zeilen Prosa, Tool-Reference-Tabelle, Architektur-Abschnitt). Backlog-Item I1 erwähnt README explizit; nur die Migration wurde verschoben.
@@ -130,5 +123,6 @@
 - G5 — Phase-Kontext-Resource: Phase + Item-Bodies zur Lesezeit mergen (Subagent-Kontext in einem Read) — done (Commit `f9f0e3b` (12.6: phaseContext + Resource `methoddocs://{root}/phase/{phase}`, Test-Commit `e1bd5c1`) — 297/297 grün, Step 12.6; M4-Alternativprüfung im README dokumentiert.)
 - N1 — Naming-Refactor: method-docs-Reste → STEPWELL durchgängig (Pakete, Bin, URI-Schema, Repo) — done (13.1@ff6a996, 13.2@bdc9a74, 13.3@f94832f, 13.4@7902677 (opencode.json npx tsx) + Repo angelegt https://github.com/RealRauch/stepwell-tool (public))
 - I1 — Sprach-Umstellung: Englisch als Primärsprache für Methoden-Struktur + Tool-Surface — erledigt (Phase 14 complete (14.1–14.6); Step 14.6 closes the loop with STRUCT_LOCALE = silent tolerance + CHANGELOG entry.)
+- E3 — Methoden-Fast-Pfad: Kickoff-Token sparen (Hash-gestützte Überspringbarkeit, Parallel-Reads) — erledigt (Commits: 255f0b3 (stepwell-tool: PLAYBOOK §0.9 + SKILL.md + AGENTS.md + CHANGELOG) + 366ce4a (stadtpfad-pwa: PLAYBOOK §0.9))
 
 ---

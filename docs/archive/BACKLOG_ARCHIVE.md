@@ -491,3 +491,13 @@
 - **Acceptance:** Beide PLAYBOOK-/LESSONS-Kopien textgleich EN (SHA256-Beleg wie L8); vier offene Dateien in beiden Repos mit EN-Struktur, `docs_validate` je Repo clean; Tests grün inkl. neuer gemischtsprachiger Fixture (DE-Archiv + EN-offene Datei); Fixtures-README EN; neue Projekte starten mit EN-Templates; Decision 10 nachgezogen; CHANGELOG-Eintrag mit Kontrakt-Notiz (message-Texte ändern sich, schema bleibt 1 — Struktur unverändert); Timing: vor 1.0.0 (Freigabe-Moment = englische öffentliche Fläche).
 - **Step-Paketierung:** Phase 14 — 14.1 (I1/1), 14.2 (I1/2), 14.3 (I1/3), 14.4 (I1/4), 14.5 (I1/5), 14.6 (I1/6).
 - **Erledigt:** Phase 14 complete (14.1–14.6); Step 14.6 closes the loop with STRUCT_LOCALE = silent tolerance + CHANGELOG entry.
+
+---
+
+### [x] E3 — Methoden-Fast-Pfad: Kickoff-Token sparen (Hash-gestützte Überspringbarkeit, Parallel-Reads) — 🟢
+- **Location:** `docs/PLAYBOOK.md` + `docs/LESSONS.md` in **beiden** Repos (method-docs + stadtpfad-pwa) — Sync-Schlag nach D4/G4-Muster, Commit je Repo, Hash-Beleg; zusätzlich SKILL.md und AGENTS.md (Kickoff-Abschnitt).
+- **Problem:** Der Session-Kickoff (PLAYBOOK + LESSONS + PROGRESS + Backlog voll lesen) ist der größte fixe Token-Block pro Session — auch wenn sich seit der letzten Session nichts geändert hat. E2 (Hash-Lieferung) ist die technische Voraussetzung; der Fast-Pfad selbst ist Methoden-Prosa.
+- **Fix:** PLAYBOOK-Kickoff-Abschnitt um Fast-Pfad ergänzen: „Stimmt der von `docs_status`/Resources gelieferte Datei-Hash mit dem letzten bekannten Stand überein, genügt das Lesen des Step-Scopes; PLAYBOOK/LESSONS müssen nicht erneut voll gelesen werden" + Merksatz: unabhängige Read-Calls parallel stellen. Reihenfolge zu E2 im Item dokumentieren (Prosa nach/vor Code-Fähigkeit — Toleranz: Fast-Pfad erst nutzen, wenn Hash geliefert wird).
+- **Acceptance:** Beide PLAYBOOK-/LESSONS-Kopien textgleich (SHA256-Beleg wie L8/G4 im Erledigt-Index); `docs_validate` je Repo clean; Commit je Repo.
+- **Step-Paketierung:** Phase 15 — 15.1; bewusst **nach** Phase 14 gelegt (Sync-Schlag schreibt direkt auf der EN-Fläche, keine Doppel-Übersetzung), technische Voraussetzung ist E2/12.5 (Hash-Lieferung).
+- **Erledigt:** Commits: 255f0b3 (stepwell-tool: PLAYBOOK §0.9 + SKILL.md + AGENTS.md + CHANGELOG) + 366ce4a (stadtpfad-pwa: PLAYBOOK §0.9)

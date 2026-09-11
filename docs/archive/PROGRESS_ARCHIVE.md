@@ -381,3 +381,12 @@ nachholen oder einen anderen Pfad wählen.
 - **14.5 Fixtures-README EN + gemischtsprachige Fixture (I1/5)**
 - **14.6 STRUCT_LOCALE-Entscheid + CHANGELOG (I1/6)**
 **Verifikation:** Decision: silent tolerance (no STRUCT_LOCALE warning); AGENTS.md Decision 10 + fixtures README updated; CHANGELOG.md Phase-14 EN entry with contract note (message texts change, schema stays 1); new regression test asserts STRUCT_LOCALE absence.
+
+---
+
+### Phase 15 — Methoden-Sync: Kickoff-Fast-Pfad
+
+**Scope (Steps):**
+
+- **15.1 Fast-Pfad + Parallel-Reads in beiden Kopien (E3)**
+**Verifikation:** Verifikation: npm run typecheck && npm run test — 316/316 grün · SHA256-Beleg: PLAYBOOK beider Kopien 6273d4fd643256fb9159603bc4b2dd7f7c327a5edaf781a8f1836826245a73c4, LESSONS beider Kopien d40fa413f3a4f42d7bef2806b5ba6fb5ceed0c70fee86ae03b8351133530924b (unverändert textgleich) · docs_validate: keine neuen Funde (stadtpfad-pwa nur dokumentierte Alt-Funde L1–L11/DATE_LEGACY/PRIO_MISSING) (checkpoint: 255f0b3)
