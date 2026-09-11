@@ -54,8 +54,8 @@ export function canonical(role: SynonymRole, locale: Locale): string {
 }
 
 /**
- * Erkennt die Sprache des Dokument-Kontexts per Mehrheitsentscheid über alle
- * Synonym-Vorkommen. Gleichstand/leer → "de" (Rückwärtskompatibilität).
+ * Detects the document language via majority vote across all synonym
+ * occurrences. Tie/empty → "en" (canonical EN primary since 14.3).
  */
 export function detectLocale(...contents: string[]): Locale {
   let de = 0;

@@ -82,15 +82,15 @@ const PRIORITY_VALUES = ["🔴", "🟠", "🟡", "🟢", "🔵", "unknown"] as c
 const PRIORITY_WRITE_VALUES = ["🔴", "🟠", "🟡", "🟢", "🔵"] as const;
 
 const TEXT_FIELD = z.string().optional()
-  .describe("Item-Body als Bullets (z. B. \"- **Ort:** …\\n- **Problem:** …\") — wird verbatim übernommen.");
+  .describe("Item body as bullets (e.g. \"- **Location:** …\\n- **Problem:** …\") — taken over verbatim.");
 const DRYRUN_FIELD = z.boolean().default(true)
-  .describe("true (Default): nur Plan/Diff-Vorschau; false: Änderungen schreiben.");
+  .describe("true (default): plan/diff preview only; false: write the changes.");
 const STRUCTURED_FIELD = z.boolean().default(false)
-  .describe("true: Payload zusätzlich als structuredContent (M3); false (Default): nur Text-Content.");
+  .describe("true: payload additionally as structuredContent (M3); false (default): text content only.");
 const DETAIL_FIELD = z.enum(["summary", "diff"]).default("diff")
   .describe(
-    "Plan-Detailstufe bei Dry-run: \"diff\" (Default) = volle Vorschau; \"summary\" = " +
-      "Headline + Zeilenzahlen (Routine-Statuspflege). Apply antwortet unverändert.",
+    "Plan detail level for dry-runs: \"diff\" (default) = full preview; \"summary\" = " +
+      "headline + line counts (routine status maintenance). Apply responses are unchanged.",
   );
 
 /** Projiziert Dry-run-Pläne auf Headline + Zeilenzahlen (E1/12.2) — Apply bleibt unberührt. */
@@ -112,7 +112,7 @@ function summarizePlan<T extends object>(plan: T): T {
   } as T;
 }
 
-const ROOT_FIELD = z.string().describe("Absoluter Pfad zum Projekt-Root (mit BACKLOG.md/PROGRESS.md).");
+const ROOT_FIELD = z.string().describe("Absolute path to the project root (containing BACKLOG.md/PROGRESS.md).");
 
 // MCP-Annotations je Tool-Klasse (Step 9.2/M2): explizit gesetzt, auch wo der
 // Spec-Default passen würde — Clients sollen nicht auf Defaults raten müssen.
@@ -134,8 +134,8 @@ export const MUTATING_ANNOTATIONS = {
   idempotentHint: false,
 } as const;
 const LOCALE_FIELD = z.enum(["de", "en"]).optional()
-  .describe("Sprache für generierte Texte (Index-Zeile, Erledigt-/Verifikations-Marker). " +
-    "Default: Auto-Erkennung aus dem Datei-Kontext.");
+  .describe("Language for generated texts (index line, done/verification markers). " +
+    "Default: auto-detection from the file context.");
 
 function withoutRaw(item: BacklogItem): Omit<BacklogItem, "raw"> {
   const { raw: _raw, ...rest } = item;

@@ -170,7 +170,7 @@ export function parseProgress(rawContent: string, file = "PROGRESS.md"): ParseRe
             code: "STATUS_UNKNOWN",
             file,
             line: lineNo,
-            message: `Unbekanntes Status-Icon "${cell}" in Zeile ${cells[0]!} — status ist "unknown".`,
+            message: `Unknown status icon "${cell}" in row ${cells[0]!} — status is "unknown".`,
           });
         }
       } else if (cells.length === 2) {
@@ -179,7 +179,7 @@ export function parseProgress(rawContent: string, file = "PROGRESS.md"): ParseRe
           code: "ROW_INCOMPLETE",
           file,
           line: lineNo,
-          message: `Tabellenzeile ${cells[0]!} ohne Status-Spalte — status ist "unknown".`,
+          message: `Table row ${cells[0]!} without a status column — status is "unknown".`,
         });
       }
     }
