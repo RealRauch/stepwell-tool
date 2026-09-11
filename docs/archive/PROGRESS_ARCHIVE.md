@@ -367,3 +367,17 @@ AGENTS Decisions 13/14, `docs_validate` beider Projekte clean).
 N1 bleibt 🟡, Phase 13 bleibt in „Laufende Phasen" — kein Verlust, keine
 Drift. Die nächste Session am **alten** Pfad kann den Rename dann später
 nachholen oder einen anderen Pfad wählen.
+
+---
+
+### Phase 14 — Sprach-Umstellung: Englisch primär
+
+**Scope (Steps):**
+
+- **14.1 Konventions-Flip: PLAYBOOK §2/§3 + Decision 10 (I1/1)**
+- **14.2 Offene Dateien beider Repos auf EN-Struktur (I1/2)**
+- **14.3 core: detectLocale-Gleichstand + EN-Templates (I1/3)**
+- **14.4 Messages + Tool-Beschreibungen + CLI-Help EN (I1/4)**
+- **14.5 Fixtures-README EN + gemischtsprachige Fixture (I1/5)**
+- **14.6 STRUCT_LOCALE-Entscheid + CHANGELOG (I1/6)**
+**Verifikation:** Decision: silent tolerance (no STRUCT_LOCALE warning); AGENTS.md Decision 10 + fixtures README updated; CHANGELOG.md Phase-14 EN entry with contract note (message texts change, schema stays 1); new regression test asserts STRUCT_LOCALE absence.

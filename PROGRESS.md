@@ -9,21 +9,21 @@
 > are moved to `docs/archive/PROGRESS_ARCHIVE.md` unchanged after completion.
 
 ## Active Phases
-### Phase 14 — Sprach-Umstellung: Englisch primär
-
-**Scope (Steps):**
-
-- **14.1 Konventions-Flip: PLAYBOOK §2/§3 + Decision 10 (I1/1)**
-- **14.2 Offene Dateien beider Repos auf EN-Struktur (I1/2)**
-- **14.3 core: detectLocale-Gleichstand + EN-Templates (I1/3)**
-- **14.4 Messages + Tool-Beschreibungen + CLI-Help EN (I1/4)**
-- **14.5 Fixtures-README EN + gemischtsprachige Fixture (I1/5)**
-- **14.6 STRUCT_LOCALE-Entscheid + CHANGELOG (I1/6)**
 ### Phase 15 — Methoden-Sync: Kickoff-Fast-Pfad
 
 **Scope (Steps):**
 
 - **15.1 Fast-Pfad + Parallel-Reads in beiden Kopien (E3)**
+### Phase 16 — Method-Docs EN Migration
+
+**Umfang (Steps):**
+
+- **16.1 PLAYBOOK.md DE → EN + Snapshot (I3)**
+- **16.2 LESSONS.md DE → EN + Snapshot (I3)**
+- **16.3 AGENTS Decision 10 wording schärfen (I3)**
+- **16.4 README.md DE → EN (I2)**
+- **16.5 BRAINSTORM.md → EN + CHANGELOG trailing (I3)**
+
 
 
 
@@ -108,7 +108,12 @@
 | 14.2 | Offene Dateien beider Repos auf EN-Struktur (I1/2) | ✅ |
 | 14.3 | core: detectLocale-Gleichstand + EN-Templates (I1/3) | ✅ |
 | 14.4 | Messages + Tool-Beschreibungen + CLI-Help EN (I1/4) | ✅ |
-| 14.5 | Fixtures-README EN + gemischtsprachige Fixture (I1/5) | ⬜ |
-| 14.6 | STRUCT_LOCALE-Entscheid + CHANGELOG (I1/6) | ⬜ |
-| 15.1 | Fast-Pfad + Parallel-Reads in beiden Kopien (E3) | ⬜ |
+| 14.5 | Fixtures-README EN + gemischtsprachige Fixture (I1/5) | ✅ |
+| 14.6 | STRUCT_LOCALE-Entscheid + CHANGELOG (I1/6) | ✅ |
+| 15.1 | Fast-Pfad + Parallel-Reads in beiden Kopien (E3) | 🔄 |
 | 12.6 | Phase-Kontext-Resource: Items zur Lesezeit mergen (G5) | ✅ |
+| 16.1 | PLAYBOOK.md DE → EN + Snapshot (I3) | ⬜ |
+| 16.2 | LESSONS.md DE → EN + Snapshot (I3) | ⬜ |
+| 16.3 | AGENTS Decision 10 wording schärfen (I3) | ⬜ |
+| 16.4 | README.md DE → EN (I2) | ⬜ |
+| 16.5 | BRAINSTORM.md → EN + CHANGELOG trailing (I3) | ⬜ |
