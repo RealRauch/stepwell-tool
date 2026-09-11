@@ -13,6 +13,19 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
 
 ## [Unreleased]
 
+### Phase 17 — CI: Linux build fix (260911)
+
+#### Fixed
+- **pack-smoke job ran without dependencies (B1/17.1):** the CI job had no
+  install step and executed the build against an empty `node_modules` — the
+  fallback `tsc` (npx cache, v6) rejected the configs (`baseUrl` removed in
+  TS6, missing `@types/node`). Both CI jobs now run `npm ci` (lockfile-pinned,
+  tsc 5.9.3). Additionally: MCP tsconfigs declare `baseUrl` for `paths`
+  (rejected strictly by tsc 5.x on Linux; guard test added in
+  `packages/mcp/tests/packaging.test.ts`), pack-smoke failures now surface
+  stdout (tsc writes errors there), and `BUILD.md` documents the
+  cross-workspace resolution rules.
+
 ### Phase 16 — Method-docs EN migration (260911)
 
 #### Changed
