@@ -575,3 +575,13 @@
 - **Voraussetzungen (vor Start in method-docs):** (a) Pure/I-O-Split in core — `node:fs`-Imports auf Modulebene (backlog/progress/status/validate/project.ts) brechen das Browser-Bundle; (b) LICENSE-Datei ergänzen (fehlt); (c) Konsum via pnpm `file:`/git-Link mit exakt gepinnter Version (0.x-Lockstep, Breaking in MINORs möglich); (d) Warn-Codes als stabile Identifier für ZooKeeper-i18n dokumentieren (messages sind menschenlesbar/deutsch, Decision 10).
 - **Abnahme (Reaktivierungskriterium):** core feldtesterprobt (1.0-nah) und Voraussetzungen (a)–(d) erledigt → ZooKeeper-Track (conductor-Format) in drei Schritten: Scan-Detection → Progress-Tab → Dashboard-Aggregation, mit Dogfooding: ZooKeeper zeigt seinen eigenen Status.
 - **Removed:** moved to BRAINSTORM.md (parked idea, no backlog-worthy work yet)
+
+---
+
+### [x] S1 — Drift: PLAYBOOK/LESSONS in stadtpfad-pwa-DE — Sync pending (anderer Agent) — 🟢
+- **Location:** method-docs-BACKLOG führt die Drift; **nicht** stadtpfad-pwa-Dateien (Entscheidung 09/2026 — deren Nutzdaten nicht anfassen).
+- **Problem:** 16.1–16.2 migrieren PLAYBOOK/LESSONS in method-docs auf EN. Die parallele Kopie in `../stadtpfad-pwa` bleibt DE, bis deren Agent die Migration aufnimmt. Sync-Schlag-Disziplin (textgleich über beide Repos) ist damit temporär unterbrochen — bewusst, nicht durch Drift verloren.
+- **Fix:** nicht in unserem Scope. Phase-16-Step-Notes tragen den Hinweis „Sync-Schlag ausgegliedert"; das hier ist der zentrale Beleg dafür.
+- **Acceptance:** Eintrag steht in method-docs-BACKLOG; kein Sync-Versuch nach stadtpfad-pwa durch unsere Steps; Phase-16-Step-Notes verweisen auf S1.
+- **Verification:** BACKLOG enthält S1; `docs_status` zeigt Item; `docs_validate` method-docs clean.
+- **Done:** Sync executed 09/2026 (user decision — no longer waiting for the other agent): PLAYBOOK/LESSONS migrated to EN in stadtpfad-pwa + DE snapshots added, textually identical with stepwell-tool. SHA256: PLAYBOOK 50f16dd8…, LESSONS 752eac47… both repos. stadtpfad-pwa commit 0d81eb6; docs_validate: only pre-existing findings, none new.

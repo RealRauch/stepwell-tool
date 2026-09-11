@@ -24,13 +24,6 @@
 
 ## 🟢 LOW
 
-### [ ] S1 — Drift: PLAYBOOK/LESSONS in stadtpfad-pwa-DE — Sync pending (anderer Agent) — 🟢
-- **Location:** method-docs-BACKLOG führt die Drift; **nicht** stadtpfad-pwa-Dateien (Entscheidung 09/2026 — deren Nutzdaten nicht anfassen).
-- **Problem:** 16.1–16.2 migrieren PLAYBOOK/LESSONS in method-docs auf EN. Die parallele Kopie in `../stadtpfad-pwa` bleibt DE, bis deren Agent die Migration aufnimmt. Sync-Schlag-Disziplin (textgleich über beide Repos) ist damit temporär unterbrochen — bewusst, nicht durch Drift verloren.
-- **Fix:** nicht in unserem Scope. Phase-16-Step-Notes tragen den Hinweis „Sync-Schlag ausgegliedert"; das hier ist der zentrale Beleg dafür.
-- **Acceptance:** Eintrag steht in method-docs-BACKLOG; kein Sync-Versuch nach stadtpfad-pwa durch unsere Steps; Phase-16-Step-Notes verweisen auf S1.
-- **Verification:** BACKLOG enthält S1; `docs_status` zeigt Item; `docs_validate` method-docs clean.
-
 ---
 
 ## 🔵 TEST GAPS
@@ -99,5 +92,6 @@
 - L11 — EN-Surface-Lücken: DE-Reste in Warnungen, zod-Feldtexten, Resources + veralteter detectLocale-Kommentar — done (Phase 18/18.2 — Commit eda4f6e: EN warnings (progress.ts), zod field descriptions + resource texts (tools.ts/resources.ts/server.ts), detectLocale comment corrected, README 318 tests, CHANGELOG E1 note clarified. 318/318 green.)
 - L12 — Konsolidierung: 4 Kopien der Step-Präfix-Regex + phaseContext re-parsed BACKLOG je Item-Ref — done (Phase 18/18.3 — Commit 6aa8c5f: scopeStepOf/scopeEntryFor as single regex source (replaced scopeStepsLike + 3 inline variants), resolveItem via memoized ProjectDocs (no N+1 parse per call), duplicate imports merged. 318/318 green, behavior-identical.)
 - Z1 — ZooKeeper-Integration als STEPWELL-Viewer (Option B — geparkt bis Tool stabil) — removed (moved to BRAINSTORM.md (parked idea, no backlog-worthy work yet))
+- S1 — Drift: PLAYBOOK/LESSONS in stadtpfad-pwa-DE — Sync pending (anderer Agent) — done (Sync executed 09/2026 (user decision — no longer waiting for the other agent): PLAYBOOK/LESSONS migrated to EN in stadtpfad-pwa + DE snapshots added, textually identical with stepwell-tool. SHA256: PLAYBOOK 50f16dd8…, LESSONS 752eac47… both repos. stadtpfad-pwa commit 0d81eb6; docs_validate: only pre-existing findings, none new.)
 
 ---
