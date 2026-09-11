@@ -403,3 +403,12 @@ nachholen oder einen anderen Pfad wählen.
 - **16.4 README.md DE → EN (I2)**
 - **16.5 BRAINSTORM.md → EN + CHANGELOG trailing (I3)**
 **Verification:** Verification: npm run typecheck && npm run test — 316/316 green (260911/1823) · docs_validate: no new findings in any step · Phase commits: 16.1@dfc271c, 16.2@6ee2d34, 16.3@b339f94, 16.4@36b8ea4, 16.5 BRAINSTORM EN + CHANGELOG trailing with the archive commit · no stadtpfad-pwa sync by design (S1 documents the drift). (checkpoint: 36b8ea4)
+
+---
+
+### Phase 17 — B1 Linux build fix
+
+**Umfang (Steps):**
+
+- **17.1 baseUrl for paths in both MCP-tsconfigs + guard test + BUILD doc (B1)**
+**Verification:** Verification: npm run typecheck && npm run test — 317/317 green (incl. guard test, RED evidence in 5408c3b) · CI run 34624130478 (commit e3c4e49): verify ✅ + pack-smoke ✅ on ubuntu-latest Node 24 · Commits: 5408c3b (RED test), 9b4262f (baseUrl), c65f9db (BUILD.md), 0a3c4b8+bd2aad4 (diagnosis), e3c4e49 (npm ci fix, gate approved) (checkpoint: e3c4e49)

@@ -20,15 +20,6 @@
 
 ## 🟡 MEDIUM
 
-### [ ] B1 — Build-Cross-Platform: Linux-CI kaputt — tsconfig `paths` ohne `baseUrl` (CI-Rot seit 13.4-Close) — 🟡
-- **Location:** `packages/mcp/tsconfig.build.json:8-10` (`paths: { "stepwell-core": ["../core/dist/index.d.ts"] }` ohne `baseUrl`); sekundär `packages/mcp/tsconfig.json:5-7` (Dev-Pendant); beide Workspaces + CI-Workflow `.github/workflows/ci.yml` Job `pack-smoke`. Fund: CI-Läufe 34537234187 + 34537418830 (d38ce6e, 86e421f), beide Jobs rot.
-- **Problem:** `paths` ohne `baseUrl` ist in TypeScript deprecated und wird unter Linux (egal ob WSL-`/mnt/d` oder nativer Linux-Pfad, mit Node 22 oder Node 24) **strikt** abgelehnt — `error TS2307: Cannot find module 'stepwell-core'`. Auf Windows wird es toleriert (TypeScript-Default-Verhalten), deshalb grün lokal und im Windows-Cache. Reihenfolge-Effekt: erst `Cannot find module`, dann kaskadiert `implicit any` über alle Importe aus `stepwell-core`. **Zweites CI-Issue:** Job `verify` failed bei `Validate STEPWELL docs` weil `PLAN_WITHOUT_WIP` für Phase 14+15 (geplant, kein 🔄-Step) als Findings gewertet werden → validate-CLI exit 1. Erwartet-vs-echt-Frage: sind geplante Phasen ohne laufenden Step ein Fehler oder eine Warnung?
-- **Ist-Stand:** Build lokal grün (Windows Node 22.23.2, TS 5.9.3, pack-smoke-Script komplett OK); CI rot seit 13.4-Close. Diagnose unter Linux reproduziert (WSL Ubuntu, nvm install 24, native Clone ohne `/mnt/d`).
-- **Probierte Fixes im WSL (alle verworfen):** (a) `baseUrl: "."` → keine Besserung; (b) `paths` auf `../core/src/index.ts` → `rootDir is not under packages/mcp/src`; (c) `rootDir: "../"` → Build grün, **aber** `mcp/dist/core/src/*.js` (core wird mit ins mcp-Artefakt reinkompiliert, falsches Layout). Alle Versuche in WSL zurückgerollt, Working-Tree clean.
-- **Fix-Skizze:** **TypeScript Project References** einführen — `tsconfig.base.json` bekommt `composite: true`, beide Workspaces tragen `references` auf das jeweils andere, `paths`-Hack entfällt komplett. TS findet cross-workspace-Module dann automatisch. Aufwand ~30 Min, alle Builds lokal + CI reproduzierbar grün. Sekundär: PLAN_WITHOUT_WIP-Verhalten klären — entweder als Finding tolerieren (Exit 0) oder akzeptieren dass CI es als Gate wertet (Issue im Sync-Playbook dokumentieren).
-- **Acceptance:** Linux-Build + Windows-Build beide grün (tsc -p tsconfig.build.json in beiden Workspaces exit 0, dist-Layout korrekt: nur die Workspace-Source-Files, kein nested core/ in mcp/dist); CI `verify` + `pack-smoke` beide grün auf letztem Commit; pack-smoke-Local (Linux) zeigt stdio-Handshake + CLI-Bin-Smoke OK; `docs_validate` clean; TypeScript Project References dokumentiert in BUILD.md oder neuem Lesson-Item.
-- **Reihenfolge:** Nach 14.1 (I1/1 Sprach-Umstellung), vor 14.6 (CHANGELOG-Eintrag für 1.0.0).
-
 ---
 
 ## 🟢 LOW
@@ -111,5 +102,6 @@
 - E3 — Methoden-Fast-Pfad: Kickoff-Token sparen (Hash-gestützte Überspringbarkeit, Parallel-Reads) — erledigt (Commits: 255f0b3 (stepwell-tool: PLAYBOOK §0.9 + SKILL.md + AGENTS.md + CHANGELOG) + 366ce4a (stadtpfad-pwa: PLAYBOOK §0.9))
 - I3 — Method-Docs EN Migration (PLAYBOOK/LESSONS/AGENTS/BRAINSTORM/CHANGELOG) — done (Phase 16 complete: 16.1@dfc271c (PLAYBOOK EN + snapshot), 16.2@6ee2d34 (LESSONS EN + snapshot), 16.3@b339f94 (Decision 10 sharpened), 16.5 BRAINSTORM EN + CHANGELOG trailing (archive commit))
 - I2 — README.md EN-Migration (aus 14.4 extrahiert — Scope zu groß für einen Step) — done (Commit 36b8ea4 — README fully EN; stale status line (phases 1–15), test count 316 and locale tie-break (en, since 14.3) refreshed during migration)
+- B1 — Build-Cross-Platform: Linux-CI kaputt — tsconfig `paths` ohne `baseUrl` (CI-Rot seit 13.4-Close) — done (Phase 17/17.1 — real root cause: pack-smoke CI job had no install step (fallback tsc 6 + missing @types/node); fixed with npm ci in both jobs (e3c4e49). Guard test for paths/baseUrl (5408c3b), BUILD.md documentation (c65f9db). CI green: run 34624130478, verify + pack-smoke both success. Original TS2307 diagnosis was a symptom of the same missing-install problem.)
 
 ---
