@@ -1,5 +1,5 @@
 import { canonical, detectLocale } from "./profile.ts";
-import { backlogShow, loadProject, type ProjectDocs } from "./project.ts";
+import { loadProject, type ProjectDocs } from "./project.ts";
 import { scopeSteps } from "./progress.ts";
 import type { BacklogItem, PhaseBlock, ProgressRow } from "./types.ts";
 
@@ -53,11 +53,11 @@ function collectRefs(block: PhaseBlock): { ids: string[]; explicitRefs: Map<stri
   return { ids, explicitRefs };
 }
 
-function resolveItem(root: string, docs: ProjectDocs, id: string): BacklogItem | undefined {
-  const open = docs.backlog().value.items.find((i) => i.id === id);
-  if (open !== undefined) return open;
-  const entry = backlogShow(root, id);
-  return entry?.item ?? entry?.archive;
+function resolveItem(docs: ProjectDocs, id: string): BacklogItem | undefined {
+  return (
+    docs.backlog().value.items.find((i) => i.id === id) ??
+    docs.backlogArchive().value.find((i) => i.id === id)
+  );
 }
 
 function renderMarkdown(
@@ -93,7 +93,7 @@ export function phaseContext(root: string, phase: string): PhaseContext {
   const items: BacklogItem[] = [];
   const unresolved: string[] = [];
   for (const id of ids) {
-    const item = resolveItem(root, docs, id);
+    const item = resolveItem(docs, id);
     if (item !== undefined) {
       items.push(item);
     } else if (explicitRefs.has(id)) {

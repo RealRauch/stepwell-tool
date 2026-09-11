@@ -2,8 +2,7 @@ import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:f
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { planPhase } from "../src/mutations.ts";
-import { applyPhasePlan } from "../src/mutations.ts";
+import { applyPhasePlan, planPhase } from "../src/mutations.ts";
 import { phaseContext } from "../src/context.ts";
 
 const fixtures = join(import.meta.dirname, "fixtures");

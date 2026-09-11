@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { lineDiff } from "./diff.ts";
 import { allSynonyms, canonical, detectLocale, escapeRegExp, synonymPattern, type Locale } from "./profile.ts";
 import { docsValidate } from "./validate.ts";
+import { scopeEntryFor } from "./progress.ts";
 import { loadProject } from "./project.ts";
 import type {
   ArchiveItemPlan,
@@ -356,10 +357,7 @@ export function planProgressUpdate(
       throw new Error(`unknown step: ${step} (gehört nicht zur neu anzulegenden Phase ${phase})`);
     }
   }
-  const scopeEntry =
-    block?.scope.find((entry) =>
-      new RegExp(`^\\*{0,2}\\s*${escapeRegExp(step)}\\b`).test(entry),
-    ) ?? undefined;
+  const scopeEntry = block === undefined ? undefined : scopeEntryFor(block, step);
   if (block !== undefined && row === undefined && scopeEntry === undefined) {
     throw new Error(`unknown step: ${step} (weder in der Tabelle noch im Scope der Phase)`);
   }
@@ -568,10 +566,7 @@ export function planPhase(
   if (running !== undefined) {
     for (const entry of steps) {
       const step = entry.step.trim();
-      const inScope = running.scope.some((s) =>
-        new RegExp(`^\\*{0,2}\\s*${escapeRegExp(step)}\\b`).test(s),
-      );
-      if (inScope) {
+      if (scopeEntryFor(running, step) !== undefined) {
         throw new Error(
           `step "${step}" ist bereits im Scope der laufenden Phase "${running.name}"`,
         );

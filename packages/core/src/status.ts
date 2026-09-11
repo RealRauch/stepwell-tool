@@ -1,8 +1,7 @@
 import { fileHashes } from "./hashes.ts";
 import { loadProject, type ProjectDocs } from "./project.ts";
-import { backlogShow } from "./project.ts";
 import { ProjectNotInitializedError } from "./project-files.ts";
-import { scopeSteps } from "./progress.ts";
+import { scopeEntryFor, scopeSteps } from "./progress.ts";
 import { docsValidate } from "./validate.ts";
 import type {
   BacklogItem,
@@ -26,19 +25,15 @@ function resolveNextStepScope(
 ): NextStepScope | undefined {
   const block = docs.progress().value.phases.find((b) => scopeSteps(b).includes(row.step));
   if (block === undefined) return undefined;
-  const scopeEntry = block.scope.find((s) => scopeStepsLike(s) === row.step);
+  const scopeEntry = scopeEntryFor(block, row.step);
   const refSource = `${row.name} ${scopeEntry ?? ""}`;
   const match = ITEM_REF.exec(refSource);
   let item: BacklogItem | undefined;
   if (match !== null) {
     const id = match[1]!;
-    const open = docs.backlog().value.items.find((i) => i.id === id);
-    if (open !== undefined) {
-      item = open;
-    } else {
-      const entry = backlogShow(root, id);
-      item = entry?.item ?? entry?.archive;
-    }
+    item =
+      docs.backlog().value.items.find((i) => i.id === id) ??
+      docs.backlogArchive().value.find((i) => i.id === id);
   }
   return {
     phase: block.name,
@@ -50,11 +45,6 @@ function resolveNextStepScope(
     ...(scopeEntry !== undefined ? { scope: scopeEntry } : {}),
     ...(item !== undefined ? { item } : {}),
   };
-}
-
-function scopeStepsLike(entry: string): string | undefined {
-  const m = /^\*{0,2}\s*(\d+(?:\.\d+)?)\b/u.exec(entry);
-  return m?.[1];
 }
 
 export function docsStatus(root: string, options?: DocsStatusOptions): DocsStatus {
