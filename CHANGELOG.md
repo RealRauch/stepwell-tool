@@ -13,6 +13,71 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
 
 ## [Unreleased]
 
+### Phase 14 — Language switch: English primary (260911)
+
+#### Added
+- **EN primary across the structure / API / message surface** (Decision 10,
+  I1/14.1). English is now the canonical language for all structural text
+  in the four doc files, PLAYBOOK / LESSONS copies, AGENTS.md, README, SKILL,
+  CHANGELOG, templates, tool descriptions, CLI help, and warning messages.
+  Content text (item bodies, notes, user prose) stays language-free by design —
+  authors keep their language.
+- **Locale profile with English synonyms** in `core/profile.ts`: every role
+  (Done Index, Active Phases, Location, Acceptance, Verification, As of:,
+  Scope, Goal, done, removed, completed) now has an English synonym alongside
+  its German one. `canonical(role, "en")` returns the English form for
+  generation; `detectLocale` returns `"en"` for EN files and `"de"` for DE
+  files.
+- **Union matching across DE+EN** for all role synonyms (locationLabel,
+  doneLabel, goalLabel, acceptanceLabel, verificationLabel, scopeLabel,
+  doneWord, removedWord, removedLabel, completedMarker, standMarker, and the
+  three headings). Mixed-locale files parse without warning.
+- **Mixed-locale fixture `project-g-mixed`** (EN open files + DE
+  append-only archives) plus 6 new tests in `locale.test.ts`. The fixture
+  is finding-free under `docsValidate` and proves the cross-locale
+  consistency check is locale-agnostic (ID-based, not text-based).
+- **Project templates in English** (EN skeletons, `projectTemplates`).
+  New STEPWELL projects start in English; German is available for legacy
+  imports via union matching.
+
+#### Changed
+- **Structural labels in the open files are now English** (CRITICAL, HIGH,
+  MEDIUM, LOW, TEST GAPS, Done Index, Active Phases, Location, Acceptance,
+  Verification, Scope, As of:, done). **Archive files are unchanged**
+  (append-only, Decision 10 — the German historical record stays German).
+- **`detectLocale` default** for generation is now `"en"` (canonical
+  English templates, EN-skeletoned project templates).
+- **Tool descriptions, CLI help, SKILL.md, warning message texts** are
+  English. The `message` field of warnings remains human-readable and may
+  be in the author's language for legacy projects.
+- **PLAYBOOK / LESSONS / AGENTS / README** were updated to match the
+  English-primary structure (both repos in sync where applicable).
+
+#### Fixed
+- None in this phase.
+
+**Contract note (binding, Decision 16):** Phase 14 changes the **human-readable
+text** of warnings, tool descriptions, CLI help, and templates. The
+**JSON contract** (`schema: 1`) and the **data object shapes** (`ParseResult`,
+`BacklogItem`, `ProgressRow`, `PhaseBlock`, `Warning`, `DoneEntry`, `Backlog`,
+`PhaseBlock`, `ArchiveItem`, …) are unchanged — the data structure is
+identical, only the user-facing strings changed. Per Lockstep-SemVer
+(Decision 16) this is a `MINOR` change in the 0.x window (SemVer-0 allows
+breaking within MINORs); the next released version will carry this entry as
+its `Added` / `Changed` set.
+
+**Decision I1/14.6 — silent tolerance, no `STRUCT_LOCALE` warning:** Legacy DE
+labels in open files stay silently accepted (union matching already absorbs
+them). No warning code is added to `validate.ts`; the `project-g-mixed`
+fixture stays finding-free. Append-only archives are never faulted (W2).
+Reactivation criterion: a future dogfooding round shows legacy DE labels
+actually accumulate in a long-running project's open files, then revisit the
+`DATE_LEGACY`-pattern warning in a separate decision.
+
+---
+
+### Historical entries below — pre-Phase-14 (German, kept verbatim as KAC history per I1/14.6)
+
 Keine Version veröffentlicht — `1.0.0` ist der Freigabe-Moment nach bestandenem
 Feldtest (Decision 16); bis dahin 0.x mit Lockstep über alle drei `package.json`.
 

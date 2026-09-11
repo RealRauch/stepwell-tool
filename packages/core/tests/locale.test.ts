@@ -92,4 +92,102 @@ describe("locale profiles — synonyms and detection (4.1)", () => {
     expect(pattern.test("Fortschritt")).toBe(false);
     expect(allSynonyms("locationLabel")).toEqual(["Ort", "Location"]);
   });
+
+  it("tolerates legacy DE bullet labels in EN open files (Decision 10)", () => {
+    const mixedBullets = [
+      "# BACKLOG.md — Open (As of: 260911/1430)",
+      "",
+      "## 🟠 HIGH",
+      "",
+      "### [ ] L1 — Item with legacy DE bullets — 🟠",
+      "- **Ort:** legacy DE location",
+      "- **Abnahme:** legacy DE acceptance",
+      "",
+    ].join("\n");
+    const r = parseBacklog(mixedBullets);
+    expect(r.warnings).toEqual([]);
+    expect(r.value.items[0]?.location).toBe("legacy DE location");
+    expect(r.value.items[0]?.text).toContain("legacy DE acceptance");
+  });
+});
+
+describe("project-g-mixed — EN open files + DE archives (I1/14.5)", () => {
+  const root = join(fixtures, "project-g-mixed");
+  const backlog = parseBacklog(readFixture("project-g-mixed", "BACKLOG.md"));
+  const progress = parseProgress(readFixture("project-g-mixed", "PROGRESS.md"));
+
+  it("parses the EN BACKLOG without warnings", () => {
+    expect(backlog.warnings).toEqual([]);
+    expect(backlog.value.items.map((i) => i.id)).toEqual(["M1", "M2", "M3", "M4"]);
+    expect(backlog.value.items.every((i) => i.open)).toBe(true);
+    expect(backlog.value.sections.map((s) => [s.emoji, s.title])).toEqual([
+      ["🔴", "CRITICAL"],
+      ["🟠", "HIGH"],
+      ["🟡", "MEDIUM"],
+      ["🟢", "LOW"],
+      ["🔵", "TEST GAPS"],
+    ]);
+    expect(backlog.value.doneIndex).toEqual([
+      { id: "S1", summary: "Pilot setup", sha: "b1c2d3e" },
+      { id: "A1", summary: "Initial migration hardening", sha: "a1b2c3d" },
+      { id: "A2", summary: "Session cookie hardening", sha: "c3d4e5f" },
+    ]);
+  });
+
+  it("captures the Location field in EN and surfaces the legacy-DE item body intact", () => {
+    expect(backlog.value.items[0]?.location).toContain("Historical BACKLOG items");
+    expect(backlog.value.items[0]?.text).toContain("**Acceptance:**");
+  });
+
+  it("parses the EN PROGRESS table and phase block without warnings", () => {
+    expect(progress.warnings).toEqual([]);
+    expect(progress.value.rows).toHaveLength(5);
+    expect(progress.value.rows.find((r) => r.step === "14.5")?.status).toBe("🔄");
+    const phase = progress.value.phases[0]!;
+    expect(phase.name).toBe("Phase 14");
+    expect(phase.title).toBe("Language switch: English primary");
+    expect(phase.goal).toContain("English");
+    expect(phase.scope).toHaveLength(2);
+  });
+
+  it("parses DE archives without warnings (append-only, never re-locale'd)", () => {
+    const items = parseBacklogArchive(readFixture("project-g-mixed", "docs", "archive", "BACKLOG_ARCHIVE.md"));
+    expect(items.warnings).toEqual([]);
+    expect(items.value.map((i) => [i.id, i.open, i.doneLine])).toEqual([
+      ["S1", false, "Commit `b1c2d3e` (02/2024)."],
+      ["A1", false, "Commit `a1b2c3d` (03/2024)."],
+      ["A2", false, "Commit `c3d4e5f` (06/2024)."],
+    ]);
+
+    const phases = parseProgressArchive(readFixture("project-g-mixed", "docs", "archive", "PROGRESS_ARCHIVE.md"));
+    expect(phases.warnings).toEqual([]);
+    expect(phases.value.map((p) => p.name)).toEqual(["Phase 0", "Phase 1"]);
+    expect(phases.value[0]?.completedOn).toBe("01/2024");
+    expect(phases.value[0]?.verification).toContain("typecheck");
+  });
+
+  it("validates clean across EN open + DE archive (Decision 10 migration)", () => {
+    const validation = docsValidate(root);
+    expect(validation.findings).toEqual([]);
+    expect(validation.warnings).toEqual([]);
+    expect(validation.ok).toBe(true);
+
+    const status = docsStatus(root);
+    expect(status.openTotal).toBe(4);
+    expect(status.runningSteps.map((r) => r.step)).toEqual(["14.5"]);
+    expect(status.runningPhases).toEqual(["Phase 14 — Language switch: English primary"]);
+  });
+
+  it("detects the locale per file (EN open, DE archive)", () => {
+    expect(detectLocale(readFixture("project-g-mixed", "BACKLOG.md"))).toBe("en");
+    expect(detectLocale(readFixture("project-g-mixed", "PROGRESS.md"))).toBe("en");
+    expect(detectLocale(readFixture("project-g-mixed", "docs", "archive", "BACKLOG_ARCHIVE.md"))).toBe("de");
+    expect(detectLocale(readFixture("project-g-mixed", "docs", "archive", "PROGRESS_ARCHIVE.md"))).toBe("de");
+  });
+
+  it("does NOT emit a STRUCT_LOCALE warning for legacy DE labels in EN files (I1/14.6)", () => {
+    const validation = docsValidate(root);
+    expect(validation.findings.map((f) => f.code)).not.toContain("STRUCT_LOCALE");
+    expect(validation.warnings.map((w) => w.code)).not.toContain("STRUCT_LOCALE");
+  });
 });

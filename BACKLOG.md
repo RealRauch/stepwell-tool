@@ -1,4 +1,4 @@
-# BACKLOG.md — Open items (As of: 260911/0139
+# BACKLOG.md — Open items (As of: 260911/1752
 
 > **This file contains only OPEN items.** Completed items are moved to `docs/archive/BACKLOG_ARCHIVE.md` unchanged after completion; this file keeps only a one-liner per item in the Done Index (below). Findings/fix-ideas/decisions are not deleted — moved to the archive.
 > Legend: 🔴 critical · 🟠 high · 🟡 medium · 🟢 low · 🔵 test gap
@@ -20,14 +20,6 @@
 
 ## 🟡 MEDIUM
 
-### [ ] I1 — Sprach-Umstellung: Englisch als Primärsprache für Methoden-Struktur + Tool-Surface — 🟡
-- **Location:** Vier Doku-Dateien beider Repos (method-docs + stadtpfad-pwa), PLAYBOOK-/LESSONS-Kopien, AGENTS.md, README, SKILL.md, CHANGELOG-Prosa, Fixtures-README (`packages/core/tests/fixtures/README.md` — arbeitende Parser-Spec), core (`profile.ts`, `templates.ts`), MCP-/CLI-Texte; Entscheidung 09/2026 (Chat-Kontext: Nicht-Deutschsprachige sollen die Methode lesen können; Inhaltstexte bleiben sprachfrei). **Explizit auch die Projekt-Doku dieses Repos selbst** — method-docs wendet die Regel zuerst auf sich an (Dogfooding).
-- **Problem:** Struktur und Prosa der Methode sind deutsch — für Dritte nicht lesbar. Zielbild: **Englisch als Primärsprache für alles Strukturelle und Tool-Seitige** (Sektions-Headings, Feld-Labels, Erledigt-Index, Statuswörter, Tool-Beschreibungen, CLI-Help, Warning-Messages, Templates, PLAYBOOK/LESSONS/AGENTS/README/SKILL); **Inhaltstexte** (Item-Bodies, Notizen, Nutzertexte) bleiben bewusst sprachfrei — jeder schreibt sie in seiner Sprache.
-- **Ist-Stand (gut):** Parser ist bereits zweisprachig — `profile.ts` kennt Locale `"en"` mit allen Rollen-Synonymen (Done Index, Active Phases, Location, Acceptance, Verification, As of:, done, removed …), Union-Matching liest DE+EN gemischt, `canonical(role, locale)` generiert sprachabhängig, `detectLocale` existiert. Der Umbau ist primär Migration + Konventions-Flip, kein Parser-Neubau.
-- **Arbeitsschritte (Entwurf):** (1) Konventions-Flip: PLAYBOOK §2/§3 + AGENTS Decision 10 — Englisch primär für Struktur/API/Messages, Inhaltstexte sprachfrei; Sync-Schlag beide Kopien. (2) Migration der offenen Dateien (nur Struktur-Labels; Archive nie anfassen): Headings (KRITISCH→CRITICAL, HOCH→HIGH, MITTEL→MEDIUM, NIEDRIG→LOW, TEST-LÜCKEN→TEST GAPS, Erledigt-Index→Done Index, Laufende Phasen→Active Phases), Feld-Labels (Ort→Location, Abnahme→Acceptance, Verifikation→Verification, Umfang→Scope), Stand:→As of:, erledigt→done — in beiden Repos, Commit je Repo mit Hash-Beleg. (3) `detectLocale`-Gleichstand de→en drehen (Generierung kanonisch en). (4) `projectTemplates` → EN-Skeletons. (5) Warning-Messages, Tool-Beschreibungen, CLI-Help, SKILL.md → EN. (6) Projekt-Doku: CHANGELOG — neue Einträge EN, deutscher Bestand bleibt als historische Einträge stehen (KAC-Historie wie Archiv behandeln); Fixtures-README → EN (arbeitsnahe Spec, zeitgleich mit gemischtsprachiger Fixture); Feldtest-Protokoll (`docs/feldtest-stadtpfad-pwa.md`) als historischer Beleg auf DE belassen (Archiv-Regel). (7) Toleranz-Entscheid im Sync-Schlag: Legacy-DE-Labels in offenen Dateien still tolerieren (Union-Matching tut es ohnehin) oder STRUCT_LOCALE-Warnung nach DATE_LEGACY-Muster.
-- **Acceptance:** Beide PLAYBOOK-/LESSONS-Kopien textgleich EN (SHA256-Beleg wie L8); vier offene Dateien in beiden Repos mit EN-Struktur, `docs_validate` je Repo clean; Tests grün inkl. neuer gemischtsprachiger Fixture (DE-Archiv + EN-offene Datei); Fixtures-README EN; neue Projekte starten mit EN-Templates; Decision 10 nachgezogen; CHANGELOG-Eintrag mit Kontrakt-Notiz (message-Texte ändern sich, schema bleibt 1 — Struktur unverändert); Timing: vor 1.0.0 (Freigabe-Moment = englische öffentliche Fläche).
-- **Step-Paketierung:** Phase 14 — 14.1 (I1/1), 14.2 (I1/2), 14.3 (I1/3), 14.4 (I1/4), 14.5 (I1/5), 14.6 (I1/6).
-
 ### [ ] B1 — Build-Cross-Platform: Linux-CI kaputt — tsconfig `paths` ohne `baseUrl` (CI-Rot seit 13.4-Close) — 🟡
 - **Location:** `packages/mcp/tsconfig.build.json:8-10` (`paths: { "stepwell-core": ["../core/dist/index.d.ts"] }` ohne `baseUrl`); sekundär `packages/mcp/tsconfig.json:5-7` (Dev-Pendant); beide Workspaces + CI-Workflow `.github/workflows/ci.yml` Job `pack-smoke`. Fund: CI-Läufe 34537234187 + 34537418830 (d38ce6e, 86e421f), beide Jobs rot.
 - **Problem:** `paths` ohne `baseUrl` ist in TypeScript deprecated und wird unter Linux (egal ob WSL-`/mnt/d` oder nativer Linux-Pfad, mit Node 22 oder Node 24) **strikt** abgelehnt — `error TS2307: Cannot find module 'stepwell-core'`. Auf Windows wird es toleriert (TypeScript-Default-Verhalten), deshalb grün lokal und im Windows-Cache. Reihenfolge-Effekt: erst `Cannot find module`, dann kaskadiert `implicit any` über alle Importe aus `stepwell-core`. **Zweites CI-Issue:** Job `verify` failed bei `Validate STEPWELL docs` weil `PLAN_WITHOUT_WIP` für Phase 14+15 (geplant, kein 🔄-Step) als Findings gewertet werden → validate-CLI exit 1. Erwartet-vs-echt-Frage: sind geplante Phasen ohne laufenden Step ein Fehler oder eine Warnung?
@@ -36,6 +28,13 @@
 - **Fix-Skizze:** **TypeScript Project References** einführen — `tsconfig.base.json` bekommt `composite: true`, beide Workspaces tragen `references` auf das jeweils andere, `paths`-Hack entfällt komplett. TS findet cross-workspace-Module dann automatisch. Aufwand ~30 Min, alle Builds lokal + CI reproduzierbar grün. Sekundär: PLAN_WITHOUT_WIP-Verhalten klären — entweder als Finding tolerieren (Exit 0) oder akzeptieren dass CI es als Gate wertet (Issue im Sync-Playbook dokumentieren).
 - **Acceptance:** Linux-Build + Windows-Build beide grün (tsc -p tsconfig.build.json in beiden Workspaces exit 0, dist-Layout korrekt: nur die Workspace-Source-Files, kein nested core/ in mcp/dist); CI `verify` + `pack-smoke` beide grün auf letztem Commit; pack-smoke-Local (Linux) zeigt stdio-Handshake + CLI-Bin-Smoke OK; `docs_validate` clean; TypeScript Project References dokumentiert in BUILD.md oder neuem Lesson-Item.
 - **Reihenfolge:** Nach 14.1 (I1/1 Sprach-Umstellung), vor 14.6 (CHANGELOG-Eintrag für 1.0.0).
+
+### [ ] I3 — Method-Docs EN Migration (PLAYBOOK/LESSONS/AGENTS/BRAINSTORM/CHANGELOG) — 🟡
+- **Location:** `docs/PLAYBOOK.md`, `docs/LESSONS.md`, `AGENTS.md`, `BRAINSTORM.md`, `CHANGELOG.md` in method-docs (kein Touch in stadtpfad-pwa — siehe S1).
+- **Problem:** Nach I1-Close (Phase 14, 14.6 ✅) bleiben vier Methoden-Doku-Dateien mit DE-Prosa — der „English only for method docs"-Schritt aus Decision 10 ist konzeptuell beschlossen, an diesen Dateien aber noch nicht umgesetzt. I2 übernimmt README separat; diese Dateien sind der Rest.
+- **Fix:** Schritt-für-Schritt-Migration: 16.1 PLAYBOOK, 16.2 LESSONS, 16.3 AGENTS-Wording schärfen (D10: „English only for method docs; tolerance layer stays for project files"), 16.4 README (eigenes Item I2), 16.5 BRAINSTORM + CHANGELOG-trailing. DE-Snapshots in `docs/archive/PLAYBOOK-2026-09-snapshot.md` und `docs/archive/LESSONS-2026-09-snapshot.md` mit Header „historische DE-Fassung, vor 16.1/16.2, nicht mehr gepflegt". CHANGELOG: neue Einträge EN, alte DE bleiben (Append-only). Kein Sync-Schlag nach stadtpfad-pwa — dort übernimmt deren Agent (S1 dokumentiert die Drift).
+- **Acceptance:** alle fünf Dateien in method-docs auf EN-Struktur; `docs_validate` clean; kein DE-Schatten mehr in Method-Doku; S1 dokumentiert die stadtpfad-pwa-Drift zentral.
+- **Verification:** Phase 16 Steps 16.1–16.5 ✅; Done-Index-Eintrag mit Commit-Hash; CHANGELOG-Eintrag für I3-Abschluss; Backlog-Wurzel intakt.
 
 ---
 
@@ -63,6 +62,13 @@
 - **Acceptance:** No remaining structural DE labels in README headers/tool-reference-table; SKILL.md/CLI/Tools bleiben EN; npm run test 308/308; README-Tool-Reference-Tabelle-Tests optional analog cli.test.ts.
 - **Reihenfolge:** Nach 14.6 (Phase 14 abgeschlossen). Vor 1.0.0 (Freigabe-Moment = englische öffentliche Fläche).
 - **Aufwand:** ~30 Min, mehrere Edit-Aufrufe pro Sektion.
+
+### [ ] S1 — Drift: PLAYBOOK/LESSONS in stadtpfad-pwa-DE — Sync pending (anderer Agent) — 🟢
+- **Location:** method-docs-BACKLOG führt die Drift; **nicht** stadtpfad-pwa-Dateien (Entscheidung 09/2026 — deren Nutzdaten nicht anfassen).
+- **Problem:** 16.1–16.2 migrieren PLAYBOOK/LESSONS in method-docs auf EN. Die parallele Kopie in `../stadtpfad-pwa` bleibt DE, bis deren Agent die Migration aufnimmt. Sync-Schlag-Disziplin (textgleich über beide Repos) ist damit temporär unterbrochen — bewusst, nicht durch Drift verloren.
+- **Fix:** nicht in unserem Scope. Phase-16-Step-Notes tragen den Hinweis „Sync-Schlag ausgegliedert"; das hier ist der zentrale Beleg dafür.
+- **Acceptance:** Eintrag steht in method-docs-BACKLOG; kein Sync-Versuch nach stadtpfad-pwa durch unsere Steps; Phase-16-Step-Notes verweisen auf S1.
+- **Verification:** BACKLOG enthält S1; `docs_status` zeigt Item; `docs_validate` method-docs clean.
 
 ---
 
@@ -123,5 +129,6 @@
 - E2 — Token-Ökonomie II: Runden-Ersparnis (docs_status-Scope-Include, Multi-Step-Update, Hash-Kurzschluss) — done (Commits `9676e3c` (12.3: docs_status nextStepScope-Include, Test `42388e0`) + `153537f` (12.4: Multi-Step-Update, Test `6badfce`) + `5b18a9e` (12.5: Hash-Kurzschluss, Test `61fcba8`) — 290/290 grün, Steps 12.3–12.5.)
 - G5 — Phase-Kontext-Resource: Phase + Item-Bodies zur Lesezeit mergen (Subagent-Kontext in einem Read) — done (Commit `f9f0e3b` (12.6: phaseContext + Resource `methoddocs://{root}/phase/{phase}`, Test-Commit `e1bd5c1`) — 297/297 grün, Step 12.6; M4-Alternativprüfung im README dokumentiert.)
 - N1 — Naming-Refactor: method-docs-Reste → STEPWELL durchgängig (Pakete, Bin, URI-Schema, Repo) — done (13.1@ff6a996, 13.2@bdc9a74, 13.3@f94832f, 13.4@7902677 (opencode.json npx tsx) + Repo angelegt https://github.com/RealRauch/stepwell-tool (public))
+- I1 — Sprach-Umstellung: Englisch als Primärsprache für Methoden-Struktur + Tool-Surface — erledigt (Phase 14 complete (14.1–14.6); Step 14.6 closes the loop with STRUCT_LOCALE = silent tolerance + CHANGELOG entry.)
 
 ---
