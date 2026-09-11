@@ -2,6 +2,7 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "types": ["node"],
+    "baseUrl": ".",
     "paths": {
       "stepwell-core": ["../core/src/index.ts"]
     }
