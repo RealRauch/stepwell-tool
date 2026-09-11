@@ -204,11 +204,21 @@ export function readProgress(root: string): ParseResult<Progress> {
   return parseProgress(content, path);
 }
 
+/** Leading step number of a scope bullet, e.g. `- **15.1 Fast path …` → `15.1`. Single source of truth (L12/18.3). */
+export function scopeStepOf(entry: string): string | undefined {
+  return /^\*{0,2}\s*(\d+(?:\.\d+)?)\b/u.exec(entry)?.[1];
+}
+
+/** The scope bullet of a block whose leading step number equals `step`. */
+export function scopeEntryFor(block: PhaseBlock, step: string): string | undefined {
+  return block.scope.find((entry) => scopeStepOf(entry) === step);
+}
+
 export function scopeSteps(block: PhaseBlock): string[] {
   const steps: string[] = [];
   for (const entry of block.scope) {
-    const m = /^\*{0,2}\s*(\d+(?:\.\d+)?)\b/u.exec(entry);
-    if (m) steps.push(m[1]!);
+    const step = scopeStepOf(entry);
+    if (step !== undefined) steps.push(step);
   }
   return steps;
 }
