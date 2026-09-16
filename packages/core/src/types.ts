@@ -35,6 +35,8 @@ export interface DoneEntry {
   id: string;
   summary: string;
   sha?: string;
+  /** Line number in BACKLOG.md (L13) — lets the inline `accepted` marker be located. */
+  line?: number;
 }
 
 export interface Backlog {

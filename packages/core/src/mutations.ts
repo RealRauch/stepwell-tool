@@ -33,6 +33,13 @@ export interface ProgressUpdateOptions {
   locale?: Locale;
   /** Optionaler Commit-SHA der Phase (7–40 Hex, L2) — landet in der Verifikations-Zeile. */
   checkpoint?: string;
+  /**
+   * Multi-Step-Batch (H2): Die Phase wurde im selben Lauf bereits abgeschlossen und
+   * archiviert — der fehlende Detail-Block wird akzeptiert (kein zweiter Archiv-Append,
+   * kein Fehler); nur die Tabellen-Zeile wird aktualisiert. Ohne diesen Schalter bleibt
+   * `unknown phase` der harte Fehler für Tippfehler.
+   */
+  phaseAlreadyArchived?: boolean;
 }
 
 interface FileEdit {
@@ -347,8 +354,9 @@ export function planProgressUpdate(
 
   const block = progress.phases.find((p) => phaseMatches(p, phase)) ?? undefined;
   const row = progress.rows.find((r) => r.step === step);
+  const alreadyArchived = options.phaseAlreadyArchived === true;
 
-  if (block === undefined && status !== "🔄") {
+  if (block === undefined && status !== "🔄" && !alreadyArchived) {
     throw new Error(`unknown phase: ${phase} (nur 🔄-Phasen können neu angelegt werden)`);
   }
   if (block === undefined && row !== undefined) {
@@ -405,11 +413,13 @@ export function planProgressUpdate(
     }
 
     if (block === undefined) {
-      const skeletonHeading =
-        newTitle !== undefined ? `### ${phase} — ${newTitle}` : `### ${phase}`;
-      insertRunningPhaseSkeleton(lines, skeletonHeading, scopeHeading, [
-        `- **${step} ${rowName}**`,
-      ]);
+      if (!alreadyArchived) {
+        const skeletonHeading =
+          newTitle !== undefined ? `### ${phase} — ${newTitle}` : `### ${phase}`;
+        insertRunningPhaseSkeleton(lines, skeletonHeading, scopeHeading, [
+          `- **${step} ${rowName}**`,
+        ]);
+      }
     } else if (!completedPhase && scopeEntry === undefined) {
       lines.splice(block.span.end, 0, `- **${step} ${rowName}**`);
     }

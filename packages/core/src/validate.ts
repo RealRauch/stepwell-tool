@@ -35,8 +35,54 @@ function scanLegacyDates(filePath: string, file: string, findings: Warning[]): v
   }
 }
 
+const ACCEPT_MARKER = /\(\s*accepted\s*:\s*([^)]*)\)/iu;
+
+/**
+ * L13: a finding can be acknowledged in place with `*(accepted: CODE[, CODE])*` on the
+ * same line it points at (codes compared case-insensitively). Acknowledged findings
+ * stay visible in the report but do **not** flip `ok` to false — a deliberate,
+ * documented deviation instead of a permanent red. Findings without a line (or without
+ * the marker) stay blocking.
+ */
+function splitAcknowledged(findings: Warning[]): {
+  findings: Warning[];
+  acknowledged: Warning[];
+} {
+  const cache = new Map<string, string[]>();
+  const linesOf = (file: string): string[] => {
+    const cached = cache.get(file);
+    if (cached !== undefined) return cached;
+    let lines: string[] = [];
+    try {
+      lines = readFileSync(file, "utf8").split(/\r?\n/);
+    } catch {
+      lines = [];
+    }
+    cache.set(file, lines);
+    return lines;
+  };
+  const isAccepted = (finding: Warning): boolean => {
+    if (finding.line === undefined) return false;
+    const line = linesOf(finding.file)[finding.line - 1];
+    if (line === undefined) return false;
+    const marker = ACCEPT_MARKER.exec(line);
+    if (!marker) return false;
+    return marker[1]!
+      .split(",")
+      .map((code) => code.trim().toUpperCase())
+      .includes(finding.code.toUpperCase());
+  };
+  const kept: Warning[] = [];
+  const acknowledged: Warning[] = [];
+  for (const finding of findings) {
+    (isAccepted(finding) ? acknowledged : kept).push(finding);
+  }
+  return { findings: kept, acknowledged };
+}
+
 export function docsValidate(root: string): {
   findings: Warning[];
+  acknowledged: Warning[];
   warnings: Warning[];
   ok: boolean;
 } {
@@ -47,6 +93,7 @@ export function docsValidate(root: string): {
     if (err instanceof ProjectNotInitializedError) {
       return {
         findings: [{ code: "PROJECT_NOT_INITIALIZED", file: root, message: err.message }],
+        acknowledged: [],
         warnings: [],
         ok: false,
       };
@@ -106,6 +153,7 @@ export function docsValidate(root: string): {
       findings.push({
         code: "ID_CONVENTION",
         file: backlogPath,
+        ...(done.line !== undefined ? { line: done.line } : {}),
         message: `Item-ID "${done.id}" in the Done Index violates the naming convention ^[A-Z][0-9]+$.`,
       });
     }
@@ -184,6 +232,7 @@ export function docsValidate(root: string): {
   scanLegacyDates(progressPath, progressPath, findings);
 
   const warnings = [...backlog.warnings, ...progress.warnings];
+  const split = splitAcknowledged(findings);
 
-  return { findings, warnings, ok: findings.length === 0 };
+  return { findings: split.findings, acknowledged: split.acknowledged, warnings, ok: split.findings.length === 0 };
 }

@@ -399,8 +399,13 @@ export function registerDocsTools(server: McpServer): void {
           ...(checkpoint !== undefined ? { checkpoint } : {}),
           ...(locale !== undefined ? { locale: locale as Locale } : {}),
         };
+        const archivedThisBatch = new Set<string>();
         const runSingle = (oneStep: string): unknown => {
-          const plan = planProgressUpdate(root, phase, oneStep, status as Status, planOptions);
+          const plan = planProgressUpdate(root, phase, oneStep, status as Status, {
+            ...planOptions,
+            ...(archivedThisBatch.has(phase) ? { phaseAlreadyArchived: true } : {}),
+          });
+          if (plan.completedPhase) archivedThisBatch.add(phase);
           const result = plan.dryRun ? plan : applyProgressPlan(plan);
           return detail === "summary" ? summarizePlan(result) : result;
         };

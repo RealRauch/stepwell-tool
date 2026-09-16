@@ -87,7 +87,7 @@ describe("parseBacklog — project-a (clean, no warnings)", () => {
   });
 
   it("parses the done index as separate one-liners", () => {
-    expect(result.value.doneIndex).toEqual([
+    expect(result.value.doneIndex.map(({ id, summary, sha }) => ({ id, summary, sha }))).toEqual([
       { id: "S1", summary: "Schema-Migration 001→002 abgesichert", sha: "a1b2c3d" },
       { id: "S2", summary: "Env-Config failt hart bei fehlenden Secrets", sha: "b2c3d4e" },
       { id: "M7", summary: "Duplizierte Geo-Logik auf Shared-Helper umgestellt", sha: "c3d4e5f" },
@@ -104,7 +104,7 @@ describe("parseBacklog — project-b-drift (tolerance, parse warnings)", () => {
       "K9", "H9", "L9", "L10", "L10", "fix_me", "X1", "T9",
     ]);
     expect(result.value.sections).toHaveLength(6);
-    expect(result.value.doneIndex).toEqual([
+    expect(result.value.doneIndex.map(({ id, summary, sha }) => ({ id, summary, sha }))).toEqual([
       { id: "S9", summary: "Im Index, aber NICHT im Archiv (Validate-Fall)", sha: "d4e5f6a" },
       { id: "M9", summary: "Auch im Index, fehlt im Archiv", sha: "e5f6a7b" },
       { id: "Z8", summary: "Archiv-Block ohne Prioritäts-Suffix (W2-Fall)", sha: "x9y8z7a" },
@@ -228,7 +228,7 @@ describe("parseBacklog — Erledigt-Index als Tabelle (W1)", () => {
 
   it("parses table rows after the separator into done entries, skipping the header", () => {
     const r = parseBacklog(tableIndex);
-    expect(r.value.doneIndex).toEqual([
+    expect(r.value.doneIndex.map(({ id, summary, sha }) => ({ id, summary, sha }))).toEqual([
       { id: "K5", summary: "SQL-Injection Column-Whitelist", sha: "d4e5f6a" },
       { id: "M8", summary: "Cache-Header für statische Assets" },
       { id: "L1–L3", summary: "(Cleanup-Batch)" },
@@ -252,7 +252,7 @@ describe("parseBacklog — Erledigt-Index als Tabelle (W1)", () => {
       "",
     ].join("\n");
     const r = parseBacklog(twoColumns);
-    expect(r.value.doneIndex).toEqual([
+    expect(r.value.doneIndex.map(({ id, summary, sha }) => ({ id, summary, sha }))).toEqual([
       { id: "K5", summary: "Rate-Limit", sha: "d4e5f6a" },
     ]);
   });
@@ -260,7 +260,7 @@ describe("parseBacklog — Erledigt-Index als Tabelle (W1)", () => {
   it("parses the project-e fixture table index without warnings", () => {
     const r = parseFixture("project-e-tableindex", "BACKLOG.md");
     expect(r.warnings).toEqual([]);
-    expect(r.value.doneIndex).toEqual([
+    expect(r.value.doneIndex.map(({ id, summary, sha }) => ({ id, summary, sha }))).toEqual([
       { id: "K5", summary: "SQL-Injection Column-Whitelist", sha: "d4e5f6a" },
       { id: "M8", summary: "Cache-Header für statische Assets" },
     ]);

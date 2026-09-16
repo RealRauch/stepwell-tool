@@ -24,7 +24,7 @@ describe("project-c-en — English files parse without configuration (4.1)", () 
   });
 
   it("detects the Done Index and its one-liners", () => {
-    expect(backlog.value.doneIndex).toEqual([
+    expect(backlog.value.doneIndex.map(({ id, summary, sha }) => ({ id, summary, sha }))).toEqual([
       { id: "F1", summary: "Migration hardening", sha: "a1b2c3d" },
     ]);
     expect(backlog.value.sections.some((s) => s.title.includes("Done Index"))).toBe(false);
@@ -127,7 +127,7 @@ describe("project-g-mixed — EN open files + DE archives (I1/14.5)", () => {
       ["🟢", "LOW"],
       ["🔵", "TEST GAPS"],
     ]);
-    expect(backlog.value.doneIndex).toEqual([
+    expect(backlog.value.doneIndex.map(({ id, summary, sha }) => ({ id, summary, sha }))).toEqual([
       { id: "S1", summary: "Pilot setup", sha: "b1c2d3e" },
       { id: "A1", summary: "Initial migration hardening", sha: "a1b2c3d" },
       { id: "A2", summary: "Session cookie hardening", sha: "c3d4e5f" },

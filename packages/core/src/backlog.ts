@@ -66,7 +66,7 @@ interface TitleParts {
  * `summary` = Rest; `sha` = erstes Backtick-Token der Commit/Phase-Spalte.
  * Zwei Spalten ([Item, Commit/Phase]) lesen die ID aus der ersten Spalte.
  */
-function parseDoneTableRow(line: string): DoneEntry | undefined {
+function parseDoneTableRow(line: string, lineNo: number): DoneEntry | undefined {
   const cells = line
     .trim()
     .replace(/^\|/, "")
@@ -78,7 +78,7 @@ function parseDoneTableRow(line: string): DoneEntry | undefined {
   const commitCell = cells.length >= 3 ? cells[2]! : cells[1]!;
   const token = FIRST_TOKEN.exec(itemCell)?.[0];
   if (!token) return undefined;
-  const entry: DoneEntry = { id: token, summary: itemCell.slice(token.length).trim() };
+  const entry: DoneEntry = { id: token, summary: itemCell.slice(token.length).trim(), line: lineNo };
   const sha = BACKTICKED.exec(commitCell);
   if (sha) {
     entry.sha = sha[1]!;
@@ -307,7 +307,7 @@ export function parseBacklog(rawContent: string, file = "BACKLOG.md"): ParseResu
     if (inDoneIndex) {
       const done = DONE_LINE.exec(line);
       if (done) {
-        const entry: DoneEntry = { id: done[1]!.trim(), summary: done[2]!.trim() };
+        const entry: DoneEntry = { id: done[1]!.trim(), summary: done[2]!.trim(), line: lineNo };
         if (done[3] !== undefined) {
           entry.sha = done[3]!;
         }
@@ -318,7 +318,7 @@ export function parseBacklog(rawContent: string, file = "BACKLOG.md"): ParseResu
         if (TABLE_SEPARATOR.test(line)) {
           doneTableData = true;
         } else if (doneTableData) {
-          const entry = parseDoneTableRow(line);
+          const entry = parseDoneTableRow(line, lineNo);
           if (entry) {
             doneIndex.push(entry);
           }

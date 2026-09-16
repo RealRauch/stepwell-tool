@@ -48,6 +48,13 @@ load (hard error with a clear message).
 | ⬜ open · 🔄 in progress · ✅ done · ⛔ blocked | step status in `PROGRESS.md` | steps `<Phase>.<x>` (e.g. `7.2`) |
 | other series letters (`R`, `T`, `D`, …) | thematic series, not priority-bound | consecutive, never reused |
 
+**Archive ordering (M10/Decision 19):** completed phase blocks are appended
+**chronologically** at the end of `PROGRESS_ARCHIVE.md` — the archives stay strictly
+append-only, so phase numbers there may be **non-monotonic** (a post-hoc completed
+older phase lands after younger ones, e.g. `… 53 → 55 → 54`). Deliberately no insert
+at the phase-number position (that would be a write into existing history). The
+progress table in `PROGRESS.md` stays the complete, permanent index.
+
 ---
 
 ## Requirements & setup
@@ -123,14 +130,14 @@ with a clear message — the server does not crash.
 | `backlog_show` | `root`, `id` | Merge view for one item ID across open BACKLOG ↔ Done Index ↔ BACKLOG_ARCHIVE, including `raw` + `span`; case-sensitive |
 | `progress_list` | `root`, optional `status` | Rows of the progress table `{step, name, status}` |
 | `progress_show` | `root`, `phase` | Detail block including `raw` — search across running phases **and** archive (name, title or `name — title`) |
-| `docs_validate` | `root`, optional `structured` | Validate findings (consistency rules) + collected parse warnings, `ok` |
+| `docs_validate` | `root`, optional `structured` | Validate findings (consistency rules) + collected parse warnings, `ok`; findings acknowledged in place (L13) are reported separately in `acknowledged[]` and do not flip `ok` |
 
 #### Write (dry-run + apply)
 
 | Tool | Parameters | Behaviour |
 |------|-----------|-----------|
 | `archive_item` | `root`, `id`, optional `note`, `locale`, `structured`, `detail`, `dryRun` (**default `true`**) | Plans the **verbatim move** of an item: remove the block (span-based) from BACKLOG.md, in the archive copy flip the checkbox → `[x]`, optional `note` becomes the done line; plus a one-liner `- <ID> — <title> — done (note?)` at the end of the Done Index. Apply verifies freshly: ID gone from open, present in archive + index, no findings left. This is the antidote to the `NOT_ARCHIVED` (D2) validate finding. |
-| `progress_update` | `root`, `phase`, `step` (string **or string[]** for multi-step in one call, only with `dryRun: false`; all steps are validated before the first write and `detail: "summary"` is rejected for multi-step), `status` (`⬜🔄✅⛔`), optional `title`, `note`, `checkpoint` (commit SHA, 7–40 hex), `locale`, `structured`, `detail`, `dryRun` (**default `true`**) | Sets the status cell(s) of the steps (missing rows are added, name derived from the scope bullet); on 🔄 creates a detail-block skeleton under "Active Phases" (`### Phase …` + `**Scope (Steps):**` + step bullet — **no** invented goal/acceptance texts); `title` renames the block heading consistently (rename → archival in the same call is defined); if afterwards no step of the phase is still 🔄/⬜, the block moves **verbatim** into PROGRESS_ARCHIVE (`note`/`checkpoint` → verification line, response contains the doc-sync reminder) — with step arrays completion is detected automatically at the last step. Apply verifies row, block move and `docs_validate`. |
+| `progress_update` | `root`, `phase`, `step` (string **or string[]** for multi-step in one call, only with `dryRun: false`; all steps are validated before the first write and `detail: "summary"` is rejected for multi-step), `status` (`⬜🔄✅⛔`), optional `title`, `note`, `checkpoint` (commit SHA, 7–40 hex), `locale`, `structured`, `detail`, `dryRun` (**default `true`**) | Sets the status cell(s) of the steps (missing rows are added, name derived from the scope bullet); on 🔄 creates a detail-block skeleton under "Active Phases" (`### Phase …` + `**Scope (Steps):**` + step bullet — **no** invented goal/acceptance texts); `title` renames the block heading consistently (rename → archival in the same call is defined); if afterwards no step of the phase is still 🔄/⬜, the block moves **verbatim** into PROGRESS_ARCHIVE (`note`/`checkpoint` → verification line, response contains the doc-sync reminder) — with step arrays completion is detected automatically at the last step. A step whose phase was already archived **earlier in the same batch** is accepted idempotently (row update only, no second append, no error — H2). Apply verifies row, block move and `docs_validate`. |
 | `backlog_add` | `root`, `section`, `title`, `priority` (`🔴🟠🟡🟢🔵`), optional `id`, `text`, `detail`, `dryRun` | Creates an open item at the **end of the target section**: ID with convention check (`^[A-Z][0-9]+$`), auto-assignment = next free number of the priority series (K/H/M/L; 🔵 requires an explicit ID), `text` bullets verbatim, `As of:` timestamp in the heading is updated. |
 | `backlog_update` | `root`, `id`, optional `title`, `priority`, `section`, `text`, `detail`, `dryRun` | Changes title/priority/text/section in the block format (span recomputation, checkbox and `*(…)*` suffix are preserved). A priority change moves the block into the matching priority section. |
 | `backlog_remove` | `root`, `id`, optional `note`, `locale`, `detail`, `dryRun` | **No hard delete:** block moves verbatim into BACKLOG_ARCHIVE (checkbox stays `[ ]`, optional `note` → `**Removed:**` line), the Done Index gets a tail without a done marker (`- <ID> — <title> — removed (note?)`). `docs_validate` deliberately does **not** report checkbox-`[ ]` blocks as `ARCHIVE_WITHOUT_INDEX`. |
@@ -209,7 +216,7 @@ Human output on stdout; `--json` returns the core payloads with a leading
 | `status` | `openByPriority`, `openTotal`, `runningSteps`, `runningPhases`, `doneQuote`, `nextStep`, `nextPriority`, `warnings` |
 | `backlog` | `count`, `items[]` (without `raw`), `warnings` |
 | `progress` | `count`, `rows[]`, `warnings` |
-| `validate` | `findings[]`, `warnings[]`, `ok` |
+| `validate` | `findings[]` (blocking), `acknowledged[]` (accepted in place, L13), `warnings[]`, `ok` |
 | `archive` (dry-run) | `root`, `id`, `dryRun`, `note`, `changes[]` |
 | `archive --apply` | `written[]`, `verification{ok, messages[]}` |
 | `progress-update` | like `archive` plus `phase`, `step`, `status`, `title`, `completedPhase`, `checkpoint?` |
@@ -308,6 +315,16 @@ is silently tolerated (stripped deterministically, T5/9.13) — no warning.
 | `STEP_DUPLICATE` (R6) | validate | step number appears twice in the progress table — `progress_update` maintains only the first row |
 | `DATE_LEGACY` (D15) | validate | legacy `MM/YYYY` date in open files — canonical is `YYMMDD/HHMM` (e.g. `260907/1523`) |
 | `PROJECT_NOT_INITIALIZED` (M5) | validate | root without a STEPWELL project (all four files missing) — exactly one finding with guidance instead of an error desert; `docs_status` returns the zero aggregate + this finding, read/mutation tools a structured error response (`code`/`message`/`missing`). Partial stock (a single file missing) stays a hard error per file. Contract exception: `file` carries the project root (directory) here, not a file path |
+
+### Acknowledging a finding in place (L13)
+
+A deliberately accepted deviation is marked **on the line the finding points at** with
+`*(accepted: CODE[, CODE])*` — codes compared case-insensitively (e.g. a legacy Done
+Index ID: `- R1-A — … — done in \`d4e5f6a\` *(accepted: ID_CONVENTION)*`). Such findings
+move into `acknowledged[]` (count stays visible) and no longer flip `ok` to false; a new,
+unmarked finding still blocks. No config file, no extra tool — findings without a line
+(or without the marker) stay blocking. The marker sits inside the already-tolerated
+optional `*(…)*` suffix, so titles/IDs stay clean.
 
 ---
 

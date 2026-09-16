@@ -242,7 +242,12 @@ function progressText(rows: Array<{ step: string; name: string; status: string }
   return [...lines, "", `Rows: ${rows.length}`, ""].join("\n");
 }
 
-function validateText(result: { findings: Array<{ code: string; file: string; line?: number; message: string }>; warnings: Array<{ code: string }>; ok: boolean }): string {
+function validateText(result: {
+  findings: Array<{ code: string; file: string; line?: number; message: string }>;
+  acknowledged: Array<{ code: string; file: string; line?: number; message: string }>;
+  warnings: Array<{ code: string }>;
+  ok: boolean;
+}): string {
   const lines: string[] = [];
   if (result.ok) {
     lines.push("OK — no consistency findings.");
@@ -251,6 +256,13 @@ function validateText(result: { findings: Array<{ code: string; file: string; li
     for (const f of result.findings) {
       const where = f.line === undefined ? basename(f.file) : `${basename(f.file)}:${f.line}`;
       lines.push(`${f.code} ${where} — ${f.message}`);
+    }
+  }
+  if (result.acknowledged.length > 0) {
+    lines.push(`Acknowledged (accepted findings): ${result.acknowledged.length}`);
+    for (const f of result.acknowledged) {
+      const where = f.line === undefined ? basename(f.file) : `${basename(f.file)}:${f.line}`;
+      lines.push(`  ${f.code} ${where}`);
     }
   }
   lines.push(`Warnings (parse): ${result.warnings.length}`);

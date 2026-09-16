@@ -13,6 +13,28 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
 
 ## [Unreleased]
 
+### Phase 19 - Completion & validate hardening (260916)
+
+#### Fixed
+- **Multi-step phase completion no longer reports success as an error (H2/19.2):**
+  a `progress_update` step array whose steps include already-✅ ones around the last
+  open step now completes the phase idempotently - the archive block is appended
+  exactly once and `verification.ok` stays `true` (previously `unknown phase … failed
+  after partially applying` after the first step had already archived the block).
+
+#### Added
+- **Inline accepted findings (L13/19.5):** a deliberately accepted deviation is marked
+  on the line the finding points at with `*(accepted: CODE[, CODE])*`; `docs_validate`
+  moves such findings into `acknowledged[]` (count stays visible) and `ok` reflects
+  only the unmarked findings. No config file, no new tool; `DoneEntry` now carries the
+  source `line`.
+
+#### Changed
+- **Archive ordering documented (M10/19.3):** completed phase blocks are appended
+  chronologically at the end of `PROGRESS_ARCHIVE.md` - phase numbers there may be
+  non-monotonic (append-only, no insert at the number position); Decision 19, fixture
+  `project-h-completion-order`.
+
 ### Phase 18 — Review follow-ups (260911)
 
 #### Fixed
