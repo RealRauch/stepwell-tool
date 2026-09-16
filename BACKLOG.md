@@ -1,4 +1,4 @@
-# BACKLOG.md — Open items (As of: 260911/1930
+# BACKLOG.md — Open items (As of: 260916/1931
 
 > **This file contains only OPEN items.** Completed items are moved to `docs/archive/BACKLOG_ARCHIVE.md` unchanged after completion; this file keeps only a one-liner per item in the Done Index (below). Findings/fix-ideas/decisions are not deleted — moved to the archive.
 > Legend: 🔴 critical · 🟠 high · 🟡 medium · 🟢 low · 🔵 test gap
@@ -14,17 +14,61 @@
 
 ## 🟠 HIGH
 
-> No open items.
+### [ ] Q1 — Quick-Start: Einstiegsdokument für Methoden-Adoption — 🟠
+- `docs/QUICKSTART.md` (~500–800 Wörter) erstellen
+- **Location:** `docs/QUICKSTART.md` (neu)
+- **Acceptance:** Ein Dokument, das in ≤5 Minuten vermittelt: Was STEPWELL ist (3 Sätze), Kernschleife (Plan → Package → Release → Implement → Verify → Archive), die vier Dateien und was reingehört (je 1 Satz), die 5 wichtigsten Regeln (Test-First, Commit-Disziplin, Freigabe-Gate, Archiv-Muster, Doku-Pflicht), Verweis auf PLAYBOOK als Vollreferenz. PLAYBOOK bleibt unverändert — Quick-Start ist Einstieg, nicht Ersatz.
+
+### [ ] H2 — progress_update multi-step: Phasen-Abschluss archiviert den Block mitten im Batch — Folgesteps scheitern (Erfolg als Fehler) — 🟠
+- **Location:** `packages/mcp/src/tools.ts:411-433` (Multi-Step-Loop) + `packages/core/src/mutations.ts:348-353` (Block-Lookup), `:366-374` (`remainingOpen`/`completedPhase`), `:393-395` (Span-Entfernung).
+- **Fund (Feldnutzung internal-pwa, 16.09.2026):** Abschluss von Phase 54 mit `progress_update(phase="Phase 54 — …", step=["54.1","54.2","54.3","54.4","54.5"], status="✅", dryRun=false)` — nur `54.1` war noch 🔄, `54.2–54.5` bereits ✅. Ablauf: `steps.map(plan…)` validiert alle Steps gegen den Ausgangsstand (ok), dann `runSingle` je Step. Der **erste** Step (`54.1 → ✅`) schließt die Phase ab → Detailblock wird nach `PROGRESS_ARCHIVE` verschoben. Der **zweite** Step (`54.2`) plant erneut gegen den bereits geschriebenen Stand, findet den Block nicht mehr, und `status==="✅" && block===undefined` (mutations.ts:351) wirft: `unknown phase: … (nur 🔄-Phasen können neu angelegt werden)`.
+- **Wirkung:** Der Endzustand war korrekt (Zeile ✅, Block + Verifikationszeile im Archiv) — gemeldet wurde aber `multi-step (…) failed after partially applying — already written: PROGRESS.md, docs/archive/PROGRESS_ARCHIVE.md — cause: unknown phase …`. Also **Erfolg als Fehler** → Retry-Risiko (Doppel-Archivierung) und manuelles Nachfassen. M9/18.1 meldet die Teilanwendung zwar ehrlich, aber der Fall bleibt.
+- **Ursache:** Die Vorab-Validierung (M9/18.1) prüft gegen den Ausgangsstand; die Completion-Erkennung kennt den Batch nicht. Nach dem ersten `runSingle` ist der Block weg — Folge-Steps derselben Phase scheitern.
+- **Lösungsskizze:** (a) Completion über den **gesamten Batch** rechnen (Block erst entfernen, wenn nach Verarbeitung aller Steps kein Step der Phase offen bleibt) — erzeugt genau einen Archiv-Append; oder (b) idempotent: pro Step, dessen Phase im selben Lauf bereits archiviert wurde, „bereits abgeschlossen" annehmen (Tabellenzeile ok, kein zweiter Append, kein Fehler). (a) ist semantisch sauberer, (b) kleiner.
+- **Acceptance:** Multi-Step-Abschluss, dessen Batch bereits-✅ Steps **vor und nach** dem letzten offenen Step enthält, endet `verification.ok=true`, archiviert den Block **genau einmal** und meldet **keinen** Fehler; Regressionstest mit dem heutigen Fall (54.1 offen, 54.2–54.5 ✅) als Fixture (ROT vor Fix). M9-Verhalten (echte Validierungsfehler vor dem ersten Write) bleibt unverändert.
 
 ---
 
 ## 🟡 MEDIUM
 
+### [ ] Q2 — Retro-Konvention: Methoden-Pruning legitimieren — 🟡
+- PLAYBOOK-Abschnitt für periodische Methoden-Retrospektive ergänzen
+- **Location:** `docs/PLAYBOOK.md` (neuer Abschnitt, z.B. nach §5)
+- **Acceptance:** Konvention, die alle N Phasen (z.B. 5) ein Review von LESSONS + Decisions vorsieht. Drei Leitfragen: (1) Hat die Regel in den letzten N Phasen einen Bug verhindert? (2) Erzeugt sie mehr Overhead als Nutzen? (3) Konsolidierbar mit einer anderen? Outcomes: bleibt / herabstufen (bindend → empfohlen) / streichen (Verweis im Archiv). Kein Zwang zum Streichen — aber ein legitimierter Pfad dafür. Sync in alle PLAYBOOK-Kopien.
+
+### [ ] Q4 — AGENTS.md Decisions konsolidieren — 🟡
+- Decisions-Liste straffen: historische Fakten → Archiv, Redundanzen → eliminieren
+- **Location:** `AGENTS.md` (Architektur-Entscheidungen), `docs/archive/`
+- **Acceptance:** Decisions, die rein historische Fakten dokumentieren (z.B. D8 Stack-Entscheidung, D12 Namens-Kollisionscheck) oder PLAYBOOK-Abschnitte wiederholen (z.B. D9 ≈ §2), werden ins Archiv verschoben oder mit dem PLAYBOOK-Verweis ersetzt. Ziel: ≤12 aktive Decisions. Verbleibende Decisions sind solche, die laufendes Verhalten steuern (Content-Gates, Lockstep-SemVer, Surface-Guardrail, etc.). Kein inhaltlicher Verlust — nur Umzug.
+
+### [ ] M10 — Phasen-Abschluss hängt den Archiv-Block ans Dateiende — Reihenfolge bei nachgeholtem Abschluss (53 → 55 → 54) — 🟡
+- **Location:** `packages/core/src/mutations.ts:428-439` (Archiv-Append bei Phasen-Abschluss), `packages/core/src/archive.ts` (append), Fixture-Spec.
+- **Fund (16.09.2026, internal-pwa):** Phase 55 war bereits archiviert, als der Nachtrag Phase 54 abgeschlossen wurde → der Block landete **hinter** 55 (`… 50 → 51 → 52 → 53 → 55 → 54`). Für die Lesbarkeit wurde er manuell an die Phasennummer-Position einsortiert (im selben Commit, Block war gerade erst erzeugt).
+- **Frage/Entscheid nötig:** append-only (Reihenfolge = Beleg der Abschluss-Historie, Phasennummer darf nicht-monoton sein) **oder** einsortiert nach Phasennummer (Lesbarkeit)? Reines Append ist methodentreu („Archive sind append-only"); Einsortieren ist ein Insert und damit eine bewusste Abweichung.
+- **Lösungsskizze:** Entweder dokumentierte Decision „Archiv = chronologisch nach Abschlusszeit, Phasennummer kann nicht-monoton sein" (README/AGENTS) **oder** (falls Einsortieren gewünscht) `progress_update` fügt an der Phasennummer-Position ein (Insert statt Append), mit Test für beide Fälle (nachgeholter Abschluss einer älteren Phase; normaler Abschluss in Reihenfolge → unverändert).
+- **Acceptance:** Entscheidung in README/AGENTS dokumentiert und durch einen Fixture-Test belegt; nachgeholter Abschluss einer älteren Phase landet an der definierten Position; kein stilles Mischen.
+
+### [ ] S2 — Sync-Schlag: Inline-Acceptance-Marker (L13) ins PLAYBOOK (alle Kopien) — 🟡
+- **Location:** `docs/PLAYBOOK.md` (Validate-/Verifikations-Kapitel) + Kopie in `../internal-pwa`.
+- **Kontext:** L13/19.5 hat den Inline-Marker `*(accepted: CODE)*` als Parser-/Validate-Semantik eingeführt (README + Fixture `project-i-acknowledged`). Die projektunabhängige Methode kennt „bewusst akzeptierte Abweichung" noch nicht.
+- **Acceptance:** PLAYBOOK-Abschnitt zu bewusst akzeptierten Findings (Marker-Syntax, Wirkung auf `ok`, append-only-Archive bleiben ausgenommen); textgleich in beiden PLAYBOOK-Kopien (SHA256-Beleg je Kopie); `docs_validate` in beiden Repos ohne neue Findings.
+
 ---
 
 ## 🟢 LOW
 
----
+### [ ] Q3 — Zeitstempel auf ISO 8601 umstellen — 🟢
+- YYMMDD/HHMM → ISO 8601 (`2026-09-07T15:23`) in Methode + Parser
+- **Location:** `docs/PLAYBOOK.md` §3 (Timestamps), Parser-Toleranzschicht, AGENTS.md Decision 11
+- **Acceptance:** Neue Einträge verwenden ISO 8601 (z.B. `2026-09-07T15:23`). Parser-Toleranz liest YYMMDD/HHMM + MM/YYYY weiterhin still (keine Warnung für Bestand). PLAYBOOK §3 dokumentiert das neue Format + Toleranz. `DATE_LEGACY`-Warnung gilt für beide Alt-Formate, nur in offenen Dateien. Archive nie anfassen. Sync in alle PLAYBOOK-Kopien.
+
+### [ ] L13 — docs_validate: bewusst akzeptierte Findings halten ok:false dauerhaft — Acknowledgement-Mechanismus fehlt — 🟢
+- **Location:** `packages/core/src/validate.ts`, README (Warning-Modell / Decision 6), `docs/PLAYBOOK.md` (Validate-Kapitel).
+- **Fund (16.09.2026, internal-pwa):** `R1-A`/`R1-B` im Erledigt-Index sind in `AGENTS.md` **bewusst** als akzeptierte Legacy-Abweichungen dokumentiert („kein Fix, keine wiederholte Meldung"). `docs_validate` meldet sie trotzdem dauerhaft (`ID_CONVENTION`) und liefert deshalb `ok:false` — obwohl außer diesen beiden Alt-Einträgen nichts offen ist. Das Signal „Findings > 0" ist damit dauerhaft entwertet; ein echtes neues Finding fällt weniger auf.
+- **Wirkung:** Jeder Validator-Lauf zeigt rote Findings, die der Mensch projekt-seitig bereits sanktioniert hat — Rauschen statt Signal, kein Weg zu einem ehrlichen „grün".
+- **Lösungsskizze:** Projekt-seitige Acknowledgement-Liste (z. B. `.stepwell/acknowledged.json` oder ein Abschnitt in `AGENTS.md`), die Findings per `code` + `file` + optionalem `message`-Muster stilllegt. Im Report getrennt als „acknowledged" ausweisen (Anzahl sichtbar, aber `ok:true`, solange keine nicht-akzeptierten Findings bleiben). Alternative: `acknowledged`-Flag/Severity im `Warning`-Modell. Bewusst **kein** Auto-Ignore ganzer Archiv-Dateien (W2-Verhalten bleibt).
+- **Abgrenzung:** Kein Guide-/Meta-Tool (Decision 17) — reine Parser-/Validate-Semantik, kein neues Tool.
+- **Acceptance:** Ein bewusst akzeptiertes Finding lässt `docs_validate` `ok:true` liefern und wird separat als „acknowledged" mitgezählt; ein neues, nicht gelistetes Finding hält `ok:false`; Fixture + Doku (README + PLAYBOOK-Validate-Kapitel) belegen das Verhalten.
 
 ## 🔵 TEST GAPS
 
