@@ -47,13 +47,12 @@ alles andere (Prosa) editiert der Agent direkt in den Dateien.
    Hashes mit dem letzten bekannten Stand überein, genügt das Lesen des Step-Scopes —
    PLAYBOOK/LESSONS müssen nicht erneut voll gelesen werden; unabhängige Read-Calls
    parallel stellen.
-2. `PROGRESS.md` → „Laufende Phasen": nächster offener Step in definierter Reihenfolge
-   (Phasen 1–12 sind abgeschlossen und archiviert — 11 „Methoden-Sync: Mess-Lesson" (G4),
-   12 „Token-Ökonomie" (E1/E2/G5); Phase 13 „Naming-Refactor" ist vorausgeplant.
-   Achtung: 13.1–13.3 berühren Dependency-Manifeste/Tool-Kontrakte → Content-Gate
-   **Mittel** gem. Decision 15 (Freigabe je Vorkommnis), 13.4 (Repo-Rename) ist
-   explizites menschliches Gate; Freigabe-Gate gem. Decision 13 — Code-Steps erst
-   nach expliziter menschlicher Freigabe; Backlog-Wurzel-Pflicht gem. Decision 14).
+2. `PROGRESS.md` → „Laufende Phasen": nächster offener Step in definierter Reihenfolge.
+   Stand 09/2026: Phasen 1–19 sind abgeschlossen und archiviert — aktuell keine laufende
+   Phase; nächste Arbeit gem. Decision 14 aus offenen BACKLOG-Items paketieren
+   (Priorität 🔴 → 🟠 → 🟡 → 🟢 → 🔵). Freigabe-Gate gem. Decision 13 — Code-Steps erst
+   nach expliziter menschlicher Freigabe; Content-Gates gem. Decision 15 (Mittel bei
+   Dependency-Manifesten/Tool-Kontrakten); Backlog-Wurzel-Pflicht gem. Decision 14.
 3. **Testdaten:** `packages/core/tests/fixtures/` — die `README.md` dort ist die arbeitende
    Spezifikation für 1.2–1.6 (erwartete Parser-Ergebnisse + Validate-Funde D1–D15).
    `project-a` = sauberes Musterprojekt (Parser-Positivpfad) · `project-b-drift` = absichtliche Drift-Fälle (Toleranz + Validate).

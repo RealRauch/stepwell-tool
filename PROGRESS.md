@@ -9,15 +9,6 @@
 > are moved to `docs/archive/PROGRESS_ARCHIVE.md` unchanged after completion.
 
 ## Active Phases
-### Phase 19 — Completion & validate hardening
-
-**Umfang (Steps):**
-
-- **19.1 H2 RED: regression fixture + failing test — multi-step completion with already-✅ steps before and after the open step**
-- **19.2 H2: batch-wide completion detection — archive exactly once, verification.ok=true, no false failure (approach fixed at release)**
-- **19.3 M10: archive ordering — decision documented (README/AGENTS) + fixture test (append-chronological vs insert at phase-number position)**
-- **19.4 L13 RED: acknowledgement fixture + failing test — acknowledged finding → ok:true, counted separately**
-- **19.5 L13: acknowledgement mechanism (no new tool) + README/PLAYBOOK validate chapter**
 
 
 
@@ -119,8 +110,8 @@
 | 18.1 | M9: multi-step progress_update — validate-before-write + detail handling (Review Findings 1+2) | ✅ |
 | 18.2 | L11: EN surface gaps — warnings, zod descriptions, resources, stale comment, README count, CHANGELOG note (Review Findings 3+4+6) | ✅ |
 | 18.3 | L12: consolidate step-prefix regex + phaseContext re-parse + duplicate imports (Review Findings 5+6) | ✅ |
-| 19.1 | H2 RED: regression fixture + failing test — multi-step completion with already-✅ steps before and after the open step | ⬜ |
-| 19.2 | H2: batch-wide completion detection — archive exactly once, verification.ok=true, no false failure (approach fixed at release) | ⬜ |
-| 19.3 | M10: archive ordering — decision documented (README/AGENTS) + fixture test (append-chronological vs insert at phase-number position) | ⬜ |
-| 19.4 | L13 RED: acknowledgement fixture + failing test — acknowledged finding → ok:true, counted separately | ⬜ |
-| 19.5 | L13: acknowledgement mechanism (no new tool) + README/PLAYBOOK validate chapter | ⬜ |
+| 19.1 | H2 RED: regression fixture + failing test — multi-step completion with already-✅ steps before and after the open step | ✅ |
+| 19.2 | H2: batch-wide completion detection — archive exactly once, verification.ok=true, no false failure (approach fixed at release) | ✅ |
+| 19.3 | M10: archive ordering — decision documented (README/AGENTS) + fixture test (append-chronological vs insert at phase-number position) | ✅ |
+| 19.4 | L13 RED: acknowledgement fixture + failing test — acknowledged finding → ok:true, counted separately | ✅ |
+| 19.5 | L13: acknowledgement mechanism (no new tool) + README/PLAYBOOK validate chapter | ✅ |

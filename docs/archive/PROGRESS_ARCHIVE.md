@@ -423,3 +423,16 @@ nachholen oder einen anderen Pfad wählen.
 - **18.2 L11: EN surface gaps — warnings, zod descriptions, resources, stale comment, README count, CHANGELOG note (Review Findings 3+4+6)**
 - **18.3 L12: consolidate step-prefix regex + phaseContext re-parse + duplicate imports (Review Findings 5+6)**
 **Verification:** Verification: npm run typecheck && npm run test — 318/318 green (260911/1923) · Refactor behavior-identical, tests unchanged · scopeStepOf/scopeEntryFor as single regex source (4 variants removed); resolveItem via memoized ProjectDocs; duplicate imports merged. (checkpoint: de70733)
+
+---
+
+### Phase 19 — Completion & validate hardening
+
+**Umfang (Steps):**
+
+- **19.1 H2 RED: regression fixture + failing test — multi-step completion with already-✅ steps before and after the open step**
+- **19.2 H2: batch-wide completion detection — archive exactly once, verification.ok=true, no false failure (approach fixed at release)**
+- **19.3 M10: archive ordering — decision documented (README/AGENTS) + fixture test (append-chronological vs insert at phase-number position)**
+- **19.4 L13 RED: acknowledgement fixture + failing test — acknowledged finding → ok:true, counted separately**
+- **19.5 L13: acknowledgement mechanism (no new tool) + README/PLAYBOOK validate chapter**
+**Verifikation:** npm run typecheck && npm run test — both green (324/324); coverage above thresholds (core 96.9/88.6/99.1/96.9, mcp 95.5/85.0/100/95.5). RED a2f659f+e127bb7 → fix a5a6e11. H2 (multi-step batch completion, fixture project-h-completion-order), M10 (append-only ordering, Decision 19), L13 (inline accepted marker, fixture project-i-acknowledged); PLAYBOOK sync rooted as S2. (checkpoint: a5a6e11)
