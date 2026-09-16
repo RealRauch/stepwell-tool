@@ -585,3 +585,35 @@
 - **Acceptance:** Eintrag steht in method-docs-BACKLOG; kein Sync-Versuch nach internal-pwa durch unsere Steps; Phase-16-Step-Notes verweisen auf S1.
 - **Verification:** BACKLOG enthält S1; `docs_status` zeigt Item; `docs_validate` method-docs clean.
 - **Done:** Sync executed 09/2026 (user decision — no longer waiting for the other agent): PLAYBOOK/LESSONS migrated to EN in internal-pwa + DE snapshots added, textually identical with stepwell-tool. SHA256: PLAYBOOK 50f16dd8…, LESSONS 752eac47… both repos. internal-pwa commit 0d81eb6; docs_validate: only pre-existing findings, none new.
+
+---
+
+### [x] H2 — progress_update multi-step: Phasen-Abschluss archiviert den Block mitten im Batch — Folgesteps scheitern (Erfolg als Fehler) — 🟠
+- **Location:** `packages/mcp/src/tools.ts:411-433` (Multi-Step-Loop) + `packages/core/src/mutations.ts:348-353` (Block-Lookup), `:366-374` (`remainingOpen`/`completedPhase`), `:393-395` (Span-Entfernung).
+- **Fund (Feldnutzung internal-pwa, 16.09.2026):** Abschluss von Phase 54 mit `progress_update(phase="Phase 54 — …", step=["54.1","54.2","54.3","54.4","54.5"], status="✅", dryRun=false)` — nur `54.1` war noch 🔄, `54.2–54.5` bereits ✅. Ablauf: `steps.map(plan…)` validiert alle Steps gegen den Ausgangsstand (ok), dann `runSingle` je Step. Der **erste** Step (`54.1 → ✅`) schließt die Phase ab → Detailblock wird nach `PROGRESS_ARCHIVE` verschoben. Der **zweite** Step (`54.2`) plant erneut gegen den bereits geschriebenen Stand, findet den Block nicht mehr, und `status==="✅" && block===undefined` (mutations.ts:351) wirft: `unknown phase: … (nur 🔄-Phasen können neu angelegt werden)`.
+- **Wirkung:** Der Endzustand war korrekt (Zeile ✅, Block + Verifikationszeile im Archiv) — gemeldet wurde aber `multi-step (…) failed after partially applying — already written: PROGRESS.md, docs/archive/PROGRESS_ARCHIVE.md — cause: unknown phase …`. Also **Erfolg als Fehler** → Retry-Risiko (Doppel-Archivierung) und manuelles Nachfassen. M9/18.1 meldet die Teilanwendung zwar ehrlich, aber der Fall bleibt.
+- **Ursache:** Die Vorab-Validierung (M9/18.1) prüft gegen den Ausgangsstand; die Completion-Erkennung kennt den Batch nicht. Nach dem ersten `runSingle` ist der Block weg — Folge-Steps derselben Phase scheitern.
+- **Lösungsskizze:** (a) Completion über den **gesamten Batch** rechnen (Block erst entfernen, wenn nach Verarbeitung aller Steps kein Step der Phase offen bleibt) — erzeugt genau einen Archiv-Append; oder (b) idempotent: pro Step, dessen Phase im selben Lauf bereits archiviert wurde, „bereits abgeschlossen" annehmen (Tabellenzeile ok, kein zweiter Append, kein Fehler). (a) ist semantisch sauberer, (b) kleiner.
+- **Acceptance:** Multi-Step-Abschluss, dessen Batch bereits-✅ Steps **vor und nach** dem letzten offenen Step enthält, endet `verification.ok=true`, archiviert den Block **genau einmal** und meldet **keinen** Fehler; Regressionstest mit dem heutigen Fall (54.1 offen, 54.2–54.5 ✅) als Fixture (ROT vor Fix). M9-Verhalten (echte Validierungsfehler vor dem ersten Write) bleibt unverändert.
+- **Erledigt:** Fix a5a6e11 (Phase 19/19.2) — Batch-weite Idempotenz, Fixture project-h-completion-order, 324/324 grün
+
+---
+
+### [x] M10 — Phasen-Abschluss hängt den Archiv-Block ans Dateiende — Reihenfolge bei nachgeholtem Abschluss (53 → 55 → 54) — 🟡
+- **Location:** `packages/core/src/mutations.ts:428-439` (Archiv-Append bei Phasen-Abschluss), `packages/core/src/archive.ts` (append), Fixture-Spec.
+- **Fund (16.09.2026, internal-pwa):** Phase 55 war bereits archiviert, als der Nachtrag Phase 54 abgeschlossen wurde → der Block landete **hinter** 55 (`… 50 → 51 → 52 → 53 → 55 → 54`). Für die Lesbarkeit wurde er manuell an die Phasennummer-Position einsortiert (im selben Commit, Block war gerade erst erzeugt).
+- **Frage/Entscheid nötig:** append-only (Reihenfolge = Beleg der Abschluss-Historie, Phasennummer darf nicht-monoton sein) **oder** einsortiert nach Phasennummer (Lesbarkeit)? Reines Append ist methodentreu („Archive sind append-only"); Einsortieren ist ein Insert und damit eine bewusste Abweichung.
+- **Lösungsskizze:** Entweder dokumentierte Decision „Archiv = chronologisch nach Abschlusszeit, Phasennummer kann nicht-monoton sein" (README/AGENTS) **oder** (falls Einsortieren gewünscht) `progress_update` fügt an der Phasennummer-Position ein (Insert statt Append), mit Test für beide Fälle (nachgeholter Abschluss einer älteren Phase; normaler Abschluss in Reihenfolge → unverändert).
+- **Acceptance:** Entscheidung in README/AGENTS dokumentiert und durch einen Fixture-Test belegt; nachgeholter Abschluss einer älteren Phase landet an der definierten Position; kein stilles Mischen.
+- **Erledigt:** Decision 19 (append-only chronologisch) + Fixture project-h-completion-order, Commit a5a6e11 (Phase 19/19.3)
+
+---
+
+### [x] L13 — docs_validate: bewusst akzeptierte Findings halten ok:false dauerhaft — Acknowledgement-Mechanismus fehlt — 🟢
+- **Location:** `packages/core/src/validate.ts`, README (Warning-Modell / Decision 6), `docs/PLAYBOOK.md` (Validate-Kapitel).
+- **Fund (16.09.2026, internal-pwa):** `R1-A`/`R1-B` im Erledigt-Index sind in `AGENTS.md` **bewusst** als akzeptierte Legacy-Abweichungen dokumentiert („kein Fix, keine wiederholte Meldung"). `docs_validate` meldet sie trotzdem dauerhaft (`ID_CONVENTION`) und liefert deshalb `ok:false` — obwohl außer diesen beiden Alt-Einträgen nichts offen ist. Das Signal „Findings > 0" ist damit dauerhaft entwertet; ein echtes neues Finding fällt weniger auf.
+- **Wirkung:** Jeder Validator-Lauf zeigt rote Findings, die der Mensch projekt-seitig bereits sanktioniert hat — Rauschen statt Signal, kein Weg zu einem ehrlichen „grün".
+- **Lösungsskizze:** Projekt-seitige Acknowledgement-Liste (z. B. `.stepwell/acknowledged.json` oder ein Abschnitt in `AGENTS.md`), die Findings per `code` + `file` + optionalem `message`-Muster stilllegt. Im Report getrennt als „acknowledged" ausweisen (Anzahl sichtbar, aber `ok:true`, solange keine nicht-akzeptierten Findings bleiben). Alternative: `acknowledged`-Flag/Severity im `Warning`-Modell. Bewusst **kein** Auto-Ignore ganzer Archiv-Dateien (W2-Verhalten bleibt).
+- **Abgrenzung:** Kein Guide-/Meta-Tool (Decision 17) — reine Parser-/Validate-Semantik, kein neues Tool.
+- **Acceptance:** Ein bewusst akzeptiertes Finding lässt `docs_validate` `ok:true` liefern und wird separat als „acknowledged" mitgezählt; ein neues, nicht gelistetes Finding hält `ok:false`; Fixture + Doku (README + PLAYBOOK-Validate-Kapitel) belegen das Verhalten.
+- **Erledigt:** Inline accepted marker (Variante B), Fixture project-i-acknowledged, Commit a5a6e11 (Phase 19/19.5); PLAYBOOK-Sync als S2 gewurzelt
