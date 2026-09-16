@@ -158,3 +158,45 @@ describe("docsValidate — STEP_DUPLICATE (R6)", () => {
     expect(result.findings.filter((f) => f.code === "STEP_DUPLICATE")).toHaveLength(2);
   });
 });
+
+describe("docsValidate — inline accepted marker (L13)", () => {
+  const result = docsValidate(join(fixtures, "project-i-acknowledged"));
+
+  it("moves a marked finding to `acknowledged` and keeps the report green", () => {
+    expect(result.findings).toEqual([]);
+    expect(result.acknowledged.map((f) => f.code)).toEqual(["ID_CONVENTION"]);
+    expect(result.acknowledged[0]!.message).toContain("R1-A");
+    expect(result.ok).toBe(true);
+  });
+
+  it("keeps the same finding blocking without the marker", () => {
+    const dir = tempCopy("project-i-acknowledged");
+    const backlogPath = join(dir, "BACKLOG.md");
+    writeFileSync(
+      backlogPath,
+      readFileSync(backlogPath, "utf8").replace(" *(accepted: ID_CONVENTION)*", ""),
+      "utf8",
+    );
+
+    const stripped = docsValidate(dir);
+
+    expect(stripped.acknowledged).toEqual([]);
+    expect(stripped.ok).toBe(false);
+    expect(stripped.findings.map((f) => f.code)).toEqual(["ID_CONVENTION"]);
+  });
+
+  it("acknowledges only the codes named in the marker", () => {
+    const dir = tempCopy("project-i-acknowledged");
+    const backlogPath = join(dir, "BACKLOG.md");
+    writeFileSync(
+      backlogPath,
+      readFileSync(backlogPath, "utf8").replace("accepted: ID_CONVENTION", "accepted: DATE_LEGACY"),
+      "utf8",
+    );
+
+    const other = docsValidate(dir);
+
+    expect(other.acknowledged).toEqual([]);
+    expect(other.findings.map((f) => f.code)).toEqual(["ID_CONVENTION"]);
+  });
+});

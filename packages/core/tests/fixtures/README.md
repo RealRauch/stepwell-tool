@@ -46,6 +46,18 @@ fixtures/
 │   └── docs/archive/      #   tolerates legacy DE bullet labels in EN open files.
 │       ├── BACKLOG_ARCHIVE.md
 │       └── PROGRESS_ARCHIVE.md
+├── project-h-completion-order/  # H2 + M10 (Phase 19): Phase 2 is active with an open
+│   ├── BACKLOG.md               #   step between already-✅ ones (2.0/2.2/2.3 done,
+│   ├── PROGRESS.md              #   2.1 in progress); a later phase (3) is already
+│   └── docs/archive/            #   archived → batch completion + chronological append.
+│       ├── BACKLOG_ARCHIVE.md
+│       └── PROGRESS_ARCHIVE.md
+├── project-i-acknowledged/  # L13 (Phase 19): like project-a, but the Done Index carries
+│   ├── BACKLOG.md           #   the non-conforming ID `R1-A` with the inline marker
+│   ├── PROGRESS.md          #   `*(accepted: ID_CONVENTION)*` → docsValidate is green
+│   └── docs/archive/        #   (`acknowledged[]`) instead of a permanent finding.
+│       ├── BACKLOG_ARCHIVE.md
+│       └── PROGRESS_ARCHIVE.md
 
 project-empty/             # empty directory (.gitkeep only; M5/9.3) — root WITHOUT a
                            #   STEPWELL project: docs_validate/docs_status → exactly
@@ -117,6 +129,32 @@ exactly as in real projects.
 - **Edge cases (inline tests, not part of the fixtures):** a range row
   (`L1–L3 …`) is captured as one entry with `id: "L1–L3"` (convention check then
   honestly fails); tables with only two columns read `id` from the first column.
+
+## Expected Behaviour (project-h-completion-order) — H2 + M10 (Phase 19)
+
+- **H2 — multi-step completion with already-✅ steps around the open one:** Phase 2 is
+  active with `2.0 ✅`, `2.1 🔄`, `2.2 ✅`, `2.3 ✅`. A batch
+  `step: ["2.0","2.1","2.2","2.3"]`, `status: "✅"` completes the phase on `2.1` and
+  treats the following already-✅ steps **idempotently**: `verification.ok: true`,
+  **exactly one** archive append, no error (formerly: `unknown phase` after partial apply).
+  A hard `unknown phase` (without the same-batch tolerance) remains the error for typos.
+- **M10 — chronological append:** `PROGRESS_ARCHIVE.md` already contains the
+  later-numbered `### Phase 3 — Performance` while Phase 2 is still active. Completing
+  the older Phase 2 afterwards appends its block **after** Phase 3 — phase numbers in
+  the archive may be non-monotonic; append-only, no insert at the number position
+  (AGENTS Decision 19). The permanent index stays the table in `PROGRESS.md`.
+- **Consistency:** `project-h` is finding-free under `docs_validate`.
+
+## Expected Behaviour (project-i-acknowledged) — inline accepted marker (L13, Phase 19)
+
+- The Done Index entry `R1-A` violates the naming convention → `ID_CONVENTION`, and its
+  archive block exists (no `ARCHIVE_WITHOUT_INDEX`).
+- The entry line carries `*(accepted: ID_CONVENTION)*` → the finding moves to
+  `acknowledged[]`, `findings` is empty and `docs_validate` returns **`ok: true`**
+  (count still visible). Without the marker (or with a different code) the same finding
+  stays blocking.
+- No config file, no extra tool: detection is per line; findings without a line stay
+  blocking (L13 alternative B, README → "Acknowledging a finding in place").
 
 ## Expected Findings (project-b-drift) — validate checklist for 1.6
 
@@ -212,7 +250,7 @@ project, then revisit the `DATE_LEGACY`-pattern warning in a separate decision.
 | `ParseResult<T>` | `value`, `warnings[]` | 1.2 |
 | `Warning` | `code`, `file` (file path; **exception:** root-level findings like `PROJECT_NOT_INITIALIZED` carry the project root as a directory), `line?`, `message` | 1.2 |
 | `BacklogItem` | `id`, `title`, `priority`, `section`, `open`, `location?`, `text`, `span{start,end}`, `raw` | 1.2 |
-| `DoneEntry` | `id`, `summary`, `sha?` | 1.2 |
+| `DoneEntry` | `id`, `summary`, `sha?`, `line?` (line in BACKLOG.md, L13) | 1.2 |
 | `Backlog` | `sections[]` (`title`, `emoji`, `headerRule`), `items[]` (flat), `doneIndex[]` | 1.2 |
 | `ProgressRow` | `step` (`"2.1"`), `name`, `status` | 1.3 |
 | `PhaseBlock` | `name` (`"Phase 2"`), `title`, `goal`, `scope[]`, `acceptance`, `verification?`, `completedOn?` (YYMMDD/HHMM or MM/YYYY stock, verbatim, archive only), `span`, `raw` | 1.3 |

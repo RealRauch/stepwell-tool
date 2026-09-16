@@ -527,4 +527,35 @@ describe("progress_update multi-step (12.4, E2/2)", () => {
       await c.close();
     }
   });
+
+  it("completes the phase when the batch carries already-✅ steps before and after the open step (H2/19.1)", async () => {
+    const dir = tempProject("project-h-completion-order");
+    const c = await connect();
+    try {
+      const data = payload(
+        await callTool(c, "progress_update", {
+          root: dir,
+          phase: "Phase 2",
+          step: ["2.0", "2.1", "2.2", "2.3"],
+          status: "✅",
+          dryRun: false,
+        }),
+      );
+      expect(data.verification.ok).toBe(true);
+      expect(data.steps).toEqual(["2.0", "2.1", "2.2", "2.3"]);
+      expect(data.written).toHaveLength(2);
+      expect(data.written.some((f: string) => f.endsWith("PROGRESS.md"))).toBe(true);
+      expect(data.written.some((f: string) => f.endsWith("PROGRESS_ARCHIVE.md"))).toBe(true);
+    } finally {
+      await c.close();
+    }
+    const progress = readFileSync(join(dir, "PROGRESS.md"), "utf8");
+    const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.md"), "utf8");
+    expect(progress).not.toContain("### Phase 2 — UI-Polish");
+    expect(progress).toContain("| 2.1 | Strings-Modul | ✅ |");
+    expect(archive).toContain("### Phase 2 — UI-Polish");
+    expect(archive.indexOf("### Phase 2 — UI-Polish")).toBe(
+      archive.lastIndexOf("### Phase 2 — UI-Polish"),
+    );
+  });
 });

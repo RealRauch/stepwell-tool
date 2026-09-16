@@ -223,6 +223,44 @@ describe("planProgressUpdate — dry-run planning (3.3)", () => {
     expect(archiveChange.after).toContain("**Verifikation:** Suite 132/132 grün");
   });
 
+  it("M10: appends a post-hoc completed older phase at the end (phase numbers may be non-monotonic)", () => {
+    const dir = tempCopy("project-h-completion-order");
+
+    const plan = planProgressUpdate(dir, "Phase 2", "2.1", "✅", {
+      dryRun: false,
+      note: "nachgeholt",
+    });
+    expect(plan.completedPhase).toBe(true);
+    applyProgressPlan(plan);
+
+    const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.md"), "utf8");
+    const phase3 = archive.indexOf("### Phase 3 — Performance");
+    const phase2 = archive.indexOf("### Phase 2 — UI-Polish");
+    expect(phase3).toBeGreaterThan(-1);
+    expect(phase2).toBeGreaterThan(phase3);
+    expect(archive.lastIndexOf("### Phase 2 — UI-Polish")).toBe(phase2);
+    expect(archive).toContain("**Verifikation:** nachgeholt");
+  });
+
+  it("H2: accepts a phase archived earlier in the same batch — row update only, no second append", () => {
+    const dir = tempCopy("project-h-completion-order");
+    const first = planProgressUpdate(dir, "Phase 2", "2.1", "✅", { dryRun: false });
+    expect(first.completedPhase).toBe(true);
+    applyProgressPlan(first);
+
+    expect(() => planProgressUpdate(dir, "Phase 2", "2.2", "✅")).toThrow(/unknown phase/);
+    const plan = planProgressUpdate(dir, "Phase 2", "2.2", "✅", {
+      dryRun: false,
+      phaseAlreadyArchived: true,
+    });
+    expect(plan.completedPhase).toBe(false);
+    expect(plan.changes).toHaveLength(1);
+    const change = plan.changes[0]!;
+    expect(change.file.endsWith("PROGRESS_ARCHIVE.md")).toBe(false);
+    expect(change.after).toContain("| 2.2 | U21 Fehlertexte | ✅ |");
+    expect(change.after).not.toContain("### Phase 2");
+  });
+
   it("creates a skeleton block and table row for a new phase (🔄)", () => {
     const dir = tempCopy("project-b-drift");
     const plan = planProgressUpdate(dir, "Phase 9 — Drift-Fixes", "9.1", "🔄");
