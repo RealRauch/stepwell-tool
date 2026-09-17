@@ -50,7 +50,7 @@ describe("resource templates (2.4)", () => {
       const result = await c.client.readResource({ uri: `stepwell://${enc(projectA)}/backlog` });
       expect(resourceMime(result)).toBe("text/markdown");
       const text = resourceText(result);
-      expect(text).toContain("# BACKLOG.md — Offene Punkte (Stand: 260907/1200)");
+      expect(text).toContain("# BACKLOG.md — Offene Punkte (Stand: 2026-09-07T12:00)");
       expect(text).toContain("### [ ] H1 — Upload-Endpunkt ohne Größenlimit — 🟠");
     } finally {
       await c.close();

@@ -574,7 +574,7 @@ describe("backlog CRUD (T1, 6.9)", () => {
       priority: "🟡",
     });
     const heading = plan.changes[0]!.after.split("\n")[0]!;
-    expect(heading).toMatch(/Stand: \d{6}\/\d{4}/u);
+    expect(heading).toMatch(/Stand: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}/u);
     expect(heading).not.toContain("260907/1200");
     expect(plan.id).toBe("M8");
   });
@@ -933,5 +933,63 @@ describe("doc-sync reminder on phase completion (L4, 9.11)", () => {
 
     expect(result.verification.ok).toBe(true);
     expect(result.verification.messages.some((m) => m.includes("Doku-Sync prüfen"))).toBe(true);
+  });
+});
+
+describe("K1: phase completion removes exactly the own block (adjacent blocks, mixed line endings)", () => {
+  const countLoneLf = (content: string): number => (content.match(/(?<!\r)\n/gu) ?? []).length;
+
+  /**
+   * Converts PROGRESS.md to CRLF and injects `stray` lone-LF line endings in the
+   * preamble — the real-world internal-pwa shape (CRLF file touched by an LF edit).
+   * The parsers split on /\r?\n/ (every newline); a mutation that splits on the
+   * detected dominant eol only then mis-aligns block.span line numbers.
+   */
+  function toCrlfWithStrayLf(dir: string, stray: number): void {
+    const path = join(dir, "PROGRESS.md");
+    let content = readFileSync(path, "utf8").replace(/\n/gu, "\r\n");
+    for (let n = 0; n < stray; n += 1) {
+      const at = content.indexOf("\r\n");
+      content = `${content.slice(0, at)}\n${content.slice(at + 2)}`;
+    }
+    writeFileSync(path, content, "utf8");
+  }
+
+  it("leaves the following block heading + scope untouched (the reported failure mode)", () => {
+    const dir = tempCopy("project-j-adjacent-blocks");
+    toCrlfWithStrayLf(dir, 3);
+
+    const plan = planProgressUpdate(dir, "Phase 7", "7.2", "✅", {
+      dryRun: false,
+      note: "Suite grün",
+    });
+    expect(plan.completedPhase).toBe(true);
+
+    const result = applyProgressPlan(plan);
+    expect(result.verification.ok).toBe(true);
+
+    const progress = readFileSync(join(dir, "PROGRESS.md"), "utf8");
+    expect(progress).not.toContain("### Phase 7 — Erste Phase");
+    expect(progress).toContain("### Phase 8 — Zweite Phase");
+    expect(progress).toContain("**Ziel:** Zweite Phase läuft.");
+    expect(progress).toContain("- **8.1 Gamma**");
+    expect(progress).toContain("- **8.2 Delta**");
+    expect(progress).not.toMatch(/\n{3,}/u);
+    expect(countLoneLf(progress)).toBe(0);
+  });
+
+  it("archives the completed block verbatim (pure LF, adjacent blocks)", () => {
+    const dir = tempCopy("project-j-adjacent-blocks");
+    const plan = planProgressUpdate(dir, "Phase 7", "7.2", "✅", {
+      dryRun: false,
+      note: "Suite grün",
+    });
+    const result = applyProgressPlan(plan);
+    expect(result.verification.ok).toBe(true);
+
+    const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.md"), "utf8");
+    expect(archive).toContain("### Phase 7 — Erste Phase");
+    expect(archive).toContain("- **7.2 Beta**");
+    expect(archive).toContain("**Verifikation:** Suite grün");
   });
 });

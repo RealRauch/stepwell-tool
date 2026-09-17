@@ -58,6 +58,12 @@ fixtures/
 │   └── docs/archive/        #   (`acknowledged[]`) instead of a permanent finding.
 │       ├── BACKLOG_ARCHIVE.md
 │       └── PROGRESS_ARCHIVE.md
+├── project-j-adjacent-blocks/  # K1 (Phase 20): two ADJACENT detail blocks (Phase 7
+│   ├── BACKLOG.md              #   directly followed by Phase 8 — no blank line between
+│   ├── PROGRESS.md             #   the last scope bullet and the next heading), Phase 7
+│   └── docs/archive/           #   fully ✅ in the table. Completion must remove exactly
+│       ├── BACKLOG_ARCHIVE.md  #   Phase 7's own block; the test also injects mixed line
+│       └── PROGRESS_ARCHIVE.md #   endings (CRLF + stray LF) → span misalignment (K1).
 
 project-empty/             # empty directory (.gitkeep only; M5/9.3) — root WITHOUT a
                            #   STEPWELL project: docs_validate/docs_status → exactly
@@ -105,8 +111,8 @@ exactly as in real projects.
 - `BACKLOG_ARCHIVE.md`: complete item blocks, checkbox `[x]`, end marker
   `**Done:** Commit <sha7> …` → S1, S2, M7 (matches the Done Index exactly).
 - `PROGRESS_ARCHIVE.md`: detail blocks `### Phase 0 — …` / `### Phase 1 — …`
-  (+ `*(completed MM/YYYY)*` — legacy format, shows tolerance; canonical is
-  `YYMMDD/HHMM`), same field structure as active phases.
+  (+ `*(completed MM/YYYY)*` — legacy format, shows tolerance; canonical is ISO 8601
+  `YYYY-MM-DDTHH:mm`), same field structure as active phases.
 - **Consistency (basis for `docs_validate`, 1.6):** project-a is **finding-free** —
   index ↔ archive match; every 🔄 row has a detail block and vice versa.
 
@@ -174,7 +180,7 @@ exactly as in real projects.
 | D12 | Detail block without an active phase | PROGRESS | validate: "orphan block" |
 | D13 | Archive block **without** an index entry (`Z9`) | BACKLOG_ARCHIVE | validate: "missing from Done Index" |
 | D14 | Id violates the naming convention (`fix_me`) | BACKLOG | `ID_CONVENTION` warning, item still listed |
-| D15 | Date only as `MM/YYYY` (the `As of:` header of the drift BACKLOG) | BACKLOG | `DATE_LEGACY` warning — open files only, never archives |
+| D15 | Date in a legacy format (`MM/YYYY` in the drift header; also `YYMMDD/HHMM`) | BACKLOG | `DATE_LEGACY` warning — open files only, never archives |
 | D16 | Archive block without priority suffix (`Z8`) | BACKLOG_ARCHIVE | parser warns (`PRIO_MISSING`), but `docs_validate`/`docs_status` do **not** pass parse warnings through from archive files (W2/8.2 — "archives are never faulted"); consistency findings (e.g. `ARCHIVE_WITHOUT_INDEX`) remain |
 
 **Parser ground rule (AGENTS.md no. 2):** drift → structured warning, **never abort**.
@@ -236,11 +242,12 @@ project, then revisit the `DATE_LEGACY`-pattern warning in a separate decision.
 
 ### Timestamps & Migration (PLAYBOOK §3)
 
-- Canonical format: `YYMMDD/HHMM` (e.g. `260907/1523`) for `*(done …)*`,
-  `*(completed …)*` and `As of:` header lines.
-- Tolerance: the `MM/YYYY` legacy stock is parsed/validated without abort;
-  `DATE_LEGACY` warning **only in open files** — archives are append-only and
-  therefore exempt (D15).
+- Canonical format: ISO 8601 `YYYY-MM-DDTHH:mm` (local time, e.g.
+  `2026-09-07T15:23`) for `*(done …)*`, `*(completed …)*` and `As of:` header lines.
+- Tolerance: both legacy forms (`YYMMDD/HHMM`, e.g. `260907/1523`, and the
+  4-digit `MM/YYYY`) are read silently (no parse warning) and without abort;
+  `DATE_LEGACY` (validate) fires for **both** — only in open files, archives are
+  append-only and therefore exempt (D15).
 - `completedOn` stores the date **verbatim** (no normalisation).
 
 ### Data Objects (core)

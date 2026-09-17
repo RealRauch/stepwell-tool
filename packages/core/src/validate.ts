@@ -8,10 +8,16 @@ import type { Warning } from "./types.ts";
 
 const ID_CONVENTION = /^[A-Z][0-9]+$/;
 const union = (words: readonly string[]): string => words.map(escapeRegExp).join("|");
+/**
+ * Q3: canonical is ISO 8601 `YYYY-MM-DDTHH:mm`. Both legacy forms are flagged in
+ * the same contexts (done/completed marker, As-of header): `YYMMDD/HHMM` and the
+ * 4-digit `MM/YYYY`. The lookbehind keeps the 2-digit alternative from matching
+ * inside the 6-digit form.
+ */
 const LEGACY_DATE = new RegExp(
   `(?:\\((?:${union([...allSynonyms("doneWord"), ...allSynonyms("completedMarker")])})\\s+` +
     `|\\b(?:${union(allSynonyms("standMarker"))})\\s*)` +
-    `(?<!\\d)(\\d{2}\\/\\d{4})(?!\\d)`,
+    `(?<![\\d/-])(\\d{6}\\/\\d{4}|\\d{2}\\/\\d{4})(?!\\d)`,
   "gu",
 );
 
@@ -29,7 +35,7 @@ function scanLegacyDates(filePath: string, file: string, findings: Warning[]): v
         code: "DATE_LEGACY",
         file,
         line: idx + 1,
-        message: `Legacy date format "${m[1]}" — canonical is JJMMDD/HHMM (PLAYBOOK §3).`,
+        message: `Legacy date format "${m[1]}" — canonical is ISO 8601 YYYY-MM-DDTHH:mm (PLAYBOOK §3).`,
       });
     }
   }

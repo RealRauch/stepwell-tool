@@ -159,6 +159,48 @@ describe("docsValidate — STEP_DUPLICATE (R6)", () => {
   });
 });
 
+describe("docsValidate — DATE_LEGACY (Q3: ISO 8601 canonical, both legacy forms)", () => {
+  it("flags a legacy YYMMDD/HHMM timestamp in an open file", () => {
+    const dir = tempCopy("project-a");
+    const backlogPath = join(dir, "BACKLOG.md");
+    writeFileSync(
+      backlogPath,
+      readFileSync(backlogPath, "utf8").replace(/Stand: [0-9T:-]+/u, "Stand: 260907/1200"),
+      "utf8",
+    );
+
+    const result = docsValidate(dir);
+
+    expect(result.ok).toBe(false);
+    const finding = result.findings.find((f) => f.code === "DATE_LEGACY");
+    expect(finding?.message).toContain("260907/1200");
+    expect(finding?.line).toBe(1);
+  });
+
+  it("accepts the canonical ISO 8601 timestamp without a finding", () => {
+    const dir = tempCopy("project-a");
+    const result = docsValidate(dir);
+    expect(result.findings.some((f) => f.code === "DATE_LEGACY")).toBe(false);
+  });
+
+  it("never flags legacy timestamps in the append-only archive", () => {
+    const dir = tempCopy("project-a");
+    const archivePath = join(dir, "docs", "archive", "PROGRESS_ARCHIVE.md");
+    writeFileSync(
+      archivePath,
+      readFileSync(archivePath, "utf8").replace(
+        "*(abgeschlossen 07/2026)*",
+        "*(abgeschlossen 260907/1523)*",
+      ),
+      "utf8",
+    );
+
+    const result = docsValidate(dir);
+
+    expect(result.findings.some((f) => f.code === "DATE_LEGACY")).toBe(false);
+  });
+});
+
 describe("docsValidate — inline accepted marker (L13)", () => {
   const result = docsValidate(join(fixtures, "project-i-acknowledged"));
 

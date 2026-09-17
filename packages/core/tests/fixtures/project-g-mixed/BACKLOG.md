@@ -1,4 +1,4 @@
-# BACKLOG.md — Open Issues (As of: 260911/1430)
+# BACKLOG.md — Open Issues (As of: 2026-09-11T14:30)
 
 > **This file contains only OPEN items.** Completed items move **verbatim**
 > to `docs/archive/BACKLOG_ARCHIVE.md`; only a one-liner remains in the Done

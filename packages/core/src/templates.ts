@@ -13,7 +13,7 @@ export const TEMPLATE_KINDS: readonly TemplateKind[] = [
   "progress-archive",
 ];
 
-const BACKLOG = `# BACKLOG.md — Open items (As of: JJMMDD/HHMM)
+const BACKLOG = `# BACKLOG.md — Open items (As of: YYYY-MM-DDTHH:mm)
 
 > **This file contains only OPEN items.** Completed items are moved to \`docs/archive/BACKLOG_ARCHIVE.md\` unchanged after completion; this file keeps only a one-liner per item in the Done Index (below). Findings/fix-ideas/decisions are not deleted — moved to the archive.
 > Legend: 🔴 critical · 🟠 high · 🟡 medium · 🟢 low · 🔵 test gap

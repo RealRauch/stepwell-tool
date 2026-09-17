@@ -1,4 +1,4 @@
-# BACKLOG.md — Offene Punkte (Stand: 260801/0900)
+# BACKLOG.md — Offene Punkte (Stand: 2026-08-01T09:00)
 
 > **Diese Datei enthält nur OFFENE Items.** Erledigte Items werden nach dem Abschluss
 > **unverändert** in `docs/archive/BACKLOG_ARCHIVE.md` verschoben; hier bleibt je Item nur ein Einzeiler

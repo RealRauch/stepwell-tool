@@ -53,6 +53,17 @@ function readText(path: string): { content: string; eol: string } {
   return { content, eol: content.includes("\r\n") ? "\r\n" : "\n" };
 }
 
+/**
+ * Splits lines exactly like the parsers (`/\r?\n/`, every newline) so that span
+ * line numbers stay aligned when a file mixes CRLF with lone LF (K1). Splitting
+ * on the detected dominant `eol` alone would treat a stray `\n` inside a CRLF
+ * file as part of one line and shift every later span. Re-joining with `eol`
+ * normalises such stray endings on write.
+ */
+function splitLines(content: string): string[] {
+  return content.split(/\r?\n/);
+}
+
 function normalizeNote(note: string | undefined): string | undefined {
   const trimmed = note?.trim();
   return trimmed === "" ? undefined : trimmed;
@@ -119,7 +130,7 @@ export function planArchiveItem(
   const doneLabel = canonical("doneLabel", locale);
 
   const removeBlock = (content: string, eol: string): string => {
-    const lines = content.split(eol);
+    const lines = splitLines(content);
     const start = item.span.start - 1;
     const count = item.span.end - item.span.start + 1;
     lines.splice(start, count);
@@ -134,7 +145,7 @@ export function planArchiveItem(
   };
 
   const appendIndexLine = (content: string, eol: string): string => {
-    const lines = content.split(eol);
+    const lines = splitLines(content);
     let sectionStart = -1;
     for (const [idx, line] of lines.entries()) {
       if (SECTION_HEADING.test(line) && INDEX_HEADING.test(line)) {
@@ -386,7 +397,7 @@ export function planProgressUpdate(
   const rowName = row?.name ?? (scopeEntry !== undefined ? extractScopeName(scopeEntry) : undefined) ?? step;
 
   const editProgress = (content: string, eol: string): string => {
-    const lines = content.split(eol);
+    const lines = splitLines(content);
 
     // Reihenfolge definiert (T2): 1) Titel-Rename (zeilenzahlneutral), 2) Phasen-
     // Entfernung (Span noch gültig, R1), 3) Tabellen-Zeile, 4) Skelett/Scope.
@@ -595,7 +606,7 @@ export function planPhase(
   const scopeHeading = `${canonical("scopeLabel", locale)} (Steps):`;
 
   const edit = (content: string, eol: string): string => {
-    const lines = content.split(eol);
+    const lines = splitLines(content);
     appendTableRows(lines, steps.map((s) => `| ${s.step.trim()} | ${s.name.trim()} | ⬜ |`));
     if (running === undefined) {
       insertRunningPhaseSkeleton(
@@ -701,11 +712,11 @@ export interface BacklogRemoveOptions {
   locale?: Locale;
 }
 
-/** JJMMDD/HHMM gemäß PLAYBOOK §3. */
+/** ISO 8601 local time `YYYY-MM-DDTHH:mm` gemäß PLAYBOOK §3 (Q3). */
 export function stampNow(): string {
   const d = new Date();
   const p = (n: number): string => String(n).padStart(2, "0");
-  return `${String(d.getFullYear()).slice(2)}${p(d.getMonth() + 1)}${p(d.getDate())}/${p(d.getHours())}${p(d.getMinutes())}`;
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
 function refreshHeadingStamp(lines: string[]): void {
@@ -856,7 +867,7 @@ export function planBacklogAdd(root: string, options: BacklogAddOptions): Backlo
   const blockLines = buildItemBlock(id, title, options.priority, options.text);
 
   const edit = (content: string, eol: string): string => {
-    const lines = content.split(eol);
+    const lines = splitLines(content);
     insertIntoSection(lines, section, blockLines);
     refreshHeadingStamp(lines);
     return lines.join(eol);
@@ -935,7 +946,7 @@ export function planBacklogUpdate(root: string, id: string, options: BacklogUpda
   }
 
   const edit = (content: string, eol: string): string => {
-    const lines = content.split(eol);
+    const lines = splitLines(content);
     if (sectionChanged || targetSection !== item.section) {
       removeItemLines(lines, item.span);
       insertIntoSection(lines, targetSection, blockLines);
@@ -1006,7 +1017,7 @@ export function planBacklogRemove(root: string, id: string, options: BacklogRemo
   const removedLabel = canonical("removedLabel", locale);
 
   const editBacklog = (content: string, eol: string): string => {
-    const lines = content.split(eol);
+    const lines = splitLines(content);
     removeItemLines(lines, item.span);
     appendIndexTail(
       lines,
