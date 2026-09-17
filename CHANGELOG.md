@@ -3,15 +3,43 @@
 All notable changes to `stepwell` / `stepwell-core` are documented here.
 
 Format: [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/), adhering to
-[Semantic Versioning](https://semver.org/spec/v2.0.0.html). Documented deviation
-(Step 9.8/L6): dates use the project-wide `JJMMDD/HHMM` format (Decision 11) instead
-of ISO-8601 — one date format across the repo.
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html). Dates use the project-wide
+ISO 8601 `YYYY-MM-DDTHH:mm` format (Decision 11) — one date format across the repo.
+Older sections keep their historical legacy-format dates (archive rule).
 
 **Redundanz-Regel:** Dieses CHANGELOG ist ein kuratiertes, nutzerrelevantes Aggregat
 je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
 `BACKLOG_ARCHIVE` (dort bleibt die Item-/Commit-Historie).
 
 ## [Unreleased]
+
+### Phase 20–24 — Field robustness & method docs (2026-09-17T18:40)
+
+#### Fixed
+- **Mixed line endings shifted block boundaries (K1/20.2):** a CRLF file touched by a lone
+  LF edit made `progress_update` remove the wrong phase-block range — the following block's
+  heading and scope label were deleted and `applyProgressPlan` reported `archiveOk=false`
+  despite a correct archive append. Mutations now split lines exactly like the parsers
+  (`/\r?\n/`) and normalise stray endings on write; new regression fixture
+  `project-j-adjacent-blocks`.
+
+#### Added
+- **Quick-Start guide (Q1/21.1):** `docs/QUICKSTART.md` — a five-minute entry point (core
+  loop, the four files, the five rules) that points to PLAYBOOK as the full reference.
+- **Method retrospective (Q2/23.1):** PLAYBOOK §8 — periodic pruning with three guiding
+  questions and the outcomes stay/demote/drop (no obligation to prune).
+
+#### Changed
+- **ISO 8601 timestamps (Q3/22.2):** new entries use `YYYY-MM-DDTHH:mm` (`stampNow`,
+  templates, PLAYBOOK §3, Decision 11); both legacy forms (`YYMMDD/HHMM` and `MM/YYYY`) are
+  read silently and reported as `DATE_LEGACY` in open files only.
+- **Accepted findings in the method (S2/23.2):** PLAYBOOK documents the inline
+  `*(accepted: CODE[, CODE])*` marker, its effect on `ok`, and the archive exemption.
+- **Architecture decisions consolidated (Q4/23.3):** `AGENTS.md` lists 12 active decisions;
+  historical and PLAYBOOK-duplicate entries moved verbatim into
+  `docs/archive/AGENTS-decisions-history.md`.
+- **PLAYBOOK §2 tolerance fixed (M11/24.1):** the section no longer claims a `STRUCT_LOCALE`
+  warning — silent tolerance per decision I1/14.6.
 
 ### Phase 19 - Completion & validate hardening (260916)
 

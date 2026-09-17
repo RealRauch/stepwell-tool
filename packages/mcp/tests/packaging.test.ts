@@ -131,21 +131,26 @@ describe("doku-prosa sync (N1/13.3)", () => {
     expect(unreleased, "Unreleased mentions stepwell naming").toMatch(/stepwell/i);
   });
 
-  it("AGENTS.md Decision 16 + Decision 18 reference stepwell packages", () => {
+  it("AGENTS.md SemVer decision + relocated naming history reference stepwell packages", () => {
     const agents = readFileSync(join(repoRoot, "AGENTS.md"), "utf8");
-    // Decision 16: must list the new package names (replaces old @method-docs/* mentions)
-    const d16 = agents.match(/16\.\s+\*\*[^]*?(?=\n17\.)/u)?.[0] ?? "";
-    expect(d16, "Decision 16 names stepwell").toContain("stepwell");
-    expect(d16, "Decision 16 names stepwell-core").toContain("stepwell-core");
-    expect(d16, "Decision 16 negative: no @method-docs/core").not.toContain("@method-docs/core");
-    expect(d16, "Decision 16 negative: no @method-docs/mcp").not.toContain("@method-docs/mcp");
-    // Decision 18: endgültiges Naming — anchor for the rename
-    const d18 = agents.match(/18\.\s+\*\*[^]*?(?=\n##|$)/u)?.[0] ?? "";
-    expect(d18, "Decision 18 exists").toContain("**");
-    expect(d18, "Decision 18 mentions Naming").toMatch(/[Nn]aming/);
-    expect(d18, "Decision 18 mentions stepwell").toContain("stepwell");
-    expect(d18, "Decision 18 mentions stepwell-core").toContain("stepwell-core");
-    expect(d18, "Decision 18 mentions URI scheme").toContain("stepwell://");
+    // Decision 10 (Lockstep-SemVer; renumbered by the Q4/Phase-23 consolidation)
+    // must list the new package names (replaces old @method-docs/* mentions).
+    const d10 = agents.match(/10\.\s+\*\*[^]*?(?=\n11\.)/u)?.[0] ?? "";
+    expect(d10, "Decision 10 names stepwell").toContain("stepwell");
+    expect(d10, "Decision 10 names stepwell-core").toContain("stepwell-core");
+    expect(d10, "Decision 10 negative: no @method-docs/core").not.toContain("@method-docs/core");
+    expect(d10, "Decision 10 negative: no @method-docs/mcp").not.toContain("@method-docs/mcp");
+    // The "final naming" decision moved verbatim into the append-only history (Q4).
+    expect(agents, "AGENTS.md points at the history file").toContain("AGENTS-decisions-history.md");
+    const history = readFileSync(
+      join(repoRoot, "docs", "archive", "AGENTS-decisions-history.md"),
+      "utf8",
+    );
+    const d18 = history.split("18. Endgültiges")[1]?.split("\n---")[0] ?? "";
+    expect(d18, "relocated naming decision exists").not.toBe("");
+    expect(d18, "relocated decision mentions stepwell").toContain("stepwell");
+    expect(d18, "relocated decision mentions stepwell-core").toContain("stepwell-core");
+    expect(d18, "relocated decision mentions URI scheme").toContain("stepwell://");
   });
 });
 

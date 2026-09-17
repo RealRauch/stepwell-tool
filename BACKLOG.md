@@ -1,4 +1,4 @@
-# BACKLOG.md — Open items (As of: 260916/1931
+# BACKLOG.md — Open items (As of: 2026-09-17T19:29
 
 > **This file contains only OPEN items.** Completed items are moved to `docs/archive/BACKLOG_ARCHIVE.md` unchanged after completion; this file keeps only a one-liner per item in the Done Index (below). Findings/fix-ideas/decisions are not deleted — moved to the archive.
 > Legend: 🔴 critical · 🟠 high · 🟡 medium · 🟢 low · 🔵 test gap
@@ -14,38 +14,26 @@
 
 ## 🟠 HIGH
 
-### [ ] Q1 — Quick-Start: Einstiegsdokument für Methoden-Adoption — 🟠
-- `docs/QUICKSTART.md` (~500–800 Wörter) erstellen
-- **Location:** `docs/QUICKSTART.md` (neu)
-- **Acceptance:** Ein Dokument, das in ≤5 Minuten vermittelt: Was STEPWELL ist (3 Sätze), Kernschleife (Plan → Package → Release → Implement → Verify → Archive), die vier Dateien und was reingehört (je 1 Satz), die 5 wichtigsten Regeln (Test-First, Commit-Disziplin, Freigabe-Gate, Archiv-Muster, Doku-Pflicht), Verweis auf PLAYBOOK als Vollreferenz. PLAYBOOK bleibt unverändert — Quick-Start ist Einstieg, nicht Ersatz.
-
 ---
 
 ## 🟡 MEDIUM
 
-### [ ] Q2 — Retro-Konvention: Methoden-Pruning legitimieren — 🟡
-- PLAYBOOK-Abschnitt für periodische Methoden-Retrospektive ergänzen
-- **Location:** `docs/PLAYBOOK.md` (neuer Abschnitt, z.B. nach §5)
-- **Acceptance:** Konvention, die alle N Phasen (z.B. 5) ein Review von LESSONS + Decisions vorsieht. Drei Leitfragen: (1) Hat die Regel in den letzten N Phasen einen Bug verhindert? (2) Erzeugt sie mehr Overhead als Nutzen? (3) Konsolidierbar mit einer anderen? Outcomes: bleibt / herabstufen (bindend → empfohlen) / streichen (Verweis im Archiv). Kein Zwang zum Streichen — aber ein legitimierter Pfad dafür. Sync in alle PLAYBOOK-Kopien.
+### [ ] M12 — Quick-Start ist für Agents nicht auffindbar (kein Kickoff-/SKILL-/README-Haken, nicht in Zielprojekten verteilt) — 🟡
+- **Location:** `docs/QUICKSTART.md` (Doku) + Aufhänger in `AGENTS.md` (Kickoff/Struktur), `packages/mcp/skills/stepwell/SKILL.md`, `README.md`; Server-Kanal: `packages/mcp/src/server.ts` (Server-`instructions`, bisher leer — SDK 1.30.0 `ServerOptions.instructions`).
+- **Problem:** QUICKSTART.md ist nur an einer Stelle referenziert (`README.md`, Abschnitt „Typical workflow", am Dateiende). Der Agenten-Kickoff (`AGENTS.md` Schritt 1) liest PLAYBOOK + LESSONS, nicht QUICKSTART; `SKILL.md` verweist ebenfalls nur auf PLAYBOOK/LESSONS; das MCP injiziert nichts (Server-`instructions` leer). Ein Agent, der der Methode folgt (oder in einem leeren Repo startet), findet den Einstiegstext damit praktisch nie. Zusätzlich: in Zielprojekten existiert QUICKSTART gar nicht, weil nur PLAYBOOK/LESSONS als verbatim-Kopien verteilt werden.
+- **Fix (Optionen, Alternativprüfung nötig):** (a) AGENTS-Kickoff Schritt 0 „Neu hier? zuerst docs/QUICKSTART.md" + Eintrag in der Struktur-Tabelle; (b) SKILL.md ergänzen (Einstieg für Skill-fähige Agents); (c) README-Aufhänger in den Intro-/Statusblock nach oben ziehen; (d) Entscheid dokumentieren, ob QUICKSTART als dritte verbatim-Methodenkopie in Zielprojekte verteilt und mit-synchronisiert wird (Sync-Beleg) oder bewusst stepwell-lokal bleibt; (e) optional `stepwell://quickstart`-Resource nur nach Guardrail-Alternativprüfung (Resource statt Tool); (f) Server-`instructions` aufnehmen — **bedingt** formuliert; (g) Test (Muster `packaging.test.ts`), der den bedingten Wortlaut gegen Drift festnagelt.
+- **Guardrail (bindend für die Umsetzung):** Opt-in pro Projekt, der Server bleibt passiv — Auffindbarkeit ja, Aufdringlichkeit nein. Konkret: `instructions` nur mit Bedingung („Tools nur nutzen, wenn der Root die vier Dateien hat ODER der Nutzer STEPWELL verlangt; nie ungefragt Struktur anlegen"), kein soll-Imperativ; die SKILL-Klausel „…or one is to be set up" entschärfen; nie Auto-Init (kein `init_project`-Tool, M8 Variante A). Server-`instructions` sind projektglobal (einmal je Session), können den `root` also nicht kennen — die Bedingung muss im Text stehen.
+- **Acceptance:** Ein Agent, der den Kickoffpfad (AGENTS → SKILL/`instructions` → README) durchläuft, trifft explizit auf QUICKSTART; der Verteilungs-Entscheid (Kopie in Zielprojekten ja/nein) ist als Decision dokumentiert; die `instructions` sind bedingt formuliert und per Test fixiert; `docs_validate`/Tests unverändert grün.
 
-### [ ] Q4 — AGENTS.md Decisions konsolidieren — 🟡
-- Decisions-Liste straffen: historische Fakten → Archiv, Redundanzen → eliminieren
-- **Location:** `AGENTS.md` (Architektur-Entscheidungen), `docs/archive/`
-- **Acceptance:** Decisions, die rein historische Fakten dokumentieren (z.B. D8 Stack-Entscheidung, D12 Namens-Kollisionscheck) oder PLAYBOOK-Abschnitte wiederholen (z.B. D9 ≈ §2), werden ins Archiv verschoben oder mit dem PLAYBOOK-Verweis ersetzt. Ziel: ≤12 aktive Decisions. Verbleibende Decisions sind solche, die laufendes Verhalten steuern (Content-Gates, Lockstep-SemVer, Surface-Guardrail, etc.). Kein inhaltlicher Verlust — nur Umzug.
-
-### [ ] S2 — Sync-Schlag: Inline-Acceptance-Marker (L13) ins PLAYBOOK (alle Kopien) — 🟡
-- **Location:** `docs/PLAYBOOK.md` (Validate-/Verifikations-Kapitel) + Kopie in `../internal-pwa`.
-- **Kontext:** L13/19.5 hat den Inline-Marker `*(accepted: CODE)*` als Parser-/Validate-Semantik eingeführt (README + Fixture `project-i-acknowledged`). Die projektunabhängige Methode kennt „bewusst akzeptierte Abweichung" noch nicht.
-- **Acceptance:** PLAYBOOK-Abschnitt zu bewusst akzeptierten Findings (Marker-Syntax, Wirkung auf `ok`, append-only-Archive bleiben ausgenommen); textgleich in beiden PLAYBOOK-Kopien (SHA256-Beleg je Kopie); `docs_validate` in beiden Repos ohne neue Findings.
+### [ ] M13 — Fremdes Repo: PROJECT_NOT_INITIALIZED-Meldung und SKILL-Klausel sind anweisend statt neutral (kein Auto-Init) — 🟡
+- **Location:** `packages/core/src/project-files.ts` (`ProjectNotInitializedError`, Meldungstext), `packages/core/src/status.ts` (Rückgabe als `warnings`), `packages/mcp/skills/stepwell/SKILL.md` (Aktivierungs-Klausel), `packages/core/tests` (M5-Fixture `project-empty`, `status.test.ts`/`validate.test.ts`).
+- **Problem:** Ein projektweit aktivierter MCP-Server läuft auch in Repos, die nie STEPWELL wollten. Der heutige Meldeweg ist anweisend statt neutral: `PROJECT_NOT_INITIALIZED` sagt „Lege `<Dateien>` an — Vorlagen: …", und die SKILL-Beschreibung aktiviert sich „when the target project contains the four STEPWELL files **or one is to be set up**". Beides kann einen Agenten in einem fremden Repo zu ungefragter Einrichtung drängen — genau das soll vermieden werden (Opt-in pro Projekt, Server passiv).
+- **Fix:** (a) Meldung entdramatisieren: „No STEPWELL project here — no action required unless you want to adopt STEPWELL; templates: `stepwell://templates/{kind}`" (alles-vier-fehlen = harmlos; Teilbestand bleibt harter Fehler, unverändert); (b) SKILL-Klausel auf „…contains the four STEPWELL files **or the user explicitly asks for STEPWELL**" umstellen, „or one is to be set up" streichen; (c) klarstellen/dokumentieren, dass Lesezugriffe in fremden Repos harmlos sind und keine Aktion auslösen; (d) Tests/Fixtures an den neuen Wortlaut anpassen (M5-Abnahme: genau ein Fund mit Guidance bleibt).
+- **Acceptance:** `PROJECT_NOT_INITIALIZED` ist als neutraler Hinweis formuliert (keine Aufforderung, ungefragt Dateien anzulegen); SKILL aktiviert sich nur bei vorhandenen vier Dateien oder explizitem STEPWELL-Wunsch; Auslösen des Hinweises in einem fremden Repo führt zu keiner Schreiboperation; Tests/Fixtures grün, `docs_validate` unverändert.
 
 ---
 
 ## 🟢 LOW
-
-### [ ] Q3 — Zeitstempel auf ISO 8601 umstellen — 🟢
-- YYMMDD/HHMM → ISO 8601 (`2026-09-07T15:23`) in Methode + Parser
-- **Location:** `docs/PLAYBOOK.md` §3 (Timestamps), Parser-Toleranzschicht, AGENTS.md Decision 11
-- **Acceptance:** Neue Einträge verwenden ISO 8601 (z.B. `2026-09-07T15:23`). Parser-Toleranz liest YYMMDD/HHMM + MM/YYYY weiterhin still (keine Warnung für Bestand). PLAYBOOK §3 dokumentiert das neue Format + Toleranz. `DATE_LEGACY`-Warnung gilt für beide Alt-Formate, nur in offenen Dateien. Archive nie anfassen. Sync in alle PLAYBOOK-Kopien.
 
 ## 🔵 TEST GAPS
 
@@ -117,5 +105,12 @@
 - H2 — progress_update multi-step: Phasen-Abschluss archiviert den Block mitten im Batch — Folgesteps scheitern (Erfolg als Fehler) — erledigt (Fix a5a6e11 (Phase 19/19.2) — Batch-weite Idempotenz, Fixture project-h-completion-order, 324/324 grün)
 - M10 — Phasen-Abschluss hängt den Archiv-Block ans Dateiende — Reihenfolge bei nachgeholtem Abschluss (53 → 55 → 54) — erledigt (Decision 19 (append-only chronologisch) + Fixture project-h-completion-order, Commit a5a6e11 (Phase 19/19.3))
 - L13 — docs_validate: bewusst akzeptierte Findings halten ok:false dauerhaft — Acknowledgement-Mechanismus fehlt — erledigt (Inline accepted marker (Variante B), Fixture project-i-acknowledged, Commit a5a6e11 (Phase 19/19.5); PLAYBOOK-Sync als S2 gewurzelt)
+- K1 — progress_update (Phasenabschluss) löscht falsche Blockgrenze — Heading des Folge-Blocks wird mitentfernt — erledigt (Phase 20: mutations.ts Zeilensplit an Parser (/\r?\n/) angeglichen — mixed-EOL-Span-Verschiebung behoben; Regressionstest `project-j-adjacent-blocks`)
+- Q1 — Quick-Start: Einstiegsdokument für Methoden-Adoption — erledigt (Phase 21: docs/QUICKSTART.md (≤5 Min: Kernschleife, vier Dateien, 5 Regeln) + README-Link)
+- Q3 — Zeitstempel auf ISO 8601 umstellen — erledigt (Phase 22: ISO 8601 kanonisch (stampNow + PLAYBOOK §3 + Decision 11), Toleranz für JJMMDD/HHMM + MM/JJJJ, DATE_LEGACY beide Formate nur offene Dateien; PLAYBOOK-Kopien synchron (sha256 91498231…))
+- Q2 — Retro-Konvention: Methoden-Pruning legitimieren — erledigt (Phase 23: PLAYBOOK §8 Methoden-Retrospektive (3 Leitfragen, stay/demote/drop, kein Streichzwang) + Sync)
+- S2 — Sync-Schlag: Inline-Acceptance-Marker (L13) ins PLAYBOOK (alle Kopien) — erledigt (Phase 23: PLAYBOOK-Abschnitt „Intentionally accepted findings" (`*(accepted: CODE)*`, Wirkung auf ok, Archive ausgenommen); Kopien textgleich (sha256 3b481dcd…))
+- Q4 — AGENTS.md Decisions konsolidieren — erledigt (Phase 23: Decisions 19→12 konsolidiert; historische/Duplikat-Entscheidungen nach docs/archive/AGENTS-decisions-history.md verschoben)
+- M11 — PLAYBOOK §2 behauptet STRUCT_LOCALE-Warnung, die Decision I1/14.6 abgeschafft hat — erledigt (Phase 24: PLAYBOOK §2 nennt keine STRUCT_LOCALE-Warnung mehr (stille Toleranz, I1/14.6); Kopien synchron (sha256 6464d111…))
 
 ---

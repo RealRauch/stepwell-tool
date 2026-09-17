@@ -21,6 +21,11 @@
 
 
 
+
+
+
+
+
 ---
 
 ## Progress
@@ -115,3 +120,19 @@
 | 19.3 | M10: archive ordering — decision documented (README/AGENTS) + fixture test (append-chronological vs insert at phase-number position) | ✅ |
 | 19.4 | L13 RED: acknowledgement fixture + failing test — acknowledged finding → ok:true, counted separately | ✅ |
 | 19.5 | L13: acknowledgement mechanism (no new tool) + README/PLAYBOOK validate chapter | ✅ |
+| 20.1 | [K1] RED: adjacent detail blocks + mixed EOL regression fixture/test — span misalignment reproduces the wrong block boundary | ✅ |
+| 20.2 | [K1] FIX: align mutation line splitting with the parser (mutations.ts, 8 sites) — span line numbers stay aligned | ✅ |
+| 20.3 | [K1] Verification: full suite + docs_validate green, no manual repair; archive K1 | ✅ |
+| 21.1 | [Q1] docs/QUICKSTART.md (what STEPWELL is, core loop, the four files, the five rules, PLAYBOOK as full reference) | ✅ |
+| 21.2 | [Q1] README link + EN surface check + verify, archive Q1 | ✅ |
+| 22.1 | [Q3] PLAYBOOK §3 + AGENTS Decision 11: ISO 8601 canonical for new entries | ✅ |
+| 22.2 | [Q3] core: stampNow → ISO 8601, silent tolerance for YYMMDD/HHMM + MM/YYYY, DATE_LEGACY both legacy forms (open files only) | ✅ |
+| 22.3 | [Q3] Tests: stamp format, parse tolerance, DATE_LEGACY scope (open vs archive) | ✅ |
+| 22.4 | [Q3] PLAYBOOK sync to internal-pwa + SHA256 proof, verify, archive Q3 | ✅ |
+| 23.1 | [Q2] PLAYBOOK: periodic method retrospective section (every N phases; three guiding questions; stay/demote/drop outcomes) | ✅ |
+| 23.2 | [S2] PLAYBOOK: intentionally accepted findings (inline marker syntax, effect on ok, archives exempt) | ✅ |
+| 23.3 | [Q4] AGENTS.md: consolidate decisions to ≤12 active (historical facts + PLAYBOOK duplicates → archive/reference) | ✅ |
+| 23.4 | [Q2/S2] PLAYBOOK sync to internal-pwa + SHA256 proof | ✅ |
+| 23.5 | [Q2/S2/Q4] Verification: typecheck + tests + docs_validate in both repos, archive Q2/S2/Q4 | ✅ |
+| 24.1 | [M11] PLAYBOOK §2: replace the claimed STRUCT_LOCALE warning with silent tolerance (Decision I1/14.6) in both copies + SHA256 proof | ✅ |
+| 24.2 | [M11] Verification: docs_validate both repos without new findings; archive M11 | ✅ |

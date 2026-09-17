@@ -41,7 +41,7 @@ The order is always: **plan → package → implement.**
 
 ### Language (binding, 09/2026)
 
-The structural language of the method is **English primary**: section headings, field labels (Location, Acceptance, Verification, Scope), the Done Index (was: Erledigt-Index), status words, tool descriptions, CLI help, warning messages, templates, PLAYBOOK/LESSONS/AGENTS/README/SKILL. **Content texts** (item bodies, notes, user prose) stay deliberately language-free — everyone writes them in their language. Rationale: structure/API code and prose stay congruent; non-German speakers can read the method. **Transition tolerance:** legacy DE-labels in open files are silently read by the parser (union-matching reads DE+EN); `docs_validate` reports them as `STRUCT_LOCALE` warning following the `DATE_LEGACY` pattern — **only in open files**, never in the append-only archive. Migration: open files at the next natural edit (Phase 14, Step 14.2 in `stepwell-tool`); archives never touched; new projects start directly with EN templates. Method-changes to this language convention apply synchronously in both PLAYBOOK/LESSONS copies (textually identical, SHA256-evidence per copy).
+The structural language of the method is **English primary**: section headings, field labels (Location, Acceptance, Verification, Scope), the Done Index (was: Erledigt-Index), status words, tool descriptions, CLI help, warning messages, templates, PLAYBOOK/LESSONS/AGENTS/README/SKILL. **Content texts** (item bodies, notes, user prose) stay deliberately language-free — everyone writes them in their language. Rationale: structure/API code and prose stay congruent; non-German speakers can read the method. **Transition tolerance:** legacy DE-labels in open files are read **silently** by the parser (union-matching reads DE+EN; decision I1/14.6) — **no** `STRUCT_LOCALE` warning in `docs_validate`. The tolerance is part of the parser semantics, not an observation duty: anyone who touches an item anyway flips its labels to EN at the natural edit. Archives are never faulted. Migration: open files at the next natural edit (Phase 14, Step 14.2 in `stepwell-tool`); archives never touched; new projects start directly with EN templates. Method-changes to this language convention apply synchronously in both PLAYBOOK/LESSONS copies (textually identical, SHA256-evidence per copy).
 
 ## 3. Growth limit (archive pattern)
 
@@ -63,7 +63,13 @@ Item IDs follow the pattern `<series letter><number>` (e.g. `H1`, `R4`, `U21`):
 
 ### Timestamps (binding)
 
-Date/time entries in the four doc files are always created in the format `YYMMDD/HHMM` (e.g. `260907/1523`) — this affects the `*(done …)*` and `*(completed …)*` markers as well as `As of:` header lines. The legacy 4-digit `MM/YYYY` stock remains valid (tolerance) but is no longer created.
+Date/time entries in the four doc files are always created in the **ISO 8601** format
+`YYYY-MM-DDTHH:mm` (local time, e.g. `2026-09-07T15:23`) — this affects the
+`*(done …)*` and `*(completed …)*` markers as well as `As of:` header lines. The
+legacy stock (`YYMMDD/HHMM`, e.g. `260907/1523`, and the 4-digit `MM/YYYY`) remains
+valid (tolerance, read silently) but is no longer created. `docs_validate` reports
+**both** legacy forms as `DATE_LEGACY` — only in open files, never in the
+append-only archive.
 
 ### Migration of existing projects (binding)
 
@@ -102,6 +108,25 @@ Introducing STEPWELL into a project **without** the four files (grey-/brownfield
 - Never mark a step as "done" without passed verification.
 - **Optional — smell budget (quality gate):** for those who declare it in the `PROGRESS.md` header line, the following applies: (1) **soft smells** (feature envy, god concept, naming) are findings → items in `BACKLOG.md`, never gates. (2) **hard smells** (file/function length, complexity, duplication, lint rules) form a **delta budget**: a step must not increase the smell load of the files it touches; absolute thresholds only in greenfield from day 1, thresholds are only lowered and only updated at the natural occasion. (3) A delta report is release context, never a blocker — the gate stays binary (budget kept yes/no, checkable locally or in CI). Those who declare nothing have no budget.
 
+### Intentionally accepted findings (inline marker)
+
+A deliberate, documented deviation from a consistency rule is marked **on the line the
+finding points at** with `*(accepted: CODE[, CODE])*` (codes compared case-insensitively),
+e.g.
+
+```
+- R1-A — legacy index entry — done in `d4e5f6a` *(accepted: ID_CONVENTION)*
+```
+
+Such findings move into a separate `acknowledged[]` list: they stay **visible** (the count
+is reported) but no longer turn the validation result `ok` to false — a new, unmarked
+finding still blocks. There is deliberately **no config file and no extra tool**: the
+marker lives inside the already-tolerated optional `*(…)*` suffix, so titles and IDs stay
+clean, and findings without a source line (or without the marker) stay blocking.
+
+The **append-only archives are exempt**: their content is never edited afterwards, so legacy
+formats and conventions there are never faulted and never need a marker.
+
 ## 6. Test-first (RED → GREEN) — binding
 
 - **Every written code must be covered by tests.** No feature/step code without associated tests.
@@ -117,3 +142,29 @@ Introducing STEPWELL into a project **without** the four files (grey-/brownfield
 ⬜ open · 🔄 in progress · ✅ done · ⛔ blocked (with a short reason).
 
 A blocked step is **never** reported as done; the blocker — provided it is a genuine open point — belongs as an item in `BACKLOG.md` so it is not lost.
+
+## 8. Method retrospective (periodic pruning — binding)
+
+The method itself is subject to step-wise care, not to accumulation. Every **N phases**
+(recommended: 5; a project may declare a different interval in its `PROGRESS.md` header
+line) the acting team reviews `LESSONS.md` and the architecture decisions (`AGENTS.md`)
+as a whole. Three guiding questions per rule:
+
+1. **Did the rule prevent a bug in the last N phases?** (evidence: an item, a finding or
+   a reverted change it actually caught)
+2. **Does it produce more overhead than benefit?** (cost in time/context versus the
+   failures it catches)
+3. **Can it be consolidated with another rule?** (two rules with the same trigger)
+
+Every rule ends in exactly one outcome:
+
+- **stay** — the rule stays as it is, binding.
+- **demote** — binding → recommended, documented in place.
+- **drop** — the rule is removed; its text is preserved with a pointer in the archive
+  (append-only) so the reasoning stays traceable.
+
+There is **no obligation to prune** — a retrospective may well conclude "everything
+stays". But it provides a **legitimized path for dropping rules**, so that the method
+does not grow monotonically. The retrospective itself is documented (a short note at the
+phase milestone or its own step); rule changes apply synchronously in all
+PLAYBOOK/LESSONS copies.

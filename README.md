@@ -4,7 +4,7 @@ CLI + MCP server for **reading, checking and managing** the project docs
 (`BACKLOG.md`, `PROGRESS.md`, `docs/archive/*`) in repos following the
 [STEPWELL method](docs/PLAYBOOK.md) — steps, archive pattern, test-first.
 
-**Status:** fifteen phases complete. Phase 1 — core library (fault-tolerant parsers,
+**Status:** 24 phases complete. Phase 1 — core library (fault-tolerant parsers,
 status/validation reports) · Phase 2 — MCP server + CLI (read tools, resources) ·
 Phase 3 — mutations (`archive_item`, `progress_update`, each dry-run + apply) ·
 Phase 4 — locale profiles (de/en, test-first) · Phase 5 — server name `stepwell` ·
@@ -13,6 +13,10 @@ Phase 6 — review fixes (stale span, synonym regexes, CRLF roundtrip, stale che
 CLI ASCII aliases, `title` parameter). Phases 7–15: CI + field test + packaging,
 archive/index hardening, coverage gate, annotations, init/templates, JSON schema
 versioning, token economy, STEPWELL naming, language switch to English primary.
+Phases 16–19: English docs + review follow-ups (multi-step completion, archive
+ordering, inline accepted markers). Phases 20–24: line-split alignment for mixed
+line endings (K1), Quick-Start guide, ISO 8601 timestamps, method retrospective +
+decision consolidation, PLAYBOOK §2 tolerance fix.
 Current state and step history: [`PROGRESS.md`](PROGRESS.md).
 
 ---
@@ -229,8 +233,7 @@ bump `schema` (in lockstep with the npm MAJOR).
 - **Format:** [`CHANGELOG.md`](CHANGELOG.md) per Keep a Changelog 1.1.0, `[Unreleased]`
   on top, curated user-relevant aggregates. **Redundancy rule:** no git-log dump,
   no duplication of Done Index/BACKLOG_ARCHIVE — item/commit history stays
-  in the STEPWELL files. Date format `YYMMDD/HHMM` (Decision 11) instead of ISO —
-  documented deviation.
+  in the STEPWELL files. Date format ISO 8601 `YYYY-MM-DDTHH:mm` (Decision 11).
 - **Lockstep SemVer (Decision 16):** root, `stepwell` and `stepwell-core`
   always carry the same version. MAJOR = breaking in the tool/JSON/resource contract
   (always together with the `schema` field), MINOR = new tools/features, PATCH = fixes.
@@ -313,7 +316,7 @@ is silently tolerated (stripped deterministically, T5/9.13) — no warning.
 | `WIP_WITHOUT_PLAN` (D11) | validate | 🔄 row without a matching detail block |
 | `PLAN_WITHOUT_WIP` (D12) | validate | detail block without a 🔄 step (orphaned or planned ahead via `progress_plan_phase`) |
 | `STEP_DUPLICATE` (R6) | validate | step number appears twice in the progress table — `progress_update` maintains only the first row |
-| `DATE_LEGACY` (D15) | validate | legacy `MM/YYYY` date in open files — canonical is `YYMMDD/HHMM` (e.g. `260907/1523`) |
+| `DATE_LEGACY` (D15) | validate | legacy `YYMMDD/HHMM` or `MM/YYYY` date in open files — canonical is ISO 8601 `YYYY-MM-DDTHH:mm` (e.g. `2026-09-07T15:23`) |
 | `PROJECT_NOT_INITIALIZED` (M5) | validate | root without a STEPWELL project (all four files missing) — exactly one finding with guidance instead of an error desert; `docs_status` returns the zero aggregate + this finding, read/mutation tools a structured error response (`code`/`message`/`missing`). Partial stock (a single file missing) stays a hard error per file. Contract exception: `file` carries the project root (directory) here, not a file path |
 
 ### Acknowledging a finding in place (L13)
@@ -345,7 +348,8 @@ optional `*(…)*` suffix, so titles/IDs stay clean.
 
 The PLAYBOOK rules (sequence, test-first, commit discipline, archive pattern) live in
 [`docs/PLAYBOOK.md`](docs/PLAYBOOK.md); the review checklist in
-[`docs/LESSONS.md`](docs/LESSONS.md).
+[`docs/LESSONS.md`](docs/LESSONS.md). New to STEPWELL? The five-minute entry point is
+[`docs/QUICKSTART.md`](docs/QUICKSTART.md).
 
 ---
 
@@ -372,6 +376,7 @@ packages/
 │   ├── src/profile.ts    locale profiles: role synonyms de/en (read union, write canonical)
 │   └── tests/fixtures/   project-a (clean) + project-b-drift (cases D1–D15)
 │                         + project-d-tablefirst (table before detail blocks),
+│                         + project-j-adjacent-blocks (K1: adjacent blocks / mixed EOL),
 │                         README there = working specification
 └── mcp/                  stepwell — thin transport layer over core
     ├── src/server.ts     createDocsServer (all tools + resources)
@@ -389,7 +394,7 @@ packages/
 - **Data model:** `ParseResult<T> = { value, warnings[] }`,
   `Warning = { code, file, line?, message }` — item blocks carry `span` (lines)
   and `raw` (verbatim) as the basis of the verbatim move.
-- **Tests:** 318 tests, developed test-first (RED → GREEN). Mutations in tests run
+- **Tests:** 329 tests, developed test-first (RED → GREEN). Mutations in tests run
   **exclusively** against temp copies of the fixtures — the originals are
   read-only and protected by a test.
 

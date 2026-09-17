@@ -436,3 +436,59 @@ nachholen oder einen anderen Pfad wählen.
 - **19.4 L13 RED: acknowledgement fixture + failing test — acknowledged finding → ok:true, counted separately**
 - **19.5 L13: acknowledgement mechanism (no new tool) + README/PLAYBOOK validate chapter**
 **Verifikation:** npm run typecheck && npm run test — both green (324/324); coverage above thresholds (core 96.9/88.6/99.1/96.9, mcp 95.5/85.0/100/95.5). RED a2f659f+e127bb7 → fix a5a6e11. H2 (multi-step batch completion, fixture project-h-completion-order), M10 (append-only ordering, Decision 19), L13 (inline accepted marker, fixture project-i-acknowledged); PLAYBOOK sync rooted as S2. (checkpoint: a5a6e11)
+
+---
+
+### Phase 20 — K1: progress_update block boundary (mixed line endings)
+
+**Umfang (Steps):**
+
+- **20.1 [K1] RED: adjacent detail blocks + mixed EOL regression fixture/test — span misalignment reproduces the wrong block boundary**
+- **20.2 [K1] FIX: align mutation line splitting with the parser (mutations.ts, 8 sites) — span line numbers stay aligned**
+- **20.3 [K1] Verification: full suite + docs_validate green, no manual repair; archive K1**
+**Verifikation:** typecheck grün · 326 Tests (2 neue K1-Regressionstests) · mixed-EOL-Repro (stadtpfad-Struktur) jetzt archiveOk=true · docs_validate ohne neue Findings
+
+---
+
+### Phase 21 — Q1: Quick-Start entry document
+
+**Umfang (Steps):**
+
+- **21.1 [Q1] docs/QUICKSTART.md (what STEPWELL is, core loop, the four files, the five rules, PLAYBOOK as full reference)**
+- **21.2 [Q1] README link + EN surface check + verify, archive Q1**
+**Verifikation:** docs/QUICKSTART.md (Kernschleife, vier Dateien, fünf Regeln, PLAYBOOK-Verweis) + README-Link · 326 Tests grün · PLAYBOOK unverändert
+
+---
+
+### Phase 22 — Q3: ISO 8601 timestamps
+
+**Umfang (Steps):**
+
+- **22.1 [Q3] PLAYBOOK §3 + AGENTS Decision 11: ISO 8601 canonical for new entries**
+- **22.2 [Q3] core: stampNow → ISO 8601, silent tolerance for YYMMDD/HHMM + MM/YYYY, DATE_LEGACY both legacy forms (open files only)**
+- **22.3 [Q3] Tests: stamp format, parse tolerance, DATE_LEGACY scope (open vs archive)**
+- **22.4 [Q3] PLAYBOOK sync to internal-pwa + SHA256 proof, verify, archive Q3**
+**Verifikation:** PLAYBOOK §3 + AGENTS Decision 11 auf ISO 8601 · stampNow ISO · DATE_LEGACY für beide Alt-Formate (nur offene Dateien) · Fixtures auf ISO migriert · PLAYBOOK-Kopien textgleich (sha256 91498231a452906fdde8c61d67bdf336f963a3571400a608b3499cae255977c1) · typecheck + 329 Tests grün · validate beide Repos ohne neue Findings
+
+---
+
+### Phase 23 — Q2/S2/Q4: method documentation consolidation
+
+**Umfang (Steps):**
+
+- **23.1 [Q2] PLAYBOOK: periodic method retrospective section (every N phases; three guiding questions; stay/demote/drop outcomes)**
+- **23.2 [S2] PLAYBOOK: intentionally accepted findings (inline marker syntax, effect on ok, archives exempt)**
+- **23.3 [Q4] AGENTS.md: consolidate decisions to ≤12 active (historical facts + PLAYBOOK duplicates → archive/reference)**
+- **23.4 [Q2/S2] PLAYBOOK sync to internal-pwa + SHA256 proof**
+- **23.5 [Q2/S2/Q4] Verification: typecheck + tests + docs_validate in both repos, archive Q2/S2/Q4**
+**Verifikation:** typecheck grün · PLAYBOOK §8 Methoden-Retrospektive + Abschnitt „Intentionally accepted findings" · AGENTS Decisions 19→12 (Umzug nach docs/archive/AGENTS-decisions-history.md, kein Verlust) · Kickoff/Stack entstaubt · PLAYBOOK-Kopien textgleich (sha256 3b481dcda574cf611a7b4e91ac825f8788c2b1b0188a5cf9cbce0de2c7dd34be) · validate beide Repos ohne neue Findings
+
+---
+
+### Phase 24 — M11: PLAYBOOK §2 language-tolerance drift
+
+**Umfang (Steps):**
+
+- **24.1 [M11] PLAYBOOK §2: replace the claimed STRUCT_LOCALE warning with silent tolerance (Decision I1/14.6) in both copies + SHA256 proof**
+- **24.2 [M11] Verification: docs_validate both repos without new findings; archive M11**
+**Verifikation:** PLAYBOOK §2: behauptete STRUCT_LOCALE-Warnung → stille Toleranz gem. Decision I1/14.6 · beide Kopien textgleich (sha256 6464d1116ab6ada3fad3afe05a5046dd17d01e5220845d5a32dc1469aba39f9c) · validate beide Repos ohne neue Findings (stepwell: keine; stadtpfad: nur 3 Bestands-Findings)

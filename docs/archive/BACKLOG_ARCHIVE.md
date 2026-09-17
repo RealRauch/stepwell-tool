@@ -617,3 +617,63 @@
 - **Abgrenzung:** Kein Guide-/Meta-Tool (Decision 17) — reine Parser-/Validate-Semantik, kein neues Tool.
 - **Acceptance:** Ein bewusst akzeptiertes Finding lässt `docs_validate` `ok:true` liefern und wird separat als „acknowledged" mitgezählt; ein neues, nicht gelistetes Finding hält `ok:false`; Fixture + Doku (README + PLAYBOOK-Validate-Kapitel) belegen das Verhalten.
 - **Erledigt:** Inline accepted marker (Variante B), Fixture project-i-acknowledged, Commit a5a6e11 (Phase 19/19.5); PLAYBOOK-Sync als S2 gewurzelt
+
+---
+
+### [x] K1 — progress_update (Phasenabschluss) löscht falsche Blockgrenze — Heading des Folge-Blocks wird mitentfernt — 🔴
+- **Location:** `packages/core/src/mutations.ts` (`editProgress` ~Z. 388–403, `removeSpan` ~Z. 262–271) + `packages/core/src/progress.ts` (`buildBlock`/`span` ~Z. 64–78).
+- **Fund (2× reproduziert, internal-pwa, 17.09.2026):** Abschluss einer Phase via `progress_update` (letzter Step → ✅ mit `note`/`checkpoint`) verschiebt den Detail-Block **teilweise falsch**. Beobachtet bei Phase 61 (`61.5`) und erneut bei Phase 62 (`62.3`): Entfernt wurden nicht `[Heading .. letzte eigene Zeile]`, sondern ab der **ersten Scope-Bullet** und **zwei Zeilen in den Folgeblock hinein** — d. h. das `### Phase N+1`-Heading, die Leerzeile und `**Umfang (Steps):**` des Folgeblocks wurden mitgelöscht. Zurück blieb `### Phase N` mit dem **Scope des Folgeblocks**.
+- **Symptom-Kette:** (1) `PROGRESS.md` strukturell kaputt (Phase N hat fremden Scope, Phase N+1 hat kein Heading mehr); (2) `applyProgressPlan` meldet trotz korrektem Archiv-Append `phase block move FAILED (missing in archive or still in PROGRESS)`, weil `progress.phases` weiterhin ein (falsches) `Phase N` enthält (`archiveOk=false`); (3) `docs_validate` meldet anschließend `PLAN_WITHOUT_WIP` für die falsche Phase. Der Archiv-Append selbst ist korrekt.
+- **Beleg/Repro:** Zwei aufeinanderfolgende Detail-Blöcke unter dem Tabellenende (z. B. Phase 61 direkt gefolgt von Phase 62, getrennt nur durch Heading + Leerzeile + `**Umfang (Steps):**`), Phase N mit allen Steps ✅ in der Tabelle; dann letzter Step auf ✅ mit `note`+`checkpoint`.
+- **Analyse-Hypothese:** `editProgress`/`removeSpan` arbeiten mit `block.span` (Zeilennummern) auf demselben `lines`-Array; die beobachtete Grenze (Start = erste Scope-Bullet statt Heading, Ende = 2 Zeilen im Folgeblock) deutet auf eine fehlerhafte Span-Berechnung in `buildBlock` (`end = headingLine + raw.lines.length` inkl. Folge-Header-Kontext) bzw. auf eine Verschiebung von `raw.lines` ggü. `span.start`. Vor dem Fix mit einem Minimal-Fixture verifizieren, ob `block.span` bereits falsch geparst wird oder erst im Mutations-Schritt.
+- **Abnahme:** Phasenabschluss entfernt exakt den eigenen Block (Heading inkl. `Umfang`-Zeile bis zur letzten Scope-Bullet) und lässt das `### Phase N+1`-Heading + dessen `Umfang`-Zeile unangetastet; `applyProgressPlan` meldet `archiveOk=true`; `docs_validate` ohne neue Findings; Regressionstest mit zwei benachbarten Detail-Blöcken (kein manueller Repair nötig).
+- **Erledigt:** Phase 20: mutations.ts Zeilensplit an Parser (/\r?\n/) angeglichen — mixed-EOL-Span-Verschiebung behoben; Regressionstest `project-j-adjacent-blocks`
+
+---
+
+### [x] Q1 — Quick-Start: Einstiegsdokument für Methoden-Adoption — 🟠
+- `docs/QUICKSTART.md` (~500–800 Wörter) erstellen
+- **Location:** `docs/QUICKSTART.md` (neu)
+- **Acceptance:** Ein Dokument, das in ≤5 Minuten vermittelt: Was STEPWELL ist (3 Sätze), Kernschleife (Plan → Package → Release → Implement → Verify → Archive), die vier Dateien und was reingehört (je 1 Satz), die 5 wichtigsten Regeln (Test-First, Commit-Disziplin, Freigabe-Gate, Archiv-Muster, Doku-Pflicht), Verweis auf PLAYBOOK als Vollreferenz. PLAYBOOK bleibt unverändert — Quick-Start ist Einstieg, nicht Ersatz.
+- **Erledigt:** Phase 21: docs/QUICKSTART.md (≤5 Min: Kernschleife, vier Dateien, 5 Regeln) + README-Link
+
+---
+
+### [x] Q3 — Zeitstempel auf ISO 8601 umstellen — 🟢
+- YYMMDD/HHMM → ISO 8601 (`2026-09-07T15:23`) in Methode + Parser
+- **Location:** `docs/PLAYBOOK.md` §3 (Timestamps), Parser-Toleranzschicht, AGENTS.md Decision 11
+- **Acceptance:** Neue Einträge verwenden ISO 8601 (z.B. `2026-09-07T15:23`). Parser-Toleranz liest YYMMDD/HHMM + MM/YYYY weiterhin still (keine Warnung für Bestand). PLAYBOOK §3 dokumentiert das neue Format + Toleranz. `DATE_LEGACY`-Warnung gilt für beide Alt-Formate, nur in offenen Dateien. Archive nie anfassen. Sync in alle PLAYBOOK-Kopien.
+- **Erledigt:** Phase 22: ISO 8601 kanonisch (stampNow + PLAYBOOK §3 + Decision 11), Toleranz für JJMMDD/HHMM + MM/JJJJ, DATE_LEGACY beide Formate nur offene Dateien; PLAYBOOK-Kopien synchron (sha256 91498231…)
+
+---
+
+### [x] Q2 — Retro-Konvention: Methoden-Pruning legitimieren — 🟡
+- PLAYBOOK-Abschnitt für periodische Methoden-Retrospektive ergänzen
+- **Location:** `docs/PLAYBOOK.md` (neuer Abschnitt, z.B. nach §5)
+- **Acceptance:** Konvention, die alle N Phasen (z.B. 5) ein Review von LESSONS + Decisions vorsieht. Drei Leitfragen: (1) Hat die Regel in den letzten N Phasen einen Bug verhindert? (2) Erzeugt sie mehr Overhead als Nutzen? (3) Konsolidierbar mit einer anderen? Outcomes: bleibt / herabstufen (bindend → empfohlen) / streichen (Verweis im Archiv). Kein Zwang zum Streichen — aber ein legitimierter Pfad dafür. Sync in alle PLAYBOOK-Kopien.
+- **Erledigt:** Phase 23: PLAYBOOK §8 Methoden-Retrospektive (3 Leitfragen, stay/demote/drop, kein Streichzwang) + Sync
+
+---
+
+### [x] S2 — Sync-Schlag: Inline-Acceptance-Marker (L13) ins PLAYBOOK (alle Kopien) — 🟡
+- **Location:** `docs/PLAYBOOK.md` (Validate-/Verifikations-Kapitel) + Kopie in `../internal-pwa`.
+- **Kontext:** L13/19.5 hat den Inline-Marker `*(accepted: CODE)*` als Parser-/Validate-Semantik eingeführt (README + Fixture `project-i-acknowledged`). Die projektunabhängige Methode kennt „bewusst akzeptierte Abweichung" noch nicht.
+- **Acceptance:** PLAYBOOK-Abschnitt zu bewusst akzeptierten Findings (Marker-Syntax, Wirkung auf `ok`, append-only-Archive bleiben ausgenommen); textgleich in beiden PLAYBOOK-Kopien (SHA256-Beleg je Kopie); `docs_validate` in beiden Repos ohne neue Findings.
+- **Erledigt:** Phase 23: PLAYBOOK-Abschnitt „Intentionally accepted findings" (`*(accepted: CODE)*`, Wirkung auf ok, Archive ausgenommen); Kopien textgleich (sha256 3b481dcd…)
+
+---
+
+### [x] Q4 — AGENTS.md Decisions konsolidieren — 🟡
+- Decisions-Liste straffen: historische Fakten → Archiv, Redundanzen → eliminieren
+- **Location:** `AGENTS.md` (Architektur-Entscheidungen), `docs/archive/`
+- **Acceptance:** Decisions, die rein historische Fakten dokumentieren (z.B. D8 Stack-Entscheidung, D12 Namens-Kollisionscheck) oder PLAYBOOK-Abschnitte wiederholen (z.B. D9 ≈ §2), werden ins Archiv verschoben oder mit dem PLAYBOOK-Verweis ersetzt. Ziel: ≤12 aktive Decisions. Verbleibende Decisions sind solche, die laufendes Verhalten steuern (Content-Gates, Lockstep-SemVer, Surface-Guardrail, etc.). Kein inhaltlicher Verlust — nur Umzug.
+- **Erledigt:** Phase 23: Decisions 19→12 konsolidiert; historische/Duplikat-Entscheidungen nach docs/archive/AGENTS-decisions-history.md verschoben
+
+---
+
+### [x] M11 — PLAYBOOK §2 behauptet STRUCT_LOCALE-Warnung, die Decision I1/14.6 abgeschafft hat — 🟡
+- **Location:** `docs/PLAYBOOK.md` §2 „Language (binding)" (beide Kopien: `stepwell-tool` + `../internal-pwa`).
+- **Problem:** Der Abschnitt behauptet eine `STRUCT_LOCALE`-Warnung („`docs_validate` reports them as `STRUCT_LOCALE` warning following the `DATE_LEGACY` pattern"). Decision I1/14.6 hat genau diese Warnung abgeschafft (stille Toleranz, keine Warnung) — `locale.test.ts` und AGENTS Decision 10 sind die Belegstellen. Die Methode widerspricht damit der Implementierung und den eigenen Decisions.
+- **Fix:** Satz auf stille Toleranz umstellen (Union-Matching liest DE+EN ohne Warnung; Archive bleiben ausgenommen); textgleich in beiden PLAYBOOK-Kopien.
+- **Acceptance:** PLAYBOOK §2 nennt keine `STRUCT_LOCALE`-Warnung mehr; beide Kopien textgleich (SHA256-Beleg); `docs_validate` in beiden Repos ohne neue Findings.
+- **Erledigt:** Phase 24: PLAYBOOK §2 nennt keine STRUCT_LOCALE-Warnung mehr (stille Toleranz, I1/14.6); Kopien synchron (sha256 6464d111…)
