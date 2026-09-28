@@ -1,4 +1,4 @@
-# BACKLOG.md — Open items (As of: 2026-09-17T19:29
+# BACKLOG.md — Open items (As of: 2026-09-28T19:29
 
 > **This file contains only OPEN items.** Completed items are moved to `docs/archive/BACKLOG_ARCHIVE.md` unchanged after completion; this file keeps only a one-liner per item in the Done Index (below). Findings/fix-ideas/decisions are not deleted — moved to the archive.
 > Legend: 🔴 critical · 🟠 high · 🟡 medium · 🟢 low · 🔵 test gap
@@ -30,6 +30,12 @@
 - **Problem:** Ein projektweit aktivierter MCP-Server läuft auch in Repos, die nie STEPWELL wollten. Der heutige Meldeweg ist anweisend statt neutral: `PROJECT_NOT_INITIALIZED` sagt „Lege `<Dateien>` an — Vorlagen: …", und die SKILL-Beschreibung aktiviert sich „when the target project contains the four STEPWELL files **or one is to be set up**". Beides kann einen Agenten in einem fremden Repo zu ungefragter Einrichtung drängen — genau das soll vermieden werden (Opt-in pro Projekt, Server passiv).
 - **Fix:** (a) Meldung entdramatisieren: „No STEPWELL project here — no action required unless you want to adopt STEPWELL; templates: `stepwell://templates/{kind}`" (alles-vier-fehlen = harmlos; Teilbestand bleibt harter Fehler, unverändert); (b) SKILL-Klausel auf „…contains the four STEPWELL files **or the user explicitly asks for STEPWELL**" umstellen, „or one is to be set up" streichen; (c) klarstellen/dokumentieren, dass Lesezugriffe in fremden Repos harmlos sind und keine Aktion auslösen; (d) Tests/Fixtures an den neuen Wortlaut anpassen (M5-Abnahme: genau ein Fund mit Guidance bleibt).
 - **Acceptance:** `PROJECT_NOT_INITIALIZED` ist als neutraler Hinweis formuliert (keine Aufforderung, ungefragt Dateien anzulegen); SKILL aktiviert sich nur bei vorhandenen vier Dateien oder explizitem STEPWELL-Wunsch; Auslösen des Hinweises in einem fremden Repo führt zu keiner Schreiboperation; Tests/Fixtures grün, `docs_validate` unverändert.
+
+### [ ] M14 — PLAYBOOK/LESSONS-Sync aus internal-pwa: Lesson 28 (CI-Sicht = Teil der Verifikation, Push-Intervall ≤ Phase) — 🟡
+- **Location:** `docs/PLAYBOOK.md` §5 (Verification before completion) und `docs/LESSONS.md` Regel 28.
+- **Problem:** Method-Drift — die Quellkopie (internal-pwa) hat per F7 (28.09.2026) ergänzt: Lesson 28 „CI is a verification lane — push interval ≤ phase, CI-Run zählt zur Phasen-Verifikation" sowie PLAYBOOK-§5-Bullet „CI is part of verification". Diese Kopie hat den Stand noch nicht.
+- **Umfang (Häppchen):** beide Textstellen 1:1 aus der Quellkopie übernehmen (textuell identisch, SYNC-Pflicht nach PLAYBOOK-Kopf), Commit + Sync-Vermerk.
+- **Acceptance:** beide Stellen wortgleich mit internal-pwa (Commit `docs`-Hash dort), `docs_validate` grün.
 
 ---
 
