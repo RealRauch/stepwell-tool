@@ -146,12 +146,18 @@ with a clear message — the server does not crash.
 | `backlog_update` | `root`, `id`, optional `title`, `priority`, `section`, `text`, `detail`, `dryRun` | Changes title/priority/text/section in the block format (span recomputation, checkbox and `*(…)*` suffix are preserved). A priority change moves the block into the matching priority section. |
 | `backlog_remove` | `root`, `id`, optional `note`, `locale`, `detail`, `dryRun` | **No hard delete:** block moves verbatim into BACKLOG_ARCHIVE (checkbox stays `[ ]`, optional `note` → `**Removed:**` line), the Done Index gets a tail without a done marker (`- <ID> — <title> — removed (note?)`). `docs_validate` deliberately does **not** report checkbox-`[ ]` blocks as `ARCHIVE_WITHOUT_INDEX`. |
 | `progress_plan_phase` | `root`, `phase` (`"Phase <N>[ — Title]"`), `steps: [{step, name}]`, optional `detail`, `dryRun` | Plans a phase **ahead**: table rows for all steps (`⬜`, with names) + detail-block skeleton with the full scope. Validates the step prefix (`Phase 7` → `7.x`), duplicates and occupied phases/steps. `PLAN_WITHOUT_WIP` is the defined state until the first 🔄. |
+| `workstream_sync` | `root`, `direction` (`pull`/`push`/`status`), `structured`, `dryRun` (**default `true`**) | Git workstream sync (H5/26.5): `pull` merges trunk → branch (risky side — conflicts abort cleanly with a structured report), `push` fast-forwards trunk → branch head (ancestor precondition, atomic `--ff-only`), `status` returns the read-only workstream report (per-worktree liveness + conflict-candidate overlap). Dry-run runs the exact guard chain of the real op and previews the effect. Errors keep stable codes (`STALE_BRANCH`, `DIRTY_TREE`, `TRUNK_DIRTY`, …). CLI equivalent: `stepwell sync <status\|pull\|push>`. |
 
 **Response formats:** dry-run returns the plan `{dryRun, changes:[{file, description,
 before, after, diff}]}`; apply returns `{written, verification:{ok, messages}}`.
 With `detail: "summary"` (E1) dry-run `changes` are projected onto `{file, description,
 beforeLines, afterLines}` + top-level marker `detail: "summary"` —
 the default stays `"diff"` with the full preview (safety note unchanged).
+With `commit: true` (H5/26.3, applies only) the response carries an additional
+`commit` section — `{ok, committed, files[], sha?}` on success or
+`{ok:false, error:{code, message}}` (`COMMIT_BLOCKED`, `COMMIT_FAILED`); a failed
+commit never rolls the edits back. Multi-step batches commit **once** after the
+whole batch, and never when the apply verification failed.
 
 ### Locale profiles
 
@@ -222,8 +228,9 @@ Human output on stdout; `--json` returns the core payloads with a leading
 | `progress` | `count`, `rows[]`, `warnings` |
 | `validate` | `findings[]` (blocking), `acknowledged[]` (accepted in place, L13), `warnings[]`, `ok` |
 | `archive` (dry-run) | `root`, `id`, `dryRun`, `note`, `changes[]` |
-| `archive --apply` | `written[]`, `verification{ok, messages[]}` |
-| `progress-update` | like `archive` plus `phase`, `step`, `status`, `title`, `completedPhase`, `checkpoint?` |
+| `archive --apply` | `written[]`, `verification{ok, messages[]}`, `commit?` (with `--commit`, H5/26.3) |
+| `progress-update` | like `archive` plus `phase`, `step`, `status`, `title`, `completedPhase`, `checkpoint?`, `commit?` (with `--commit`) |
+| `sync <direction>` | `direction`, `dryRun` + preview payload (`behind`, `files[]`, `overlap[]` for pull; `ahead`, `target` for push) or op payload (`fastForward`, `mergedFiles`, `validation`), `error{code, message}` on failure (H5/26.5) |
 
 **Contract rule (M6/Decision 16):** a breaking change to this field set ⇒
 bump `schema` (in lockstep with the npm MAJOR).
@@ -378,13 +385,50 @@ packages/
 │                         + project-d-tablefirst (table before detail blocks),
 │                         + project-j-adjacent-blocks (K1: adjacent blocks / mixed EOL),
 │                         README there = working specification
-└── mcp/                  stepwell — thin transport layer over core
+├── git/                  stepwell-git — git satellite (H5/Decision 14), depends only on core
+│   ├── src/sync.ts       pullTrunk (merge trunk → branch, guards, clean conflict abort)
+│   ├── src/push.ts       pushTrunk (ancestor precondition, atomic --ff-only trunk move)
+│   ├── src/commit.ts     commitDocs (stages ONLY the four doc files) + message generator
+│   ├── src/report.ts     workstreamReport (liveness + overlap, derived from git itself)
+│   └── src/preview.ts    syncPreview (dry-run shares the exact guard chain of the real op)
+└── mcp/                  stepwell — thin transport layer over core + git satellite
     ├── src/server.ts     createDocsServer (all tools + resources)
     ├── src/tools.ts      tool registration (JSON payloads, isError wrapping)
     ├── src/resources.ts  resource templates (percent-encoded root)
     ├── src/serve.ts      stdio entry
     └── src/cli.ts        stepwell command line
 ```
+
+### Workstreams — parallel phases via git worktrees (H5, 11/2026)
+
+A project may run phases in parallel as **workstreams** (PLAYBOOK §1: one phase per
+git worktree + branch, merge to trunk per step). `core` stays **git-blind** — all git
+intelligence lives in the `stepwell-git` satellite, offered **CLI-first** (skill-fed
+agents need no MCP registration) and **MCP-optional** (`workstream_sync` tool).
+
+Per-step ritual (divergence ≤ 1 step):
+
+```bash
+stepwell sync pull --root <worktree>     # trunk → branch (conflicts surface HERE,
+                                         # clean abort + structured report)
+# ... implement, verify (typecheck + tests) ...
+stepwell progress-update ... --apply --commit   # doc commit: ONLY the four files
+stepwell sync push --root <worktree>     # branch → trunk (--ff-only, precondition:
+                                         # trunk head already pulled)
+stepwell sync status --root <worktree>   # liveness + overlap of all workstreams
+```
+
+Guards (stable error codes, Decision 10 contract): `DIRTY_TREE`, `DETACHED_HEAD`,
+`MERGE_CONFLICT` (clean abort, files + per-side commit counts), `STALE_BRANCH`
+(re-pull loop), `TRUNK_DIRTY`, `ON_TRUNK_BRANCH`, `COMMIT_BLOCKED` (pre-staged
+index), `COMMIT_FAILED` (edits stay applied — never a rollback). Pull/push default
+to a dry-run preview sharing the exact guard chain of the real operation; push is
+atomic (`--ff-only` in the trunk worktree — a trunk move inside the race window
+becomes a `STALE_BRANCH` refusal, never a real merge on the trunk side).
+Worktree/branch **creation and cleanup stay agent rituals** (one-time setup, no tool).
+Field-test ladder (Decision 14): fixtures → this repo → only an explicitly chosen
+non-critical project; internal-pwa receives verbatim doc syncs and read-only probes
+only.
 
 - **Stack:** TypeScript (strict, `NodeNext`, `noUncheckedIndexedAccess`,
   `exactOptionalPropertyTypes`), npm workspaces, Vitest, MCP SDK **v1.x stable**
@@ -394,7 +438,7 @@ packages/
 - **Data model:** `ParseResult<T> = { value, warnings[] }`,
   `Warning = { code, file, line?, message }` — item blocks carry `span` (lines)
   and `raw` (verbatim) as the basis of the verbatim move.
-- **Tests:** 329 tests, developed test-first (RED → GREEN). Mutations in tests run
+- **Tests:** 384 tests, developed test-first (RED → GREEN). Mutations in tests run
   **exclusively** against temp copies of the fixtures — the originals are
   read-only and protected by a test.
 

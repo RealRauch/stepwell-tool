@@ -13,6 +13,47 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
 
 ## [Unreleased]
 
+### Phase 26 — Workstream worktrees: git satellite (2026-11-10T23:00)
+
+#### Added
+- **`stepwell-git` satellite package (H5/26.1, Decision 14):** `core` stays git-blind; git
+  intelligence lives transport-neutral — CLI-first (`stepwell sync`, skill-fed agents need no
+  MCP registration), MCP-optional (`workstream_sync` tool). `pullTrunk` merges trunk → branch
+  with a guard chain (`GIT_MISSING`, `NOT_A_GIT_REPO`, `DETACHED_HEAD`, `DIRTY_TREE`) and aborts
+  merge conflicts cleanly with a structured report (files + per-side commit counts);
+  `docs_validate` re-checks the merged docs as the mechanical net.
+- **`pushTrunk` (H5/26.2):** branch → trunk with the ancestor precondition made atomic
+  (`--ff-only` in the main worktree — a trunk move inside the race window becomes a clean
+  `STALE_BRANCH` refusal for the re-pull → verify → push loop); codes `STALE_BRANCH`,
+  `TRUNK_DIRTY`, `ON_TRUNK_BRANCH`.
+- **Commit automation (H5/26.3):** `commit: true` / CLI `--commit` on `archive_item` and
+  `progress_update` — stages ONLY the four doc files (deterministic, no secret risk);
+  `COMMIT_BLOCKED` on a pre-staged index, `COMMIT_FAILED` keeps the edits applied (never a
+  rollback). Generated subjects: `docs(backlog): archive <ID>` / `docs(progress): step <n> <icon>`;
+  `commitMessage`/`--commit-message` override. Response/JSON gains an additive `commit` section
+  (schema stays 2); a failed commit exits 1 while `verification.ok` stays true. Contract surface
+  extended additively (MINOR, Decision 10).
+- **`workstreamReport` / `stepwell sync status` (H5/26.4):** read-only liveness + conflict
+  candidates derived from git itself (branches + last-commit times — no registry file, no
+  heartbeats); per worktree branch/ahead/behind/dirty/last-activity plus `overlap[]` (files
+  touched on both sides since the merge base — the likely conflicts of the next pull).
+- **`syncPreview` (H5/26.5):** dry-run default for pull/push shares the EXACT guard chain of
+  the real operation (extracted `pullGuards`/`pushGuards`) — a preview can never disagree with
+  the merge it forecasts.
+- **Docs:** README workstream section (ritual, guards, field-test ladder), SKILL workstream
+  ritual (CLI-first), QUICKSTART pointer, PLAYBOOK §1/§4/§5 workstream model (both copies,
+  SHA256-evidenced sync, H5).
+
+#### Changed
+- **pack-smoke packs three tarballs (H5/26.3):** `stepwell-git` ships as a dependency of the
+  `stepwell` MCP/CLI artifact; the smoke asserts its dist artifacts and the manifest dependency.
+- **Method: PLAYBOOK §1 "Sequential approach & parallel workstreams" (H5):** parallel phases
+  run as workstreams (one phase per worktree+branch, per-step merge to trunk, WIP visibility via
+  step-start doc commits, trunk = main worktree's branch, no hard workstream limit); §4 tool
+  doc-commits cover only the four docs; §5 verification runs after pull, before push. Word-identical
+  in both copies (SHA256 PLAYBOOK `861bc78a…`, LESSONS `2d0b9ef2…`); LESSONS grew 18 → 31 via the
+  M15/M14 drift sync from internal-pwa.
+
 ### Phase 20–24 — Field robustness & method docs (2026-09-17T18:40)
 
 #### Fixed

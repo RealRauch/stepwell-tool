@@ -70,3 +70,6 @@ All four files are mandatory: if one is missing, the project does not load.
 - Review checklist for completions: [`LESSONS.md`](LESSONS.md).
 - Tool usage (CLI + MCP, the four files' format): [`../README.md`](../README.md).
 - Project-specific commands and decisions: [`../AGENTS.md`](../AGENTS.md).
+- Running phases **in parallel** (git worktrees, per-step merge to trunk): PLAYBOOK §1
+  "Parallel phases as workstreams" + README "Workstreams" — optional; single-tree
+  sequential is the default.

@@ -62,9 +62,32 @@ backlog-archive | progress-archive), then run `docs_validate` — must be clean.
   then check doc sync (AGENTS kickoff, README, PLAYBOOK copies) and commit.
 - Before every commit: `docs_validate` must be clean.
 
+## Workstream mode — parallel phases via git worktrees (PLAYBOOK §1, H5)
+
+When a phase runs as a **workstream** (own git worktree + branch, one phase per
+workstream), the per-step ritual is CLI-first — no MCP registration needed:
+
+1. `stepwell sync pull --root <worktree>` — merge trunk into your branch (dry-run
+   preview by default; add `--apply`). Conflicts surface HERE, in your own tree:
+   clean abort + structured report — resolve, then pull again.
+2. Implement; commit code yourself (PLAYBOOK §4); verify (`typecheck` + suite).
+3. `stepwell progress-update … --apply --commit` — the tool commits ONLY the four
+   doc files on your branch (never code, never foreign files; `COMMIT_BLOCKED` on a
+   pre-staged index; a failed commit keeps the edits applied — commit yourself then).
+4. Verify the merged state, then `stepwell sync push --root <worktree> --apply` —
+   trunk fast-forwards only (precondition: trunk head already pulled; a stale branch
+   gets `STALE_BRANCH` → go to 1).
+5. `stepwell sync status --root <worktree>` — who else is active (branches + last
+   commit times) and which files overlap with your work.
+
+Worktree/branch creation and cleanup stay manual rituals (`git worktree add …`,
+`git worktree remove` after phase completion). Without git, a project stays
+single-tree sequential. Details: README "Workstreams" + PLAYBOOK §1.
+
 ## Tool alternatives
 
 Without the MCP server, the same surface is available as a CLI (`npx stepwell`):
-`status`/`backlog`/`progress`/`validate`/`archive`/`progress-update` — `--json` output
-carries the versioned schema field (`schema: <n>`; breaking ⇒ bump the number). The
+`status`/`backlog`/`progress`/`validate`/`archive`/`progress-update`/`sync` — `--json`
+output carries the versioned schema field (`schema: <n>`; breaking ⇒ bump the number).
+`--commit` on `archive`/`progress-update` automates the four-doc commit (H5). The
 method itself lives in PLAYBOOK.md — this skill is only the pointer to the tools.
