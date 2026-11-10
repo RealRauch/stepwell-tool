@@ -8,7 +8,7 @@ import { pullTrunk } from "../src/sync.ts";
 
 // --- helpers -------------------------------------------------------------
 
-const TEMPLATE_BY_FILE: Record<string, Parameters<typeof projectTemplates>[0]> = {
+const TEMPLATE_BY_FILE: Record<string, keyof typeof projectTemplates> = {
   "BACKLOG.md": "backlog",
   "PROGRESS.md": "progress",
   "docs/archive/BACKLOG_ARCHIVE.md": "backlog-archive",
@@ -27,19 +27,22 @@ function git(root: string, args: string[]): string {
   return execFileSync("git", ["-C", root, ...args], { encoding: "utf8" });
 }
 
-function makeStepwellRepo(): string {
-  const root = makeDir();
+/** Main worktree (stays on trunk = `main`) + a linked workstream worktree on `feature`. */
+function makeWorkstream(): { main: string; work: string } {
+  const main = makeDir();
   for (const rel of REQUIRED_FILES) {
-    const abs = join(root, rel);
+    const abs = join(main, rel);
     mkdirSync(join(abs, ".."), { recursive: true });
-    writeFileSync(abs, projectTemplates(TEMPLATE_BY_FILE[rel]!));
+    writeFileSync(abs, projectTemplates[TEMPLATE_BY_FILE[rel.replace(/\\/gu, "/")]!]);
   }
-  git(root, ["init", "-b", "main"]);
-  git(root, ["config", "user.email", "test@example.com"]);
-  git(root, ["config", "user.name", "Test"]);
-  git(root, ["add", "-A"]);
-  git(root, ["commit", "-m", "init stepwell docs"]);
-  return root;
+  git(main, ["init", "-b", "main"]);
+  git(main, ["config", "user.email", "test@example.com"]);
+  git(main, ["config", "user.name", "Test"]);
+  git(main, ["add", "-A"]);
+  git(main, ["commit", "-m", "init stepwell docs"]);
+  const work = `${main}-workstream`;
+  git(main, ["worktree", "add", "-b", "feature", work]);
+  return { main, work };
 }
 
 afterEach(() => {
@@ -50,15 +53,12 @@ afterEach(() => {
 
 describe("pullTrunk", () => {
   it("fast-forwards when only trunk moved", () => {
-    const root = makeStepwellRepo();
-    git(root, ["checkout", "-b", "feature"]);
-    git(root, ["checkout", "main"]);
-    writeFileSync(join(root, "trunk-only.txt"), "trunk work\n");
-    git(root, ["add", "-A"]);
-    git(root, ["commit", "-m", "trunk work"]);
-    git(root, ["checkout", "feature"]);
+    const { main, work } = makeWorkstream();
+    writeFileSync(join(main, "trunk-only.txt"), "trunk work\n");
+    git(main, ["add", "-A"]);
+    git(main, ["commit", "-m", "trunk work"]);
 
-    const result = pullTrunk(root);
+    const result = pullTrunk(work);
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -69,38 +69,34 @@ describe("pullTrunk", () => {
   });
 
   it("creates a merge commit when both sides moved", () => {
-    const root = makeStepwellRepo();
-    git(root, ["checkout", "-b", "feature"]);
-    writeFileSync(join(root, "branch-only.txt"), "branch work\n");
-    git(root, ["add", "-A"]);
-    git(root, ["commit", "-m", "branch work"]);
-    git(root, ["checkout", "main"]);
-    writeFileSync(join(root, "trunk-only.txt"), "trunk work\n");
-    git(root, ["add", "-A"]);
-    git(root, ["commit", "-m", "trunk work"]);
-    git(root, ["checkout", "feature"]);
+    const { main, work } = makeWorkstream();
+    writeFileSync(join(work, "branch-only.txt"), "branch work\n");
+    git(work, ["add", "-A"]);
+    git(work, ["commit", "-m", "branch work"]);
+    writeFileSync(join(main, "trunk-only.txt"), "trunk work\n");
+    git(main, ["add", "-A"]);
+    git(main, ["commit", "-m", "trunk work"]);
 
-    const result = pullTrunk(root);
+    const result = pullTrunk(work);
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.fastForward).toBe(false);
     expect(result.mergedFiles).toBeGreaterThan(0);
     // after the merge, trunk head is an ancestor of the branch
-    const mergeBase = git(root, ["merge-base", "main", "HEAD"]).trim();
-    const trunkHead = git(root, ["rev-parse", "main"]).trim();
+    const mergeBase = git(work, ["merge-base", "main", "HEAD"]).trim();
+    const trunkHead = git(work, ["rev-parse", "main"]).trim();
     expect(mergeBase).toBe(trunkHead);
   });
 
   it("is a no-op when already up to date", () => {
-    const root = makeStepwellRepo();
-    git(root, ["checkout", "-b", "feature"]);
-    const first = pullTrunk(root);
+    const { work } = makeWorkstream();
+    const first = pullTrunk(work);
     expect(first.ok).toBe(true);
     if (!first.ok) return;
     expect(first.mergedFiles).toBe(0);
 
-    const second = pullTrunk(root);
+    const second = pullTrunk(work);
     expect(second.ok).toBe(true);
     if (!second.ok) return;
     expect(second.fastForward).toBe(false);
@@ -108,60 +104,56 @@ describe("pullTrunk", () => {
   });
 
   it("refuses on a dirty tree and merges nothing", () => {
-    const root = makeStepwellRepo();
-    git(root, ["checkout", "-b", "feature"]);
-    git(root, ["checkout", "main"]);
-    writeFileSync(join(root, "trunk-only.txt"), "trunk work\n");
-    git(root, ["add", "-A"]);
-    git(root, ["commit", "-m", "trunk work"]);
-    git(root, ["checkout", "feature"]);
-    const headBefore = git(root, ["rev-parse", "HEAD"]).trim();
-    writeFileSync(join(root, "scratch.txt"), "uncommitted\n");
+    const { main, work } = makeWorkstream();
+    writeFileSync(join(main, "trunk-only.txt"), "trunk work\n");
+    git(main, ["add", "-A"]);
+    git(main, ["commit", "-m", "trunk work"]);
+    const headBefore = git(work, ["rev-parse", "HEAD"]).trim();
+    writeFileSync(join(work, "scratch.txt"), "uncommitted\n");
 
-    const result = pullTrunk(root);
+    const result = pullTrunk(work);
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.error.code).toBe("DIRTY_TREE");
     expect(result.error.files).toContain("scratch.txt");
-    expect(git(root, ["rev-parse", "HEAD"]).trim()).toBe(headBefore);
+    expect(git(work, ["rev-parse", "HEAD"]).trim()).toBe(headBefore);
   });
 
   it("aborts cleanly on a merge conflict and reports both sides", () => {
-    const root = makeStepwellRepo();
-    git(root, ["checkout", "-b", "feature"]);
+    const { main, work } = makeWorkstream();
     writeFileSync(
-      join(root, "PROGRESS.md"),
-      projectTemplates("progress").replace("## Active Phases", "## Active Phases\n<!-- branch edit -->"),
+      join(work, "PROGRESS.md"),
+      projectTemplates.progress.replace("## Active Phases", "## Active Phases\n<!-- branch edit -->"),
     );
-    git(root, ["add", "-A"]);
-    git(root, ["commit", "-m", "branch edit"]);
-    git(root, ["checkout", "main"]);
+    git(work, ["add", "-A"]);
+    git(work, ["commit", "-m", "branch edit"]);
     writeFileSync(
-      join(root, "PROGRESS.md"),
-      projectTemplates("progress").replace("## Active Phases", "## Active Phases\n<!-- trunk edit -->"),
+      join(main, "PROGRESS.md"),
+      projectTemplates.progress.replace("## Active Phases", "## Active Phases\n<!-- trunk edit -->"),
     );
-    git(root, ["add", "-A"]);
-    git(root, ["commit", "-m", "trunk edit"]);
-    git(root, ["checkout", "feature"]);
-    const headBefore = git(root, ["rev-parse", "HEAD"]).trim();
+    git(main, ["add", "-A"]);
+    git(main, ["commit", "-m", "trunk edit"]);
+    const headBefore = git(work, ["rev-parse", "HEAD"]).trim();
 
-    const result = pullTrunk(root);
+    const result = pullTrunk(work);
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.error.code).toBe("MERGE_CONFLICT");
     expect(result.error.files).toContain("PROGRESS.md");
+    expect(result.error.detail).toContain("branch:");
+    expect(result.error.detail).toContain("trunk:");
     // clean abort: tree back to the pre-merge state
-    expect(git(root, ["rev-parse", "HEAD"]).trim()).toBe(headBefore);
-    expect(git(root, ["status", "--porcelain"])).toBe("");
+    expect(git(work, ["rev-parse", "HEAD"]).trim()).toBe(headBefore);
+    expect(git(work, ["status", "--porcelain"])).toBe("");
   });
 
   it("reports a detached head", () => {
-    const root = makeStepwellRepo();
-    git(root, ["checkout", "--detach"]);
+    const { work } = makeWorkstream();
+    git(work, ["checkout", "--detach"]);
 
-    const result = pullTrunk(root);
+    const result = pullTrunk(work);
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
