@@ -677,3 +677,21 @@
 - **Fix:** Satz auf stille Toleranz umstellen (Union-Matching liest DE+EN ohne Warnung; Archive bleiben ausgenommen); textgleich in beiden PLAYBOOK-Kopien.
 - **Acceptance:** PLAYBOOK §2 nennt keine `STRUCT_LOCALE`-Warnung mehr; beide Kopien textgleich (SHA256-Beleg); `docs_validate` in beiden Repos ohne neue Findings.
 - **Erledigt:** Phase 24: PLAYBOOK §2 nennt keine STRUCT_LOCALE-Warnung mehr (stille Toleranz, I1/14.6); Kopien synchron (sha256 6464d111…)
+
+---
+
+### [x] H3 — Konsum-Schutz: Decision 13 + CONSUMERS.md-Inventar + Upgrade-Runbook — 🟠
+- **Location:** `AGENTS.md` (Architektur-Entscheidungen + Kickoff), `docs/CONSUMERS.md` (neu).
+- **Problem:** Live-MCP-Konsumer sehen jede Änderung sofort: internal-pwa mit 4 pfadgekoppelten Registrierungen (3× `packages/mcp/src/serve.ts` via tsx, 1× `packages/mcp/dist/serve.js`, keine Versions-Pins), internal-consumer aktiv in Nutzung — Registrierung liegt außerhalb der Repo-Ebene (dateibasierte Discovery hat sie verfehlt: user-/session-scoped Registrierungen sind ein toter Winkel). Kein Release-Moment schützt die Konsumer.
+- **Umfang:** Decision 13 in AGENTS.md: Split-Modell (Clone `stepwell-tool-dev`/Branch `dev` = Entwicklungslinie; `main` im eingefrorenen Verzeichnis = Konsumer-Stand), Promotion-Ritual (6 Schritte: grün → Feldprobe → Merge dev→main → Build → bei MAJOR Konsumer-Koordination → Probe), Kontraktregeln (Tool-Namen/-Parameter/-JSON-Formen/Resource-URIs/Warning-Codes = MAJOR + Abstimmung; Message/Prosa frei), PLAYBOOK/LESSONS = Cross-Repo-Kontrakt, Alternativprüfung „kein Migrations-Tool" (Decisions 5/6/11) + Kickoff-Verweis. `docs/CONSUMERS.md`: Inventartabelle (pwa + internal-consumer live; internal-app-1, internal-recorder, internal-app-2, internal-app-3 als Doc-Adopter) mit Referenzen (Datei:Zeile), MAJOR-Upgrade-Runbook, Discovery-Hinweis.
+- **Acceptance:** Decision 13 in AGENTS.md vorhanden (inkl. Promotion-Ritual); CONSUMERS.md listet alle 6 Konsumer mit Kopplungsart + Referenzen; Kickoff verweist darauf; `docs_validate` grün.
+- **Erledigt:** commit 98ccd94 (docs(agents): Decision 13 + CONSUMERS.md)
+
+---
+
+### [x] H4 — Contract-Tests: Input-Schema-Lock (tools/list via InMemoryTransport) + serve.ts-Pfad-Lock — 🟠
+- **Location:** `packages/mcp/tests/contract-tools.test.ts` (neu), `packages/mcp/tests/packaging.test.ts` (Ergänzung).
+- **Problem:** Parameter-Renams oder optional→required-Drehen rutschen heute durch, solange kein Test genau diesen Parameter aufruft (kein Input-Schema-Lock). Zusätzlich kein Lock auf den Entry-Point-Pfad `packages/mcp/src/serve.ts` — hart verdrahtet in 3 pwa-Registrierungen; ein Move/Rename bricht alle drei.
+- **Umfang:** Echtes `tools/list` via `InMemoryTransport.createLinkedPair()` + SDK-Client; explizite Erwartungsstruktur für alle 13 Tools (Parametername, required/optional, Typ, Enum-Werte, Defaults wie `dryRun: true`, `locale: de|en`, `step: string|string[]`). `packaging.test.ts`: Assertion `packages/mcp/src/serve.ts` existiert + README referenziert genau diesen Pfad. Falls das listTools-Muster nicht greift: Schemas explizit in `tools.ts` exportieren (kleine, nicht-brechende Ergänzung). Sabotage-Check eingebaut: absichtlich falsche Erwartung muss ROT schlagen.
+- **Acceptance:** Test-First — Sabotage-Variante ROT, korrekte Erwartung GRÜN; jede Schema-Abweichung künftig = roter Test; Bestand (329 Tests) bleibt grün.
+- **Erledigt:** commit 14eb7ca (test(mcp): contract tools test + packaging path lock)

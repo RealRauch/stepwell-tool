@@ -492,3 +492,14 @@ nachholen oder einen anderen Pfad wählen.
 - **24.1 [M11] PLAYBOOK §2: replace the claimed STRUCT_LOCALE warning with silent tolerance (Decision I1/14.6) in both copies + SHA256 proof**
 - **24.2 [M11] Verification: docs_validate both repos without new findings; archive M11**
 **Verifikation:** PLAYBOOK §2: behauptete STRUCT_LOCALE-Warnung → stille Toleranz gem. Decision I1/14.6 · beide Kopien textgleich (sha256 6464d1116ab6ada3fad3afe05a5046dd17d01e5220845d5a32dc1469aba39f9c) · validate beide Repos ohne neue Findings (stepwell: keine; stadtpfad: nur 3 Bestands-Findings)
+
+---
+
+### Phase 25 — Consumer Protection
+
+**Umfang (Steps):**
+
+- **25.1 [H3] Decision 13 + docs/CONSUMERS.md (split model, promotion ritual, inventory)**
+- **25.2 [H4] Contract tests: tools/list input-schema lock + serve.ts path lock**
+- **25.3 Verification + first promotion (merge dev→main, build, field probe)**
+**Verifikation:** Field probes green against both live consumers (internal-pwa 954/961, internal-consumer 279/283 with running phase 65 — zero warnings each, via MCP + dev CLI). First promotion executed per Decision 13 ritual. (checkpoint: 14eb7ca)

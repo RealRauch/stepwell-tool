@@ -26,6 +26,7 @@
 
 
 
+
 ---
 
 ## Progress
@@ -136,3 +137,6 @@
 | 23.5 | [Q2/S2/Q4] Verification: typecheck + tests + docs_validate in both repos, archive Q2/S2/Q4 | ✅ |
 | 24.1 | [M11] PLAYBOOK §2: replace the claimed STRUCT_LOCALE warning with silent tolerance (Decision I1/14.6) in both copies + SHA256 proof | ✅ |
 | 24.2 | [M11] Verification: docs_validate both repos without new findings; archive M11 | ✅ |
+| 25.1 | [H3] Decision 13 + docs/CONSUMERS.md (split model, promotion ritual, inventory) | ✅ |
+| 25.2 | [H4] Contract tests: tools/list input-schema lock + serve.ts path lock | ✅ |
+| 25.3 | Verification + first promotion (merge dev→main, build, field probe) | ✅ |
