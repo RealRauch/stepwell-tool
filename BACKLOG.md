@@ -1,4 +1,4 @@
-# BACKLOG.md — Open items (As of: 2026-11-10T20:53
+# BACKLOG.md — Open items (As of: 2026-11-10T23:46
 
 > **This file contains only OPEN items.** Completed items are moved to `docs/archive/BACKLOG_ARCHIVE.md` unchanged after completion; this file keeps only a one-liner per item in the Done Index (below). Findings/fix-ideas/decisions are not deleted — moved to the archive.
 > Legend: 🔴 critical · 🟠 high · 🟡 medium · 🟢 low · 🔵 test gap
@@ -18,11 +18,23 @@
 
 ## 🟡 MEDIUM
 
+### [ ] M16 — Workstream-Hygiene: Worktree-Remove hinterlässt bei untracked Content Hüllen-Dirs — automatische Husk-Erkennung + Ritual-Verifikation — 🟡
+- **Location:** `packages/git/src/report.ts` (workstreamReport), `packages/mcp/skills/stepwell/SKILL.md` + `README.md` (Workstream-Ritual); Fund: Dogfood 26.7-Aufräumen (11/2026) — `git worktree remove` meldete Erfolg, die Dirs `stepwell-ws-m12/-m13` blieben als Hüllen mit untracked `node_modules` stehen (git meldet sich ab, löscht aber untracked content nicht).
+- **Problem:** Die Workstream-Hygiene ist aktuell manuell und still fehlerhaft — der Agent glaubt „aufgeräumt", der Plattenmüll bleibt. Unter `D:\Development` sammelten sich sichtbar Hüllen-Verzeichnisse.
+- **Fix (Alternativprüfung M4: Report-Erweiterung statt neuem Tool):** (a) `workstreamReport` erkennt Husk-Dirs automatisch — Verzeichnisse, die wie ein Workstream-Pfad aussehen (`<main>-<suffix>`-Muster bzw. Einträge neben registrierten Worktrees), existieren, aber nicht mehr in `git worktree list` stehen → Warnfeld `husks[]` im Report (read-only, kein Löschen durch das Tool). (b) SKILL-Workstream-Ritual + README ergänzen den Verifikationsschritt: nach `git worktree remove` prüfen, ob das Dir weg ist; Hüllen via `git worktree prune` + `rm -rf` beseitigen.
+- **Acceptance:** Report-Test mit simulierter Hülle (Dir auf Platte, nicht registriert) → `husks[]` nennt sie; SKILL/README nennen den Prune-Schritt; Suite grün.
+
 ---
 
 ## 🟢 LOW
 
 ## 🔵 TEST GAPS
+
+### [ ] T7 — Test-Temp-Hygiene: Worktree-Pair-Fixtures leaken `%TEMP%/stepwell-*-workstream`-Dirs je Suite-Run — 🔵
+- **Location:** `packages/git/tests/sync.test.ts` + `push.test.ts` + `preview.test.ts` (makeWorkstream-Helfer registrieren nur `main`, das `${main}-workstream`-Geschwister läuft in den afterEach-Sweep hinein), `packages/mcp/tests/tools-sync.test.ts` (räumt nur `main` auf), `packages/mcp/tests/cli-sync.test.ts` (afterEach ist bewusst No-op).
+- **Problem (Fund 11/2026 nach dem Dogfood):** Jeder Suite-Run leaket Dutzende Temp-Dirs nach `%TEMP%` (`stepwell-*-workstream`-Paare, vollständige Git-Test-Repos) — Hunderte lagen vor; der manuelle Sweep musste sie beseitigen. Test-Infrastruktur verschmutzt die Maschine still.
+- **Fix:** Zentrale Temp-Hygiene: registrierender Pair-Helfer, der **beide** Verzeichnisse (`main` + workstream-Geschwister) in den afterEach-Sweep aufnimmt; No-op-afterEach in cli-sync.test.ts entfernen; Namespace-Muster einheitlich (`stepwell-`-Präfix bleibt Sweep-kompatibel).
+- **Acceptance:** Nach einem vollen `npm run test` existieren keine neuen `%TEMP%/stepwell-*`-Verzeichnisse (Sweep-Zähler vorher/nachher in der Step-Notiz belegt); Suite unverändert grün.
 
 ---
 
