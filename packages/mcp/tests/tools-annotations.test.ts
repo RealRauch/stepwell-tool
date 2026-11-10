@@ -19,6 +19,7 @@ const MUTATING_TOOLS = [
   "backlog_add",
   "backlog_update",
   "progress_plan_phase",
+  "workstream_sync",
 ] as const;
 
 describe("tool annotations (9.2/M2)", () => {

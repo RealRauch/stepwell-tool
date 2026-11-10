@@ -145,6 +145,15 @@ const CONTRACT: Record<string, { required: string[]; params: Record<string, unkn
       dryRun: boolWithDefault(true),
     },
   },
+  workstream_sync: {
+    required: ["root", "direction"],
+    params: {
+      root: str,
+      direction: enumOf("pull", "push", "status"),
+      structured: boolWithDefault(false),
+      dryRun: boolWithDefault(true),
+    },
+  },
 };
 
 /** Project a JSON schema node to its consumer-relevant keys (sorted `required`). */
