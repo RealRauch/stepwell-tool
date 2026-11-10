@@ -162,4 +162,4 @@
 | 26.4 | Activity report + overlap warning (read-only git analysis) [H5] | ✅ |
 | 26.5 | MCP transport: sync tool + commit param, contract tests (MINOR) [H5] | ✅ |
 | 26.6 | Docs: README architecture/ritual, SKILL ritual CLI-first, QUICKSTART pointer, CHANGELOG [H5] | ✅ |
-| 26.7 | Dogfood field test: M12+M13 as two parallel workstreams in this repo; archive M12+M13+H5 [H5] | ⬜ |
+| 26.7 | Dogfood field test: M12+M13 as two parallel workstreams in this repo; archive M12+M13+H5 [H5] | 🔄 |
