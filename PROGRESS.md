@@ -9,21 +9,6 @@
 > are moved to `docs/archive/PROGRESS_ARCHIVE.md` unchanged after completion.
 
 ## Active Phases
-### Phase 26 — Workstream-Worktrees (Git-Satellit)
-
-**Goal:** Git-Satellit gem. Decision 14/H5 — Pull/Push-Sync je Step (Worktree des eigenen Workstream ↔ Stamm), Push-Prüfpflicht (Trunk-Kopf ∈ Vorfahren), saubere Konflikt-Aborts mit strukturierter Liste, Overlap-Warnung + Aktivitätsbericht aus Git; Commit-Automation für die vier Doku-Dateien (`--commit`); CLI-first (Skill-Ernährung), MCP-optional; core bleibt git-blind.
-
-**Acceptance (je Step test-first):** `npm run typecheck` + `npm run test` grün, `docs_validate` clean; 26.7 = Feldtest: M12+M13 als zwei echte parallele Workstreams in diesem Repo (Feldtest-Leiter gem. Decision 14 — Fixtures → eigenes Repo → erst danach unkritisches Projekt; internal-pwa bleibt ausgenommen), Abschluss: M12+M13+H5 archiviert.
-
-**Scope (Steps):**
-
-- **26.1 Satellite package + pull (guards, conflict abort, docs_validate post-merge) [H5]**
-- **26.2 Push (precondition, re-pull loop, trunk guards) [H5]**
-- **26.3 Commit automation: commit param on progress_update/archive_item, CLI --commit (four docs only) [H5]**
-- **26.4 Activity report + overlap warning (read-only git analysis) [H5]**
-- **26.5 MCP transport: sync tool + commit param, contract tests (MINOR) [H5]**
-- **26.6 Docs: README architecture/ritual, SKILL ritual CLI-first, QUICKSTART pointer, CHANGELOG [H5]**
-- **26.7 Dogfood field test: M12+M13 as two parallel workstreams in this repo; archive M12+M13+H5 [H5]**
 
 
 
@@ -162,4 +147,4 @@
 | 26.4 | Activity report + overlap warning (read-only git analysis) [H5] | ✅ |
 | 26.5 | MCP transport: sync tool + commit param, contract tests (MINOR) [H5] | ✅ |
 | 26.6 | Docs: README architecture/ritual, SKILL ritual CLI-first, QUICKSTART pointer, CHANGELOG [H5] | ✅ |
-| 26.7 | Dogfood field test: M12+M13 as two parallel workstreams in this repo; archive M12+M13+H5 [H5] | 🔄 |
+| 26.7 | Dogfood field test: M12+M13 as two parallel workstreams in this repo; archive M12+M13+H5 [H5] | ✅ |

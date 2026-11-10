@@ -503,3 +503,22 @@ nachholen oder einen anderen Pfad wählen.
 - **25.2 [H4] Contract tests: tools/list input-schema lock + serve.ts path lock**
 - **25.3 Verification + first promotion (merge dev→main, build, field probe)**
 **Verifikation:** Field probes green against both live consumers (internal-pwa 954/961, internal-consumer 279/283 with running phase 65 — zero warnings each, via MCP + dev CLI). First promotion executed per Decision 13 ritual. (checkpoint: 14eb7ca)
+
+---
+
+### Phase 26 — Workstream-Worktrees (Git-Satellit)
+
+**Goal:** Git-Satellit gem. Decision 14/H5 — Pull/Push-Sync je Step (Worktree des eigenen Workstream ↔ Stamm), Push-Prüfpflicht (Trunk-Kopf ∈ Vorfahren), saubere Konflikt-Aborts mit strukturierter Liste, Overlap-Warnung + Aktivitätsbericht aus Git; Commit-Automation für die vier Doku-Dateien (`--commit`); CLI-first (Skill-Ernährung), MCP-optional; core bleibt git-blind.
+
+**Acceptance (je Step test-first):** `npm run typecheck` + `npm run test` grün, `docs_validate` clean; 26.7 = Feldtest: M12+M13 als zwei echte parallele Workstreams in diesem Repo (Feldtest-Leiter gem. Decision 14 — Fixtures → eigenes Repo → erst danach unkritisches Projekt; internal-pwa bleibt ausgenommen), Abschluss: M12+M13+H5 archiviert.
+
+**Scope (Steps):**
+
+- **26.1 Satellite package + pull (guards, conflict abort, docs_validate post-merge) [H5]**
+- **26.2 Push (precondition, re-pull loop, trunk guards) [H5]**
+- **26.3 Commit automation: commit param on progress_update/archive_item, CLI --commit (four docs only) [H5]**
+- **26.4 Activity report + overlap warning (read-only git analysis) [H5]**
+- **26.5 MCP transport: sync tool + commit param, contract tests (MINOR) [H5]**
+- **26.6 Docs: README architecture/ritual, SKILL ritual CLI-first, QUICKSTART pointer, CHANGELOG [H5]**
+- **26.7 Dogfood field test: M12+M13 as two parallel workstreams in this repo; archive M12+M13+H5 [H5]**
+**Verifikation:** Dogfood field test: M12 (workstream ws/m12: RED 34ddb4b -> GREEN 63d119c, archive + push) and M13 (workstream ws/m13: RED -> GREEN 07072fd, archive + push) ran as two parallel worktrees through the new mechanics - sync status/pull/push, --commit automation, activity report; trunk found the leaked mkdirSync fix the worktrees were missing (2e30b74). Suites green in both merged worktrees (385/385, 386/386), trunk 386/386, docs_validate clean. Verification: npm run typecheck && npm run test (386/386) + docs_validate OK
