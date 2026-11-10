@@ -25,6 +25,7 @@
 - **27.6 Pull auto-resolution for deterministic doc conflicts (archive appends, timestamp order, docs_validate gate) [H7]**
 - **27.7 .gitattributes text eol=lf for doc files + adoption hint in README [M19]**
 - **27.8 CLI: --root defaults to CWD + sync status single-tree setup hint [L14/L15]**
+- **27.9 PLAN_WITHOUT_WIP sharpening: purely planned phase = PHASE_PLANNED warning (ok stays true), orphaned block stays finding [M18]**
 
 
 
@@ -173,3 +174,4 @@
 | 27.6 | Pull auto-resolution for deterministic doc conflicts (archive appends, timestamp order, docs_validate gate) [H7] | ⬜ |
 | 27.7 | .gitattributes text eol=lf for doc files + adoption hint in README [M19] | ⬜ |
 | 27.8 | CLI: --root defaults to CWD + sync status single-tree setup hint [L14/L15] | ⬜ |
+| 27.9 | PLAN_WITHOUT_WIP sharpening: purely planned phase = PHASE_PLANNED warning (ok stays true), orphaned block stays finding [M18] | ⬜ |

@@ -1,4 +1,4 @@
-# BACKLOG.md — Open items (As of: 2026-11-11T00:01
+# BACKLOG.md — Open items (As of: 2026-11-11T00:03
 
 > **This file contains only OPEN items.** Completed items are moved to `docs/archive/BACKLOG_ARCHIVE.md` unchanged after completion; this file keeps only a one-liner per item in the Done Index (below). Findings/fix-ideas/decisions are not deleted — moved to the archive.
 > Legend: 🔴 critical · 🟠 high · 🟡 medium · 🟢 low · 🔵 test gap
@@ -41,6 +41,12 @@
 - **Problem:** Die Konsistenz-Prüfung Block↔Tabelle ist einseitig: ein Step in der Tabelle ohne Scope-Eintrag im Detail-Block (egal ob ⬜/🔄/✅) wird nicht gefunden. Genau diese Lücke erlaubte den stillen Drift; D5-Operationen („Einfügepunkt = letzter Scope-Bullet") können darauf aufbauend falsch einfügen.
 - **Fix:** Neues Finding `SCOPE_ROW_MISSING`: jede Tabellenzeile, deren Step-Nummer in keinem Detail-Block- Scope auftaucht, wird gemeldet (Zeile + Step); offene Dateien nur, Archive ausgenommen (W2-Muster); `*(accepted: …)*`-Marker wirkt wie gehabt.
 - **Acceptance:** Fixture mit Tabellenzeile ohne Scope-Eintrag → Finding; konsistente Phasen bleiben clean; eigene Reparatur (27.2/27.3) dient als Realbeleg; Suite grün.
+
+### [ ] M18 — PLAN_WITHOUT_WIP-Schärfung: rein geplante Phase = Warning (PHASE_PLANNED), verwaister Block bleibt Finding — 🟡
+- **Location:** `packages/core/src/validate.ts` (`PLAN_WITHOUT_WIP`, Block↔🔄-Prüfung); Fund: eigene Session 11/2026 — rein vorausgeplante Phasen (per T4 definierter Zustand) erzeugen dauerhaft ok:false-Nagging (mehrfach pro Commit-Runde erklärt).
+- **Problem:** Die Semantik unterscheidet nicht zwischen legitimer Planung (alle Steps ⬜) und echter Inkonsistenz (⬜+✅ gemischt, kein 🔄 = verwaister Block). Beides fällt unter denselben Code und kippt ok.
+- **Fix:** Reiner Plan-Zustand (Block existiert, alle seine Tabellen-Steps ⬜) → neues **Warning** `PHASE_PLANNED` (berichtet, kippt kein ok); gemischter Zustand ohne 🔄 → bleibt **Finding** `PLAN_WITHOUT_WIP` (Code bleibt im Kontrakt, Decision 10; semantisch MINOR, Release-Note). L13-Acknowledgement unverändert.
+- **Acceptance:** Fixtures: rein geplante Phase → nur Warning, ok:true; verwaister Block → Finding, ok:false; SKILL/README-Semantik-Tabellen nachgezogen; Suite grün.
 
 ---
 
