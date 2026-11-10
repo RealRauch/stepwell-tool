@@ -9,7 +9,7 @@
 > are moved to `docs/archive/PROGRESS_ARCHIVE.md` unchanged after completion.
 
 ## Active Phases
-### Phase 27 — Hygiene (Test-Temp + Workstream-Husks)
+### Phase 27 — Phase 27 — Sammel-Batch: Hygiene & Workstream-Härtung
 
 **Goal:** Automatische Hygiene aus dem Dogfood-Fund (11/2026): kein stiller Plattenmüll mehr — Test-Fixtures räumen ihre Worktree-Paare vollständig auf (T7), `workstreamReport` erkennt Husk-Dirs automatisch und das Ritual verifiziert das Aufräumen (M16).
 
@@ -167,7 +167,7 @@
 | 26.5 | MCP transport: sync tool + commit param, contract tests (MINOR) [H5] | ✅ |
 | 26.6 | Docs: README architecture/ritual, SKILL ritual CLI-first, QUICKSTART pointer, CHANGELOG [H5] | ✅ |
 | 26.7 | Dogfood field test: M12+M13 as two parallel workstreams in this repo; archive M12+M13+H5 [H5] | ✅ |
-| 27.1 | Central temp-dir hygiene in test fixtures — registered pair cleanup, no-op afterEach removed, sweep evidence [T7] | ⬜ |
+| 27.1 | Central temp-dir hygiene in test fixtures — registered pair cleanup, no-op afterEach removed, sweep evidence [T7] | 🔄 |
 | 27.2 | Husk detection in workstreamReport (husks[] for deregistered dirs) + ritual verify/prune note in SKILL/README [M16] | ⬜ |
 | 27.3 | Verification: sweep before/after full suite = 0 new dirs, suite green; archive T7+M16 [T7/M16] | ⬜ |
 | 27.4 | Empty-marker invariant: backlog_add removes placeholder, last-removal restores it, validate EMPTY_MARKER_STALE + fixture [H6] | ⬜ |
