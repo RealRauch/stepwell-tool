@@ -156,7 +156,7 @@
 | 25.1 | [H3] Decision 13 + docs/CONSUMERS.md (split model, promotion ritual, inventory) | ✅ |
 | 25.2 | [H4] Contract tests: tools/list input-schema lock + serve.ts path lock | ✅ |
 | 25.3 | Verification + first promotion (merge dev→main, build, field probe) | ✅ |
-| 26.1 | Satellite package + pull (guards, conflict abort, docs_validate post-merge) [H5] | ⬜ |
+| 26.1 | Satellite package + pull (guards, conflict abort, docs_validate post-merge) [H5] | ✅ |
 | 26.2 | Push (precondition, re-pull loop, trunk guards) [H5] | ⬜ |
 | 26.3 | Commit automation: commit param on progress_update/archive_item, CLI --commit (four docs only) [H5] | ⬜ |
 | 26.4 | Activity report + overlap warning (read-only git analysis) [H5] | ⬜ |
