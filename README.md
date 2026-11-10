@@ -82,6 +82,11 @@ npm run test:watch
 
 Server name `stepwell` (transport **stdio**, entry `packages/mcp/src/serve.ts`).
 
+**Foreign repos are safe (M13):** the server stays passive — in a repo without the
+four STEPWELL files, read operations return a neutral "No STEPWELL project here —
+no action required" hint and nothing is ever created, written or initialized
+without the user explicitly asking to adopt STEPWELL.
+
 This repo already wires the server into `opencode.json` (restart opencode after
 config changes). Other MCP clients (Claude Desktop, Cursor, …) follow the same
 pattern:

@@ -14,7 +14,7 @@ describe("init fallback — root without STEPWELL project (9.3/M5)", () => {
       const data = payload(result);
       expect(data.findings).toHaveLength(1);
       expect(data.findings[0]!.code).toBe("PROJECT_NOT_INITIALIZED");
-      expect(data.findings[0]!.message).toMatch(/PLAYBOOK/);
+      expect(data.findings[0]!.message).toContain("No action required");
       expect(data.warnings).toEqual([]);
       expect(data.ok).toBe(false);
     } finally {
@@ -53,7 +53,7 @@ describe("init fallback — root without STEPWELL project (9.3/M5)", () => {
         const data = payload(result);
         expect(data.code, tool).toBe("PROJECT_NOT_INITIALIZED");
         expect(data.missing, tool).toHaveLength(4);
-        expect(data.message, tool).toMatch(/PLAYBOOK/);
+        expect(data.message, tool).toContain("No action required");
       }
     } finally {
       await c.close();

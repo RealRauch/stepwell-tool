@@ -22,11 +22,14 @@ export class ProjectNotInitializedError extends Error {
   readonly missing: string[];
 
   constructor(root: string, missing: readonly string[]) {
+    // M13: neutral, non-prescriptive — a project-wide enabled server also runs in
+    // repos that never asked for STEPWELL; missing all four is harmless, so the
+    // message informs instead of instructing (no auto-init, Decision 14/M12 guardrail).
     super(
-      `Kein STEPWELL-Projekt unter "${root}" — alle vier Doku-Dateien fehlen. ` +
-        `Lege ${missing.join(", ")} an — Vorlagen: \`stepwell://templates/{kind}\` ` +
-        `(backlog | progress | backlog-archive | progress-archive) oder Muster: ` +
-        `PLAYBOOK §3 — oder prüfe den root-Pfad.`,
+      `No STEPWELL project under "${root}" — all four doc files are missing. ` +
+        `No action required unless you want to adopt STEPWELL (start from docs/QUICKSTART.md; ` +
+        `templates: \`stepwell://templates/{kind}\` — backlog | progress | backlog-archive | progress-archive). ` +
+        `Missing: ${missing.join(", ")}.`,
     );
     this.name = "ProjectNotInitializedError";
     this.missing = [...missing];

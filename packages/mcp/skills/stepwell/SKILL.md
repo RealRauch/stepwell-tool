@@ -1,6 +1,6 @@
 ---
 name: stepwell
-description: STEPWELL method for projects with BACKLOG.md/PROGRESS.md and the stepwell-MCP-Server — session entry, status maintenance, archival and release discipline. Active when the target project contains the four STEPWELL files or one is to be set up.
+description: STEPWELL method for projects with BACKLOG.md/PROGRESS.md and the stepwell-MCP-Server — session entry, status maintenance, archival and release discipline. Active when the target project contains the four STEPWELL files or the user explicitly asks for STEPWELL.
 ---
 
 # STEPWELL — Method (stepwell)
@@ -20,9 +20,11 @@ distributed verbatim copy).
 detail blocks of **active** phases), `docs/archive/BACKLOG_ARCHIVE.md` and
 `docs/archive/PROGRESS_ARCHIVE.md` (both **append-only** — never edited afterwards).
 
-If all four are missing in `root`: no STEPWELL project → create the four files
-from the templates: MCP resources `stepwell://templates/{kind}` (backlog | progress |
-backlog-archive | progress-archive), then run `docs_validate` — must be clean.
+If all four are missing in `root`: no STEPWELL project here — **no action required**
+(read access is harmless and triggers nothing) unless the user explicitly asks to
+adopt STEPWELL; only then create the files from the templates: MCP resources
+`stepwell://templates/{kind}` (backlog | progress | backlog-archive |
+progress-archive), then run `docs_validate` — must be clean.
 
 ## Session entry (in this order, before any write operation)
 
