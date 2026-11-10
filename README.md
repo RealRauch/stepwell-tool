@@ -434,6 +434,11 @@ to a dry-run preview sharing the exact guard chain of the real operation; push i
 atomic (`--ff-only` in the trunk worktree — a trunk move inside the race window
 becomes a `STALE_BRANCH` refusal, never a real merge on the trunk side).
 Worktree/branch **creation and cleanup stay agent rituals** (one-time setup, no tool).
+**Cleanup hygiene (M16):** `git worktree remove` deregisters but can leave a husk
+directory when untracked content (e.g. `node_modules`) survived — verify the directory
+is gone afterwards; `stepwell sync status` reports leftovers mechanically (`husks[]`
+= stale `.git` pointer into this repo's admin area, `prunable[]` = registrations git
+wants pruned) — resolve with `git worktree prune` + `rm -rf <dir>`.
 Field-test ladder (Decision 14): fixtures → this repo → only an explicitly chosen
 non-critical project; internal-pwa receives verbatim doc syncs and read-only probes
 only.

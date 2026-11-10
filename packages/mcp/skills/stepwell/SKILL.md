@@ -88,7 +88,11 @@ workstream), the per-step ritual is CLI-first — no MCP registration needed:
    commit times) and which files overlap with your work.
 
 Worktree/branch creation and cleanup stay manual rituals (`git worktree add …`,
-`git worktree remove` after phase completion). Without git, a project stays
+`git worktree remove` after phase completion). **Verify the removal (M16):**
+`worktree remove` deregisters but can leave a husk directory when untracked content
+(e.g. `node_modules`) survived — `stepwell sync status` reports such leftovers
+(`husks[]`, a stale `.git` pointer) and prunable registrations (`prunable[]`);
+resolve with `git worktree prune` + `rm -rf <dir>`. Without git, a project stays
 single-tree sequential. Details: README "Workstreams" + PLAYBOOK §1.
 
 ## Tool alternatives

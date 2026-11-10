@@ -1,3 +1,6 @@
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { isAbsolute, join, relative, resolve } from "node:path";
+import type { Stats } from "node:fs";
 import { runGit, splitLines } from "./git.ts";
 import type { SyncError } from "./types.ts";
 
@@ -27,6 +30,18 @@ export interface WorkstreamReportOk {
   trunk: string;
   /** Branch of the queried root. */
   current: string;
+  /**
+   * Hygiene (M16): directories whose `.git` FILE points into this repo's
+   * `.git/worktrees/` admin area but whose admin entry is gone — leftovers of
+   * `git worktree remove` that kept untracked content. Read-only detection; the
+   * agent removes them (`rm -rf`) after `git worktree prune`.
+   */
+  husks: string[];
+  /**
+   * Hygiene (M16): registered worktrees git considers prunable (path vanished) —
+   * `git worktree prune` cleans their admin entries.
+   */
+  prunable: string[];
   /** All linked (non-main) worktrees; empty in single-tree mode. */
   worktrees: WorkstreamInfo[];
 }
@@ -38,28 +53,79 @@ interface WorktreeEntry {
   branch: string;
 }
 
-function listWorktrees(root: string): WorktreeEntry[] {
+/** Git prints forward slashes even on win32 — report paths OS-native. */
+const toNativePath = (p: string): string =>
+  process.platform === "win32" ? p.replaceAll("/", "\\") : p;
+
+function listWorktrees(root: string): { entries: WorktreeEntry[]; prunable: string[] } {
   const list = runGit(root, ["worktree", "list", "--porcelain"]);
   const entries: WorktreeEntry[] = [];
+  const prunable: string[] = [];
   let path: string | undefined;
   let branch: string | undefined;
+  let isPrunable = false;
   const flush = (): void => {
-    if (path !== undefined) entries.push({ path, branch: branch ?? "" });
+    if (path !== undefined) {
+      entries.push({ path, branch: branch ?? "" });
+      if (isPrunable) prunable.push(path);
+    }
     path = undefined;
     branch = undefined;
+    isPrunable = false;
   };
   for (const line of splitLines(list.stdout)) {
     if (line.startsWith("worktree ")) {
       flush();
-      path = line.slice("worktree ".length);
+      path = toNativePath(line.slice("worktree ".length));
     } else if (line.startsWith("branch ")) {
       branch = line.slice("branch refs/heads/".length);
+    } else if (line.startsWith("prunable ")) {
+      isPrunable = true;
     }
     // no branch line ⇒ detached (reported with an empty branch); `bare` entries
     // land here too and are filtered by the trunk/workstream logic downstream
   }
   flush();
-  return entries;
+  return { entries, prunable };
+}
+
+/**
+ * Hygiene (M16): sibling directories of the main worktree whose `.git` FILE points
+ * into THIS repo's `.git/worktrees/` admin area while that admin entry no longer
+ * exists — leftovers of `git worktree remove` that kept untracked content after
+ * deregistering. Deliberately precise (no name/doc heuristics): real sibling
+ * projects living next to the repo must never be flagged.
+ */
+function findHusks(mainWorktreePath: string): string[] {
+  const parent = join(mainWorktreePath, "..");
+  let names: string[] = [];
+  try {
+    names = readdirSync(parent);
+  } catch {
+    return [];
+  }
+  const adminRoot = join(resolve(mainWorktreePath), ".git", "worktrees");
+  const husks: string[] = [];
+  for (const name of names) {
+    const dir = join(parent, name);
+    if (resolve(dir) === resolve(mainWorktreePath)) continue;
+    const gitPath = join(dir, ".git");
+    let stat: Stats;
+    try {
+      stat = statSync(gitPath);
+    } catch {
+      continue;
+    }
+    if (!stat.isFile()) continue;
+    const firstLine = (readFileSync(gitPath, "utf8").split(/\r?\n/u)[0] ?? "").trim();
+    if (!firstLine.startsWith("gitdir:")) continue;
+    const gitdir = firstLine.slice("gitdir:".length).trim();
+    const resolved = resolve(gitdir.startsWith("/") || gitdir.match(/^[A-Za-z]:/u) ? gitdir : join(dir, gitdir));
+    // relative() normalizes mixed separators on win32 — startsWith would not
+    const rel = relative(adminRoot, resolved);
+    if (rel !== "" && !rel.startsWith("..") && !isAbsolute(rel) && !existsSync(resolved)) husks.push(dir);
+  }
+  return husks;
 }
 
 function countCommits(root: string, range: string): number {
@@ -100,7 +166,7 @@ export function workstreamReport(root: string): WorkstreamReportResult {
     return { ok: false, error: { code: "NOT_A_GIT_REPO", message: `"${root}" is not inside a git work tree` } };
   }
 
-  const entries = listWorktrees(root);
+  const { entries, prunable } = listWorktrees(root);
   // first entry is the main worktree; its branch is the trunk (zero config)
   const main = entries[0];
   const trunk = main?.branch ?? "";
@@ -124,5 +190,7 @@ export function workstreamReport(root: string): WorkstreamReportResult {
     };
   });
 
-  return { ok: true, trunk, current, worktrees };
+  const husks = main !== undefined ? findHusks(main.path) : [];
+
+  return { ok: true, trunk, current, husks, prunable, worktrees };
 }

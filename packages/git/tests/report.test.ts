@@ -141,11 +141,7 @@ describe("workstreamReport", () => {
     const { main, work } = makeWorkstream();
     // husk: sibling dir with a .git FILE pointing into this repo's admin dir that is gone
     const huskDir = `${main}-leftover`;
-    mkdirSync(join(huskDir, ".git"), { recursive: true });
-    writeFileSync(
-      join(huskDir, ".git", "HEAD"),
-      "",
-    );
+    mkdirSync(huskDir, { recursive: true });
     writeFileSync(
       join(huskDir, ".git"),
       `gitdir: ${main}/.git/worktrees/does-not-exist`,
