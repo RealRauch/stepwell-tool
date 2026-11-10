@@ -1,4 +1,4 @@
-# BACKLOG.md — Open items (As of: 2026-11-10T23:46
+# BACKLOG.md — Open items (As of: 2026-11-10T23:55
 
 > **This file contains only OPEN items.** Completed items are moved to `docs/archive/BACKLOG_ARCHIVE.md` unchanged after completion; this file keeps only a one-liner per item in the Done Index (below). Findings/fix-ideas/decisions are not deleted — moved to the archive.
 > Legend: 🔴 critical · 🟠 high · 🟡 medium · 🟢 low · 🔵 test gap
@@ -14,6 +14,12 @@
 
 ## 🟠 HIGH
 
+### [ ] H6 — Stale „No open items."-Platzhalter: backlog_add entfernt ihn nicht (Invariante „Platzhalter ⟺ Sektion leer" fehlt) — internal-consumer lebt den Drift — 🟠
+- **Location:** `packages/core/src/mutations.ts` (`insertIntoSection`, `planBacklogAdd`, Entfernungspfade `removeItemLines`/Archive), `packages/core/src/templates.ts` (Platzhalter `> No open items.` je Sektion), `packages/core/src/validate.ts` (kein Fund für den Drift); Fund: internal-consumer-Feldprobe (11/2026, read-only) — 🟡 MEDIUM und 🟢 LOW tragen `> No open items.`, obwohl M72 bzw. L30/L36/L37 darin liegen; 🔴/🟠 korrekt.
+- **Problem:** `planBacklogAdd` fügt den Item-Block ins Sektionsende ein, ohne den `> No open items.`-Platzhalter zu entfernen — jedes frische STEPWELL-Projekt bekommt lügende Struktur-Marker („Sektion leer" despite Items), Agenten/Leser werden an der Datei irregeführt. Symmetrisch fehlt die Wiederherstellung: nach Entfernen des letzten Items bleibt die Sektion ohne Marker. Die Invariante „Platzhalter ⟺ Sektion leer" wird nirgends erzwungen und nirgends geprüft.
+- **Fix:** (a) `insertIntoSection`: steht direkt im Sektionskörper ein `> No open items.`-Platzhalter (tolerant für DE/EN-Varianten), wird er beim ersten Item-Einfügen entfernt (nur wenn es DER einzige Marker in der Sektion ist). (b) Entfernungspfade (`backlog_remove`, `archive_item`): wird eine Sektion dadurch leer, bekommt sie den Platzhalter zurück (Template-Wortlaut, Locale-passend). (c) `docs_validate`: FINDING für Sektionen, die sowohl Items als auch Platzhalter tragen (`EMPTY_MARKER_STALE`) — entdeckt Bestands-Drift wie in internal-consumer (offene Dateien nur, Archiv ausgenommen wie gehabt).
+- **Acceptance:** RED→GRÜN-Tests: add in Platzhalter-Sektion entfernt den Marker; remove/archival des letzten Items stellt ihn wieder her; validate meldet `EMPTY_MARKER_STALE` für die internal-consumer-Form (Fixture) und bleibt sonst clean; internal-consumer-seitiger Bestand wird nach Promotion über den Fund sichtbar und dort per natürlichem Edit repariert.
+
 ---
 
 ## 🟡 MEDIUM
@@ -23,6 +29,12 @@
 - **Problem:** Die Workstream-Hygiene ist aktuell manuell und still fehlerhaft — der Agent glaubt „aufgeräumt", der Plattenmüll bleibt. Unter `D:\Development` sammelten sich sichtbar Hüllen-Verzeichnisse.
 - **Fix (Alternativprüfung M4: Report-Erweiterung statt neuem Tool):** (a) `workstreamReport` erkennt Husk-Dirs automatisch — Verzeichnisse, die wie ein Workstream-Pfad aussehen (`<main>-<suffix>`-Muster bzw. Einträge neben registrierten Worktrees), existieren, aber nicht mehr in `git worktree list` stehen → Warnfeld `husks[]` im Report (read-only, kein Löschen durch das Tool). (b) SKILL-Workstream-Ritual + README ergänzen den Verifikationsschritt: nach `git worktree remove` prüfen, ob das Dir weg ist; Hüllen via `git worktree prune` + `rm -rf` beseitigen.
 - **Acceptance:** Report-Test mit simulierter Hülle (Dir auf Platte, nicht registriert) → `husks[]` nennt sie; SKILL/README nennen den Prune-Schritt; Suite grün.
+
+### [ ] M17 — Validator-Lücke: Tabellenzeile ohne Scope-Eintrag im Detail-Block wird nicht gemeldet (Block↔Tabelle nur einseitig geprüft) — 🟡
+- **Location:** `packages/core/src/validate.ts` (Funde prüfen nur 🔄↔Detail-Block: `WIP_WITHOUT_PLAN`/`PLAN_WITHOUT_WIP`, `STEP_DUPLICATE`); Fund 11/2026 im eigenen Repo: nach einem missglückten manuellen Prosa-Edit trugen die Tabellenzeilen 27.2/27.3 ⬜ keine Scope-Einträge im Detail-Block mehr — `docs_validate` meldete „no other findings", der Drift blieb unsichtbar, bis der nächste `progress_plan_phase`-Aufruf „letzter Scope-Bullet" falsch berechnete.
+- **Problem:** Die Konsistenz-Prüfung Block↔Tabelle ist einseitig: ein Step in der Tabelle ohne Scope-Eintrag im Detail-Block (egal ob ⬜/🔄/✅) wird nicht gefunden. Genau diese Lücke erlaubte den stillen Drift; D5-Operationen („Einfügepunkt = letzter Scope-Bullet") können darauf aufbauend falsch einfügen.
+- **Fix:** Neues Finding `SCOPE_ROW_MISSING`: jede Tabellenzeile, deren Step-Nummer in keinem Detail-Block- Scope auftaucht, wird gemeldet (Zeile + Step); offene Dateien nur, Archive ausgenommen (W2-Muster); `*(accepted: …)*`-Marker wirkt wie gehabt.
+- **Acceptance:** Fixture mit Tabellenzeile ohne Scope-Eintrag → Finding; konsistente Phasen bleiben clean; eigene Reparatur (27.2/27.3) dient als Realbeleg; Suite grün.
 
 ---
 
