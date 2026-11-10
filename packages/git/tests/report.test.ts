@@ -137,6 +137,41 @@ describe("workstreamReport", () => {
     expect(result.current).toBe("feature");
   });
 
+  it("flags husks (stale .git pointer into this repo) and prunable registrations", () => {
+    const { main, work } = makeWorkstream();
+    // husk: sibling dir with a .git FILE pointing into this repo's admin dir that is gone
+    const huskDir = `${main}-leftover`;
+    mkdirSync(join(huskDir, ".git"), { recursive: true });
+    writeFileSync(
+      join(huskDir, ".git", "HEAD"),
+      "",
+    );
+    writeFileSync(
+      join(huskDir, ".git"),
+      `gitdir: ${main}/.git/worktrees/does-not-exist`,
+    );
+    // clean sibling without any .git pointer must NOT be flagged
+    const clean = `${main}-clean`;
+    mkdirSync(join(clean), { recursive: true });
+    writeFileSync(join(clean, "BACKLOG.md"), "unrelated project copy");
+
+    const result = workstreamReport(main);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.husks).toContain(huskDir);
+    expect(result.husks).not.toContain(clean);
+    expect(result.husks).not.toContain(work);
+
+    // prunable: registration whose worktree path vanished
+    rmSync(work, { recursive: true, force: true });
+    const result2 = workstreamReport(main);
+    expect(result2.ok).toBe(true);
+    if (!result2.ok) return;
+    expect(result2.prunable).toContain(work);
+    git(main, ["worktree", "prune"]);
+  });
+
   it("reports a non-repo root", () => {
     const root = makeDir();
 
