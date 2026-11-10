@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { callTool, connect, git, payload, tempGitProject } from "./helper.ts";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFileSync } from "node:child_process";
@@ -66,6 +66,7 @@ describe("tool workstream_sync (H5/26.5)", () => {
 
   it("pull dryRun:false fast-forwards the branch", async () => {
     const { main, work } = makeWorktreePair();
+    gitc(main, ["commit", "--allow-empty", "-m", "trunk advances"]);
     const trunkHead = git(main, ["rev-parse", "HEAD"]).trim();
     const c = await connect();
     try {
