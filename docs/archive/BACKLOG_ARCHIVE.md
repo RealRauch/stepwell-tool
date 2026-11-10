@@ -695,3 +695,21 @@
 - **Umfang:** Echtes `tools/list` via `InMemoryTransport.createLinkedPair()` + SDK-Client; explizite Erwartungsstruktur für alle 13 Tools (Parametername, required/optional, Typ, Enum-Werte, Defaults wie `dryRun: true`, `locale: de|en`, `step: string|string[]`). `packaging.test.ts`: Assertion `packages/mcp/src/serve.ts` existiert + README referenziert genau diesen Pfad. Falls das listTools-Muster nicht greift: Schemas explizit in `tools.ts` exportieren (kleine, nicht-brechende Ergänzung). Sabotage-Check eingebaut: absichtlich falsche Erwartung muss ROT schlagen.
 - **Acceptance:** Test-First — Sabotage-Variante ROT, korrekte Erwartung GRÜN; jede Schema-Abweichung künftig = roter Test; Bestand (329 Tests) bleibt grün.
 - **Erledigt:** commit 14eb7ca (test(mcp): contract tools test + packaging path lock)
+
+---
+
+### [x] M15 — PLAYBOOK/LESSONS-Restdrift pwa↔tool: Differenz inventarisieren und wortidentisch synchronisieren — 🟡
+- **Location:** `docs/PLAYBOOK.md` + `docs/LESSONS.md` (dieses Repo) ↔ `D:\Development\internal-pwa\docs\PLAYBOOK.md` / `LESSONS.md` (Quellkopie).
+- **Problem:** Die Quellkopie (internal-pwa) ist deutlich neuer als die hiesige: LESSONS dort ~12,2 KB (Okt-Stand, Lesson 28+) vs. hier ~5,3 KB (Sep-Stand); PLAYBOOK dort u. a. „Zero errors, zero warnings (M105)" und „CI is part of verification (F7)". M14 deckt davon nur Lesson 28 + das §5-Bullet ab — der tatsächliche Restdrift ist größer (dreifacher Drift pwa > internal-recorder > dieses Repo).
+- **Umfang:** Vollständige Differenz inventarisieren (Diff pwa ↔ hier), **alle** Stellen wortidentisch aus der Quellkopie übernehmen, SYNC-Vermerk nach PLAYBOOK-Kopf, SHA256-Nachweis je Kopie (Muster: Step 22.4/23.4), Commit. Playbook-Sync-Schlag — kein npm-Release-Trigger.
+- **Acceptance:** PLAYBOOK/LESSONS hier wortgleich mit internal-pwa (SHA256-Evidenz je Datei), `docs_validate` beidseitig grün.
+- **Erledigt:** commit 11a54bd — byte-copy from internal-pwa; SHA256 equality both files both repos (PLAYBOOK 934c0381…, LESSONS 2d0b9ef2…); docs_validate green both sides
+
+---
+
+### [x] M14 — PLAYBOOK/LESSONS-Sync aus internal-pwa: Lesson 28 (CI-Sicht = Teil der Verifikation, Push-Intervall ≤ Phase) — 🟡
+- **Location:** `docs/PLAYBOOK.md` §5 (Verification before completion) und `docs/LESSONS.md` Regel 28.
+- **Problem:** Method-Drift — die Quellkopie (internal-pwa) hat per F7 (28.09.2026) ergänzt: Lesson 28 „CI is a verification lane — push interval ≤ phase, CI-Run zählt zur Phasen-Verifikation" sowie PLAYBOOK-§5-Bullet „CI is part of verification". Diese Kopie hat den Stand noch nicht.
+- **Umfang (Häppchen):** beide Textstellen 1:1 aus der Quellkopie übernehmen (textuell identisch, SYNC-Pflicht nach PLAYBOOK-Kopf), Commit + Sync-Vermerk.
+- **Acceptance:** beide Stellen wortgleich mit internal-pwa (Commit `docs`-Hash dort), `docs_validate` grün.
+- **Erledigt:** subsumed by M15 (commit 11a54bd) — Lesson 28 + §5 CI-verification bullet arrived with the full drift sync

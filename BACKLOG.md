@@ -37,18 +37,6 @@
 - **Fix:** (a) Meldung entdramatisieren: „No STEPWELL project here — no action required unless you want to adopt STEPWELL; templates: `stepwell://templates/{kind}`" (alles-vier-fehlen = harmlos; Teilbestand bleibt harter Fehler, unverändert); (b) SKILL-Klausel auf „…contains the four STEPWELL files **or the user explicitly asks for STEPWELL**" umstellen, „or one is to be set up" streichen; (c) klarstellen/dokumentieren, dass Lesezugriffe in fremden Repos harmlos sind und keine Aktion auslösen; (d) Tests/Fixtures an den neuen Wortlaut anpassen (M5-Abnahme: genau ein Fund mit Guidance bleibt).
 - **Acceptance:** `PROJECT_NOT_INITIALIZED` ist als neutraler Hinweis formuliert (keine Aufforderung, ungefragt Dateien anzulegen); SKILL aktiviert sich nur bei vorhandenen vier Dateien oder explizitem STEPWELL-Wunsch; Auslösen des Hinweises in einem fremden Repo führt zu keiner Schreiboperation; Tests/Fixtures grün, `docs_validate` unverändert.
 
-### [ ] M14 — PLAYBOOK/LESSONS-Sync aus internal-pwa: Lesson 28 (CI-Sicht = Teil der Verifikation, Push-Intervall ≤ Phase) — 🟡
-- **Location:** `docs/PLAYBOOK.md` §5 (Verification before completion) und `docs/LESSONS.md` Regel 28.
-- **Problem:** Method-Drift — die Quellkopie (internal-pwa) hat per F7 (28.09.2026) ergänzt: Lesson 28 „CI is a verification lane — push interval ≤ phase, CI-Run zählt zur Phasen-Verifikation" sowie PLAYBOOK-§5-Bullet „CI is part of verification". Diese Kopie hat den Stand noch nicht.
-- **Umfang (Häppchen):** beide Textstellen 1:1 aus der Quellkopie übernehmen (textuell identisch, SYNC-Pflicht nach PLAYBOOK-Kopf), Commit + Sync-Vermerk.
-- **Acceptance:** beide Stellen wortgleich mit internal-pwa (Commit `docs`-Hash dort), `docs_validate` grün.
-
-### [ ] M15 — PLAYBOOK/LESSONS-Restdrift pwa↔tool: Differenz inventarisieren und wortidentisch synchronisieren — 🟡
-- **Location:** `docs/PLAYBOOK.md` + `docs/LESSONS.md` (dieses Repo) ↔ `D:\Development\internal-pwa\docs\PLAYBOOK.md` / `LESSONS.md` (Quellkopie).
-- **Problem:** Die Quellkopie (internal-pwa) ist deutlich neuer als die hiesige: LESSONS dort ~12,2 KB (Okt-Stand, Lesson 28+) vs. hier ~5,3 KB (Sep-Stand); PLAYBOOK dort u. a. „Zero errors, zero warnings (M105)" und „CI is part of verification (F7)". M14 deckt davon nur Lesson 28 + das §5-Bullet ab — der tatsächliche Restdrift ist größer (dreifacher Drift pwa > internal-recorder > dieses Repo).
-- **Umfang:** Vollständige Differenz inventarisieren (Diff pwa ↔ hier), **alle** Stellen wortidentisch aus der Quellkopie übernehmen, SYNC-Vermerk nach PLAYBOOK-Kopf, SHA256-Nachweis je Kopie (Muster: Step 22.4/23.4), Commit. Playbook-Sync-Schlag — kein npm-Release-Trigger.
-- **Acceptance:** PLAYBOOK/LESSONS hier wortgleich mit internal-pwa (SHA256-Evidenz je Datei), `docs_validate` beidseitig grün.
-
 ---
 
 ## 🟢 LOW
@@ -132,5 +120,7 @@
 - M11 — PLAYBOOK §2 behauptet STRUCT_LOCALE-Warnung, die Decision I1/14.6 abgeschafft hat — erledigt (Phase 24: PLAYBOOK §2 nennt keine STRUCT_LOCALE-Warnung mehr (stille Toleranz, I1/14.6); Kopien synchron (sha256 6464d111…))
 - H3 — Konsum-Schutz: Decision 13 + CONSUMERS.md-Inventar + Upgrade-Runbook — erledigt (commit 98ccd94 (docs(agents): Decision 13 + CONSUMERS.md))
 - H4 — Contract-Tests: Input-Schema-Lock (tools/list via InMemoryTransport) + serve.ts-Pfad-Lock — erledigt (commit 14eb7ca (test(mcp): contract tools test + packaging path lock))
+- M15 — PLAYBOOK/LESSONS-Restdrift pwa↔tool: Differenz inventarisieren und wortidentisch synchronisieren — erledigt (commit 11a54bd — byte-copy from internal-pwa; SHA256 equality both files both repos (PLAYBOOK 934c0381…, LESSONS 2d0b9ef2…); docs_validate green both sides)
+- M14 — PLAYBOOK/LESSONS-Sync aus internal-pwa: Lesson 28 (CI-Sicht = Teil der Verifikation, Push-Intervall ≤ Phase) — erledigt (subsumed by M15 (commit 11a54bd) — Lesson 28 + §5 CI-verification bullet arrived with the full drift sync)
 
 ---
