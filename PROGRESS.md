@@ -169,7 +169,7 @@
 | 26.7 | Dogfood field test: M12+M13 as two parallel workstreams in this repo; archive M12+M13+H5 [H5] | ✅ |
 | 27.1 | Central temp-dir hygiene in test fixtures — registered pair cleanup, no-op afterEach removed, sweep evidence [T7] | ✅ |
 | 27.2 | Husk detection in workstreamReport (husks[] for deregistered dirs) + ritual verify/prune note in SKILL/README [M16] | ✅ |
-| 27.3 | Verification: sweep before/after full suite = 0 new dirs, suite green; archive T7+M16 [T7/M16] | ⬜ |
+| 27.3 | Verification: sweep before/after full suite = 0 new dirs, suite green; archive T7+M16 [T7/M16] | ✅ |
 | 27.4 | Empty-marker invariant: backlog_add removes placeholder, last-removal restores it, validate EMPTY_MARKER_STALE + fixture [H6] | ⬜ |
 | 27.5 | SCOPE_ROW_MISSING validate finding: table row without detail-block scope entry [M17] | ⬜ |
 | 27.6 | Pull auto-resolution for deterministic doc conflicts (archive appends, timestamp order, docs_validate gate) [H7] | ⬜ |
