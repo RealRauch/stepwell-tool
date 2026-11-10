@@ -23,11 +23,45 @@ The order is always: **plan → package → implement.**
 8. **Session entry (binding):** every session starts in this order: (1) read this file and `LESSONS.md`; (2) `PROGRESS.md` — identify the next open step of the running phase and mark it 🔄; (3) scan `BACKLOG.md` for open items and blockers. Only afterwards follow write operations to code or docs.
 9. **Kickoff fast path (binding):** If the file hashes delivered by `docs_status`, the Read-Tools or resources match the last known state, reading the current step scope suffices — this file and `LESSONS.md` do not need to be re-read in full. The fast path applies only where hashes are actually delivered (capability since E2/12.5). **Rule of thumb:** place independent read calls in parallel — never read sequentially what can be read in parallel.
 
-## 1. Sequential approach
+## 1. Sequential approach & parallel workstreams
 
-- NEVER work arbitrarily. Work step by step in the defined order.
+- NEVER work arbitrarily. Within a workstream (see below), work step by step in the defined order.
 - Each step builds on the previous one. Start a new step only when the previous one is **verified** complete.
 - After the foundation phases: continue working from `BACKLOG.md` by priority (🔴 → 🟠 → 🟡 → 🟢 → 🔵), same rules (test-first, verification, commit per item/group).
+
+### Parallel phases as workstreams (binding, 11/2026, H5)
+
+A project may run several phases **in parallel** — as **workstreams**: each workstream is
+one phase in its **own git worktree + branch**. Agents never share a working tree; foreign
+changes reach the own tree only through the own sync step. Parallelism requires git — a
+project without git stays single-tree sequential (one running phase at a time).
+
+**Per-step ritual (divergence ≤ 1 step):**
+
+```
+pull (trunk → branch) → implement → code commit (agent)
+→ doc commit (tool, four files only) → pull (trunk → branch)
+→ verify (typecheck + suite) → push (branch → trunk)
+```
+
+- **Push precondition (binding):** a push is allowed only if the trunk head is already an
+  **ancestor of the branch** (the preceding pull brought it in). A stale push is refused
+  with "re-pull required" → pull → re-verify → push. What gets pushed was verified against
+  the current trunk. Git's `index.lock` and atomic branch moves serialize the residual
+  window; races degenerate into visible merge conflicts (clean abort + structured report),
+  never silent lost updates. On repeated push failure: pause and re-sync — no livelock.
+- **Doc conflicts:** keep both sides; in archives, order blocks by completion timestamps.
+- **WIP visibility (binding):** the doc commit happens at step **start** (🔄) as well as at
+  completion (✅) — the trunk always shows the true state. Workstream liveness is derived
+  from git itself (existing workstream branches + last-commit times), never from a registry
+  file or heartbeat.
+- **Trunk derivation (zero config):** trunk = the branch checked out in the main worktree.
+- **Session entry in a workstream:** pull first, then the §0.8 order — the docs read are
+  the freshly synced state.
+- **Count guidance:** as many workstreams as useful — each additional one multiplies the
+  per-step merge traffic; two or three are typically practical.
+- **Lifecycle:** worktree/branch creation and cleanup (after phase completion + push) are
+  agent rituals, not tool operations.
 
 ## 2. Documentation duty (living documents — binding)
 
@@ -101,12 +135,19 @@ Introducing STEPWELL into a project **without** the four files (grey-/brownfield
 - Consistent, short commit messages in the repo style (imperative, English, lowercase, e.g. `feat: add env config`).
 - Test-first chain auditable in the log: new tests first in their own `test(scope): …` commit (the suite is RED; the failure evidence is in the commit message or the step note), then `feat(scope): …` with the implementation.
 - If a commit fails (hooks): fix the error and create a new commit — do not amend.
+- **Doc commits by the tool (workstream mode, binding):** in workstream mode the tool commits
+  only the four method docs (deterministic staging — no secrets risk, nothing else is staged);
+  code commits remain the agent's duty. A failed doc commit (e.g. hooks) leaves the edits
+  applied with a structured message — never a rollback; the agent resolves and commits itself.
 
 ## 5. Verification before completion
 
 - Type check (strict), unit/integration suite and E2E suite must run **without errors** (project-specific commands: see `AGENTS.md`).
 - **Zero errors, zero warnings (binding, 09/2026, M105):** the test suites must run **without stderr warnings** — `act(...)`-warnings, deprecations, unhandled rejections and similar count as findings, not as noise. Every warning trains the eye to overlook stderr, and exactly there land the real failures later; each warning is therefore fixed at its cause (await updates to completion, `fireEvent`/`userEvent` instead of raw DOM events, controlled fake-timer teardown) — never suppressed globally.
 - Never mark a step as "done" without passed verification.
+- **Workstream verification order (binding, 11/2026, H5):** in workstream mode verification
+  runs **after the pull, before the push** — the suite proves the merged state (own step +
+  trunk's current state), and only a verified merged state moves the trunk.
 - **CI is part of verification (F7, 09/2026):** the local machine is one OS/scheduler — timing-dependent behaviour (concurrency, locks) and pipeline-only steps (workflow plumbing, `docker run`) are only exercised where CI actually runs. Projects with a CI pipeline therefore push **at every phase boundary at the latest** (push interval ≤ phase) and count the phase's CI run as part of its verification: a phase is not "done" until its commits have a green CI run.
 - **Optional — smell budget (quality gate):** for those who declare it in the `PROGRESS.md` header line, the following applies: (1) **soft smells** (feature envy, god concept, naming) are findings → items in `BACKLOG.md`, never gates. (2) **hard smells** (file/function length, complexity, duplication, lint rules) form a **delta budget**: a step must not increase the smell load of the files it touches; absolute thresholds only in greenfield from day 1, thresholds are only lowered and only updated at the natural occasion. (3) A delta report is release context, never a blocker — the gate stays binary (budget kept yes/no, checkable locally or in CI). Those who declare nothing have no budget.
 
