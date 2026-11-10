@@ -1,0 +1,133 @@
+/* Stepwell Product Website Custom Styles */
+:root {
+  --bg-main: #0a0e17;
+  --bg-card: #111726;
+  --bg-card-hover: #161f33;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-glow: rgba(59, 130, 246, 0.3);
+  --accent-cyan: #06b6d4;
+  --accent-blue: #3b82f6;
+  --accent-emerald: #10b981;
+  --accent-rose: #f43f5e;
+  --accent-amber: #f59e0b;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: #e2e8f0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+.code-font {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+/* Background Grids & Ambient Glow */
+.bg-grid-pattern {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+.ambient-glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  filter: blur(140px);
+  pointer-events: none;
+  opacity: 0.18;
+  z-index: 0;
+}
+
+.glow-blue {
+  background: radial-gradient(circle, #3b82f6 0%, #1d4ed8 70%);
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.glow-cyan {
+  background: radial-gradient(circle, #06b6d4 0%, #0891b2 70%);
+  bottom: 20%;
+  right: -100px;
+}
+
+/* Glassmorphism Cards */
+.glass-card {
+  background: rgba(17, 23, 38, 0.7);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card:hover {
+  border-color: rgba(59, 130, 246, 0.35);
+  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.5), 0 0 20px -2px rgba(59, 130, 246, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Terminal & Code Blocks */
+.terminal-window {
+  background: #0d121f;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 35px -5px rgba(59, 130, 246, 0.15);
+}
+
+.terminal-header {
+  background: #131929;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* Diff Styling */
+.diff-add {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border-left: 3px solid #10b981;
+  padding-left: 0.5rem;
+}
+
+.diff-del {
+  background: rgba(244, 63, 94, 0.15);
+  color: #fb7185;
+  border-left: 3px solid #f43f5e;
+  padding-left: 0.5rem;
+}
+
+.diff-info {
+  color: #64748b;
+}
+
+/* Badges & Pills */
+.pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #090d16;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}

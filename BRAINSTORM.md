@@ -138,3 +138,55 @@ quick win; #2 gives the method its "research anchor" in the vault. #3 is
 nice-to-have once stepwell is used intensively.
 
 As of 09/2026: brainstorming only, no implementation.
+
+---
+
+## Jira & GitHub Issues bridge
+
+Bridge between the repository's local Markdown tracking and external issue trackers
+(Jira, GitHub Issues). External trackers serve as stakeholder reflection or high-level
+backlog sources, while STEPWELL Markdown remains the operative source of truth for
+developers and AI agents.
+
+**Core rule:** avoid naive bidirectional two-way sync (field mapping, race conditions,
+and rich-text/markdown format drift make bidirectional sync fragile). Keep a clear
+one-way authority per lifecycle phase.
+
+### Integration patterns
+
+#### Pattern 1 — Markdown as source of truth (Push / Mirror)
+The agent and developer work purely in the repository. The bridge reflects progress
+outward:
+- Backlog items carry an optional metadata bullet: `- **Issue:** GH-42` (or `PROJ-1082`).
+- On `backlog_add`: creates an issue or links an existing one.
+- On `progress_update`: transitions ticket to *In Progress* (`🔄`).
+- On `archive_item`: closes the issue/ticket with reference to the commit SHA (`checkpoint`)
+  and completion note.
+- **Pro:** deterministic, offline-capable for agents, preserves the local-first principle.
+
+#### Pattern 2 — Issue tracker as requirement source (Ingest / Sprint planning)
+Requirements originate in Jira / GitHub Issues (created by PM / product owner):
+- An ingest command (e.g. `stepwell-bridge import --sprint 42` or a CLI script) pulls
+  open issues and generates structured backlog items in `BACKLOG.md` via `planBacklogAdd`
+  (mapping priorities: Highest → 🔴, High → 🟠, etc.).
+- The agent packages them into phases/steps in `PROGRESS.md` and implements them test-first.
+- On merge/completion, CI or a push action notifies the external tracker.
+
+#### Pattern 3 — Git & CI hook integration (Zero-API coupling)
+No direct API integration in the tool itself:
+- Completed items in `BACKLOG.md`'s `Done Index` already record commit SHAs and titles.
+- Git commit messages or a CI job parse newly archived entries from PR diffs and trigger
+  standard tracker automations (e.g. `Closes #42` or Jira smart commits `PROJ-1082 #done`).
+
+### Architecture & guardrails
+
+1. **Keep `stepwell-core` zero-dependency:** under no circumstances bundle tracker SDKs
+   (`@octokit/rest`, Jira client, Axios) into `stepwell-core` or `stepwell` MCP.
+2. **Dedicated adapter/plugin:** either a separate satellite package (e.g. `packages/bridge-github`),
+   an independent CLI tool/GitHub Action, or a separate MCP server that interoperates with
+   `stepwell-core` as a library.
+3. **Optional validation rule:** potential `docs_validate` check `REMOTE_ISSUE_MISSING`
+   if a project mandates 100% issue-traceability.
+
+As of 09/2026: brainstorming only, no implementation.
+
