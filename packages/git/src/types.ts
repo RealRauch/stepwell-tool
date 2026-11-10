@@ -5,7 +5,10 @@ export type SyncErrorCode =
   | "DETACHED_HEAD"
   | "DIRTY_TREE"
   | "MERGE_CONFLICT"
-  | "MERGE_REFUSED";
+  | "MERGE_REFUSED"
+  | "STALE_BRANCH"
+  | "TRUNK_DIRTY"
+  | "ON_TRUNK_BRANCH";
 
 /** Structured failure of a sync operation — never a throw; callers render `message` verbatim. */
 export interface SyncError {

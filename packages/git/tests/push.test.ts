@@ -63,7 +63,7 @@ afterEach(() => {
 describe("pushTrunk", () => {
   it("fast-forwards trunk to the branch head and validates the merged docs", () => {
     const { main, work } = makeWorkstream();
-    commitFile(work, "PROGRESS.md", projectTemplates.progress, "branch work");
+    commitFile(work, "branch.txt", "branch work\n", "branch work");
     const workHead = git(work, ["rev-parse", "HEAD"]).trim();
 
     const result = pushTrunk(work);
@@ -78,7 +78,8 @@ describe("pushTrunk", () => {
 
   it("refuses a stale branch and the re-pull loop completes the push", () => {
     const { main, work } = makeWorkstream();
-    // branch pulls trunk first (up to date), then trunk moves
+    // the workstream does step work, pulls trunk, then trunk moves again
+    commitFile(work, "branch.txt", "branch work\n", "branch work");
     expect(pullTrunk(work).ok).toBe(true);
     commitFile(main, "trunk-late.txt", "late trunk work\n", "late trunk work");
 
@@ -100,7 +101,7 @@ describe("pushTrunk", () => {
 
   it("refuses when the trunk worktree is dirty", () => {
     const { main, work } = makeWorkstream();
-    commitFile(work, "PROGRESS.md", projectTemplates.progress, "branch work");
+    commitFile(work, "branch.txt", "branch work\n", "branch work");
     writeFileSync(join(main, "scratch.txt"), "uncommitted\n");
 
     const result = pushTrunk(work);
