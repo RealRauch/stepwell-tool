@@ -30,12 +30,6 @@
 
 ## 🟡 MEDIUM
 
-### [ ] M16 — Workstream-Hygiene: Worktree-Remove hinterlässt bei untracked Content Hüllen-Dirs — automatische Husk-Erkennung + Ritual-Verifikation — 🟡
-- **Location:** `packages/git/src/report.ts` (workstreamReport), `packages/mcp/skills/stepwell/SKILL.md` + `README.md` (Workstream-Ritual); Fund: Dogfood 26.7-Aufräumen (11/2026) — `git worktree remove` meldete Erfolg, die Dirs `stepwell-ws-m12/-m13` blieben als Hüllen mit untracked `node_modules` stehen (git meldet sich ab, löscht aber untracked content nicht).
-- **Problem:** Die Workstream-Hygiene ist aktuell manuell und still fehlerhaft — der Agent glaubt „aufgeräumt", der Plattenmüll bleibt. Unter `D:\Development` sammelten sich sichtbar Hüllen-Verzeichnisse.
-- **Fix (Alternativprüfung M4: Report-Erweiterung statt neuem Tool):** (a) `workstreamReport` erkennt Husk-Dirs automatisch — Verzeichnisse, die wie ein Workstream-Pfad aussehen (`<main>-<suffix>`-Muster bzw. Einträge neben registrierten Worktrees), existieren, aber nicht mehr in `git worktree list` stehen → Warnfeld `husks[]` im Report (read-only, kein Löschen durch das Tool). (b) SKILL-Workstream-Ritual + README ergänzen den Verifikationsschritt: nach `git worktree remove` prüfen, ob das Dir weg ist; Hüllen via `git worktree prune` + `rm -rf` beseitigen.
-- **Acceptance:** Report-Test mit simulierter Hülle (Dir auf Platte, nicht registriert) → `husks[]` nennt sie; SKILL/README nennen den Prune-Schritt; Suite grün.
-
 ### [ ] M17 — Validator-Lücke: Tabellenzeile ohne Scope-Eintrag im Detail-Block wird nicht gemeldet (Block↔Tabelle nur einseitig geprüft) — 🟡
 - **Location:** `packages/core/src/validate.ts` (Funde prüfen nur 🔄↔Detail-Block: `WIP_WITHOUT_PLAN`/`PLAN_WITHOUT_WIP`, `STEP_DUPLICATE`); Fund 11/2026 im eigenen Repo: nach einem missglückten manuellen Prosa-Edit trugen die Tabellenzeilen 27.2/27.3 ⬜ keine Scope-Einträge im Detail-Block mehr — `docs_validate` meldete „no other findings", der Drift blieb unsichtbar, bis der nächste `progress_plan_phase`-Aufruf „letzter Scope-Bullet" falsch berechnete.
 - **Problem:** Die Konsistenz-Prüfung Block↔Tabelle ist einseitig: ein Step in der Tabelle ohne Scope-Eintrag im Detail-Block (egal ob ⬜/🔄/✅) wird nicht gefunden. Genau diese Lücke erlaubte den stillen Drift; D5-Operationen („Einfügepunkt = letzter Scope-Bullet") können darauf aufbauend falsch einfügen.
@@ -65,12 +59,6 @@
 - **Acceptance:** CLI-Tests: Command ohne `--root` im Projekt-CWD liefert Daten; Hint-Zeile im Single-Tree-Status; JSON-Kontrakt unverändert (additiv).
 
 ## 🔵 TEST GAPS
-
-### [ ] T7 — Test-Temp-Hygiene: Worktree-Pair-Fixtures leaken `%TEMP%/stepwell-*-workstream`-Dirs je Suite-Run — 🔵
-- **Location:** `packages/git/tests/sync.test.ts` + `push.test.ts` + `preview.test.ts` (makeWorkstream-Helfer registrieren nur `main`, das `${main}-workstream`-Geschwister läuft in den afterEach-Sweep hinein), `packages/mcp/tests/tools-sync.test.ts` (räumt nur `main` auf), `packages/mcp/tests/cli-sync.test.ts` (afterEach ist bewusst No-op).
-- **Problem (Fund 11/2026 nach dem Dogfood):** Jeder Suite-Run leaket Dutzende Temp-Dirs nach `%TEMP%` (`stepwell-*-workstream`-Paare, vollständige Git-Test-Repos) — Hunderte lagen vor; der manuelle Sweep musste sie beseitigen. Test-Infrastruktur verschmutzt die Maschine still.
-- **Fix:** Zentrale Temp-Hygiene: registrierender Pair-Helfer, der **beide** Verzeichnisse (`main` + workstream-Geschwister) in den afterEach-Sweep aufnimmt; No-op-afterEach in cli-sync.test.ts entfernen; Namespace-Muster einheitlich (`stepwell-`-Präfix bleibt Sweep-kompatibel).
-- **Acceptance:** Nach einem vollen `npm run test` existieren keine neuen `%TEMP%/stepwell-*`-Verzeichnisse (Sweep-Zähler vorher/nachher in der Step-Notiz belegt); Suite unverändert grün.
 
 ---
 
@@ -155,5 +143,7 @@
 - M12 — Quick-Start ist für Agents nicht auffindbar (kein Kickoff-/SKILL-/README-Haken, nicht in Zielprojekten verteilt) — erledigt (workstream ws/m12 (dogfood 26.7) — commits 34ddb4b (RED) + 63d119c (GREEN: instructions + AGENTS step 0 + Decision 15 + SKILL/README hooks); pull merge brought trunk fix 2e30b74; suite 385/385 in merged worktree)
 - M13 — Fremdes Repo: PROJECT_NOT_INITIALIZED-Meldung und SKILL-Klausel sind anweisend statt neutral (kein Auto-Init) — erledigt (workstream ws/m13 (dogfood 26.7) — RED + GREEN in 07072fd chain; neutral message + explicit-ask SKILL clause + README passivity note; commit:true lands in the same call (ritual sequencing per M12 lesson); suite 386/386 in merged worktree)
 - K2 — Leak-Purge: Konsumer-Inventar + interne Namen aus öffentlichem Repo und kompletter Historie entfernt — erledigt (executed in phase 28.1 (commit dec8d13 archive / prep rewritten to 0a04312) — purge verified: file history empty, pickaxe zero (blobs), messages zero; force-pushed dev 8eae5a2 + main d20ff2d; frozen dir resynced; scope extended by necessity: archive block H3 revealed further internal names (session-recorder, finnland-reiseapp, Finnland 2026, jpeg-tunnel) - scrubbed in the same pass; pre-rewrite SHAs resolvable only via stepwell-internal/pre-purge-backup.bundle)
+- T7 — Test-Temp-Hygiene: Worktree-Pair-Fixtures leaken `%TEMP%/stepwell-*-workstream`-Dirs je Suite-Run — erledigt (phase 27/27.1+27.3 (fe54799, fixture commit, sweep 0e137f0) — pair fixtures register both sides; sweep evidence: clean baseline 0 -> full suite 387/387 -> 0 new %TEMP%/stepwell-* dirs; sweep caught the husk-test's own siblings (registered in follow-up))
+- M16 — Workstream-Hygiene: Worktree-Remove hinterlässt bei untracked Content Hüllen-Dirs — automatische Husk-Erkennung + Ritual-Verifikation — erledigt (phase 27/27.2+27.3 (test commit + feat 9a0fad3) — workstreamReport husks[] (stale .git pointer, precise: no name/doc heuristics, sibling projects never flagged) + prunable[] (porcelain); OS-native path normalization (win32); ritual verify/prune documented in SKILL + README; acceptance refined vs item text: plain untracked-content husks are mechanically indistinguishable from real sibling projects and stay ritual-covered)
 
 ---
