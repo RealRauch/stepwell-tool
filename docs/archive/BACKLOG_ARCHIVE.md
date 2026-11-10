@@ -713,3 +713,12 @@
 - **Umfang (Häppchen):** beide Textstellen 1:1 aus der Quellkopie übernehmen (textuell identisch, SYNC-Pflicht nach PLAYBOOK-Kopf), Commit + Sync-Vermerk.
 - **Acceptance:** beide Stellen wortgleich mit internal-pwa (Commit `docs`-Hash dort), `docs_validate` grün.
 - **Erledigt:** subsumed by M15 (commit 11a54bd) — Lesson 28 + §5 CI-verification bullet arrived with the full drift sync
+
+---
+
+### [x] H5 — Workstream-Worktrees entschieden — Umsetzung: M15-Basis, PLAYBOOK-Edit + Sync, Phase-Paketierung — 🟠
+- **Location:** `BRAINSTORM.md` (Abschnitt „Git integration & parallel phases — DECIDED"), AGENTS.md (Decision 14), PLAYBOOK (§0/§1/§4/§5, offen).
+- **Entscheidung (11/2026, Nutzer-Freigabe):** Workstream-Worktrees — je paralleler Phase ein Git-Worktree + Branch, Merge je Step zum Stamm (Pull→implement→Doku-Commit→Pull→Verify→Push; Push-Prüfpflicht Trunk-Kopf ∈ Vorfahren). 🔄-Commit schon bei Step-Start (WIP-Sichtbarkeit); Aktivität aus Git abgeleitet (Branch + letzte Commit-Zeit), keine Registry-Datei. Tool committet nur die vier Doku-Dateien; core bleibt git-blind, Git-Intelligenz in eigenem Satelliten-Paket, CLI-first (Skill-Ernährung) + MCP-optional. Feldtest-Leiter: Fixtures → Dogfood im eigenen Repo (M12/M13 als zwei Workstreams) → unkritisches Projekt explizit; **internal-pwa nie Testbed der Mechanik** (nur verbatim-Syncs + read-only Feldproben, Decision 13).
+- **Umfang (Rest):** (1) M15/M14 — PLAYBOOK/LESSONS-Drift aus internal-pwa übernehmen, **vor** den H5-PLAYBOOK-Edits (sonst überkreuzte Sync-Schläge); (2) PLAYBOOK-Edits §0/§1/§4/§5 auf dem M15-Basisstand + wortidentischer Sync in beide Kopien (SHA256-Evidenz, Muster 22.4/23.4); (3) Implementierungs-Steps paketieren (Phase 26: Satelliten-Paket, Sync-Tool, `--commit`, Overlap-Warnung, Docs) mit Dogfood-Abschlussstep — Freigabe-Gate je Phase.
+- **Acceptance:** Entscheidung dokumentiert ✓ (BRAINSTORM + Decision 14); PLAYBOOK/LESSONS wortidentisch auf M15+H5-Stand (SHA256-Evidenz beider Kopien); Phase 26 im PROGRESS paketiert mit Item→Step-Verweis; docs_validate beidseitig grün.
+- **Erledigt:** commits 1ed1123 (decision docs) + 11a54bd/f36e7c7 (M15+M14 sync basis) + 2412a54/b5d19c30 (PLAYBOOK workstream model, both copies, SHA256 PLAYBOOK 861bc78a…/LESSONS 2d0b9ef2…) — Phase 26 packaged (26.1-26.7, item→step refs in scope); field-test ladder fixed: internal-pwa never a mechanics testbed
