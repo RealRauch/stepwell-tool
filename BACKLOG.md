@@ -1,4 +1,4 @@
-# BACKLOG.md — Open items (As of: 2026-11-11T00:03
+# BACKLOG.md — Open items (As of: 2026-11-11T00:16
 
 > **This file contains only OPEN items.** Completed items are moved to `docs/archive/BACKLOG_ARCHIVE.md` unchanged after completion; this file keeps only a one-liner per item in the Done Index (below). Findings/fix-ideas/decisions are not deleted — moved to the archive.
 > Legend: 🔴 critical · 🟠 high · 🟡 medium · 🟢 low · 🔵 test gap
@@ -9,6 +9,12 @@
 ## 🔴 CRITICAL
 
 > No open items.
+
+### [ ] K2 — Leak-Purge: Konsumer-Inventar + interne Namen aus öffentlichem Repo und kompletter Historie entfernt — 🔴
+- **Location:** ~~`docs/CONSUMERS.md` + `docs/feldtest-stadtpfad-pwa.md`~~ (gepurged), AGENTS.md, BRAINSTORM.md, README.md; Fund: Nutzer-Hinweis 11/2026 — öffentliches GitHub-Repo trug Konsumer-Inventar inkl. lokaler Pfade; `98ccd94` war Vorfahre von origin/main UND origin/dev (Live-Leak).
+- **Problem:** Interne Infrastruktur-Infos (Konsumer-Projekte, Verdrahtung, lokale Pfade) waren öffentlich und blieben nach einfachem Löschen in der Historie abrufbar.
+- **Fix (ausgeführt, 11/2026):** (a) interne Doku nach `D:\Development\stepwell-internal\` relocatet (+ Backup-Bundle), Dateien gelöscht + `.gitignore`-Guard; (b) AGENTS-Verweise auf privates Inventar umgestellt; (c) History-Purge via git-filter-repo (2 Pässe): beide Dateien aus allen Commits + Text-Scrub `stadtpfad-pwa`→`internal-pwa`, `datacraft`→`internal-consumer`, `session-recorder`→`internal-recorder`, `finnland-reiseapp`→`internal-app-1`, `Finnland 2026`→`internal-app-2`, `jpeg-tunnel`→`internal-app-3` in Blobs UND Commit-Messages (Scope erweitert: Archivblock H3 enthüllte weitere interne Namen); (d) Force-Push dev+main, frozen-Dir auf rewritten main resynced. Verifikation: Dateien + Namen in Blobs/Messages = 0 Treffer in `git log --all`; „Stadtpfad" als generische Herkunft bleibt.
+- **Acceptance:** erfüllt — Purge verifiziert (Datei-Historie leer, Pickaxe 0, Messages 0), origin force-gepusht (dev `8eae5a2`, main `d20ff2d`), frozen-Dir resynced, docs_validate grün. Bekannter Kostenpunkt dokumentiert: alle Vor-Rewrite-SHA-Referenzen in Done Index/Archiven sind über das Backup-Bundle (`stepwell-internal/pre-purge-backup.bundle`) auflösbar.
 
 ---
 
