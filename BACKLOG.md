@@ -10,12 +10,6 @@
 
 > No open items.
 
-### [ ] K2 — Leak-Purge: Konsumer-Inventar + interne Namen aus öffentlichem Repo und kompletter Historie entfernt — 🔴
-- **Location:** ~~`docs/CONSUMERS.md` + `docs/feldtest-stadtpfad-pwa.md`~~ (gepurged), AGENTS.md, BRAINSTORM.md, README.md; Fund: Nutzer-Hinweis 11/2026 — öffentliches GitHub-Repo trug Konsumer-Inventar inkl. lokaler Pfade; `98ccd94` war Vorfahre von origin/main UND origin/dev (Live-Leak).
-- **Problem:** Interne Infrastruktur-Infos (Konsumer-Projekte, Verdrahtung, lokale Pfade) waren öffentlich und blieben nach einfachem Löschen in der Historie abrufbar.
-- **Fix (ausgeführt, 11/2026):** (a) interne Doku nach `D:\Development\stepwell-internal\` relocatet (+ Backup-Bundle), Dateien gelöscht + `.gitignore`-Guard; (b) AGENTS-Verweise auf privates Inventar umgestellt; (c) History-Purge via git-filter-repo (2 Pässe): beide Dateien aus allen Commits + Text-Scrub `stadtpfad-pwa`→`internal-pwa`, `datacraft`→`internal-consumer`, `session-recorder`→`internal-recorder`, `finnland-reiseapp`→`internal-app-1`, `Finnland 2026`→`internal-app-2`, `jpeg-tunnel`→`internal-app-3` in Blobs UND Commit-Messages (Scope erweitert: Archivblock H3 enthüllte weitere interne Namen); (d) Force-Push dev+main, frozen-Dir auf rewritten main resynced. Verifikation: Dateien + Namen in Blobs/Messages = 0 Treffer in `git log --all`; „Stadtpfad" als generische Herkunft bleibt.
-- **Acceptance:** erfüllt — Purge verifiziert (Datei-Historie leer, Pickaxe 0, Messages 0), origin force-gepusht (dev `8eae5a2`, main `d20ff2d`), frozen-Dir resynced, docs_validate grün. Bekannter Kostenpunkt dokumentiert: alle Vor-Rewrite-SHA-Referenzen in Done Index/Archiven sind über das Backup-Bundle (`stepwell-internal/pre-purge-backup.bundle`) auflösbar.
-
 ---
 
 ## 🟠 HIGH
@@ -160,5 +154,6 @@
 - H5 — Workstream-Worktrees entschieden — Umsetzung: M15-Basis, PLAYBOOK-Edit + Sync, Phase-Paketierung — erledigt (commits 1ed1123 (decision docs) + 11a54bd/f36e7c7 (M15+M14 sync basis) + 2412a54/b5d19c30 (PLAYBOOK workstream model, both copies, SHA256 PLAYBOOK 861bc78a…/LESSONS 2d0b9ef2…) — Phase 26 packaged (26.1-26.7, item→step refs in scope); field-test ladder fixed: internal-pwa never a mechanics testbed)
 - M12 — Quick-Start ist für Agents nicht auffindbar (kein Kickoff-/SKILL-/README-Haken, nicht in Zielprojekten verteilt) — erledigt (workstream ws/m12 (dogfood 26.7) — commits 34ddb4b (RED) + 63d119c (GREEN: instructions + AGENTS step 0 + Decision 15 + SKILL/README hooks); pull merge brought trunk fix 2e30b74; suite 385/385 in merged worktree)
 - M13 — Fremdes Repo: PROJECT_NOT_INITIALIZED-Meldung und SKILL-Klausel sind anweisend statt neutral (kein Auto-Init) — erledigt (workstream ws/m13 (dogfood 26.7) — RED + GREEN in 07072fd chain; neutral message + explicit-ask SKILL clause + README passivity note; commit:true lands in the same call (ritual sequencing per M12 lesson); suite 386/386 in merged worktree)
+- K2 — Leak-Purge: Konsumer-Inventar + interne Namen aus öffentlichem Repo und kompletter Historie entfernt — erledigt (executed in phase 28.1 (commit dec8d13 archive / prep rewritten to 0a04312) — purge verified: file history empty, pickaxe zero (blobs), messages zero; force-pushed dev 8eae5a2 + main d20ff2d; frozen dir resynced; scope extended by necessity: archive block H3 revealed further internal names (session-recorder, finnland-reiseapp, Finnland 2026, jpeg-tunnel) - scrubbed in the same pass; pre-rewrite SHAs resolvable only via stepwell-internal/pre-purge-backup.bundle)
 
 ---
