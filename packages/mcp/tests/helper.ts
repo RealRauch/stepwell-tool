@@ -1,5 +1,6 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
+import { execFileSync } from "node:child_process";
 import { cpSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -18,6 +19,21 @@ export function tempProject(project: string): string {
   tempDirs.push(dir);
   cpSync(join(fixtures, project), dir, { recursive: true });
   return dir;
+}
+
+/** Like tempProject, plus a git repo with one `init` commit on `main` (H5/26.3). */
+export function tempGitProject(project: string): string {
+  const dir = tempProject(project);
+  git(dir, ["init", "-b", "main"]);
+  git(dir, ["config", "user.email", "test@example.com"]);
+  git(dir, ["config", "user.name", "Test"]);
+  git(dir, ["add", "-A"]);
+  git(dir, ["commit", "-m", "init"]);
+  return dir;
+}
+
+export function git(root: string, args: string[]): string {
+  return execFileSync("git", ["-C", root, ...args], { encoding: "utf8" });
 }
 
 afterEach(() => {
