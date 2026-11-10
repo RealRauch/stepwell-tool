@@ -1,4 +1,4 @@
-# BACKLOG.md — Open items (As of: 2026-11-10T19:53
+# BACKLOG.md — Open items (As of: 2026-11-10T20:53
 
 > **This file contains only OPEN items.** Completed items are moved to `docs/archive/BACKLOG_ARCHIVE.md` unchanged after completion; this file keeps only a one-liner per item in the Done Index (below). Findings/fix-ideas/decisions are not deleted — moved to the archive.
 > Legend: 🔴 critical · 🟠 high · 🟡 medium · 🟢 low · 🔵 test gap
@@ -14,11 +14,11 @@
 
 ## 🟠 HIGH
 
-### [ ] H5 — Design: Git-Integration + parallele Phasen je Projekt (Zielbild offen) — 🟠
-- **Location:** `BRAINSTORM.md` (Fließtext-Eintrag), Entscheidungsdoku → PLAYBOOK + Tool-Surface.
-- **Problem:** Zielbild „zwei Phasen gleichzeitig je Projekt" + „bessere Git-Einbindung" ist unbestimmt: interleaved (zwei 🔄 in einem Arbeitsverzeichnis) vs. Branch/Worktree-je-Phase? Git-Rolle des Tools: Commit-je-Step automatisiert, Branch-Handling, Merge-Hilfen? Das ist Methoden-Ebene (PLAYBOOK-Änderung ⇒ Cross-Repo-Sync-Pflicht mit internal-pwa) und potenziell MAJOR (neues Tool-Surface ⇒ Alternativprüfung Decision 11 je Tool).
-- **Umfang:** Erst Zielbild-Entscheidung dokumentieren (dieses Item + BRAINSTORM-Absatz), dann PLAYBOOK/LESSONS synchronisieren, erst danach Code-Steps paketieren. Tool-Surface-Guardrail beachten: kein Guide-/Meta-Tool; jedes neue Tool mit dokumentierter Alternativprüfung.
-- **Acceptance:** dokumentierte Entscheidung (Zielbild + Git-Rolle + Tool-Surface-Begründung); PLAYBOOK/LESSONS ggf. wortidentisch synchronisiert (SHA256-Evidenz); erst danach Implementierungs-Steps im PROGRESS.
+### [ ] H5 — Workstream-Worktrees entschieden — Umsetzung: M15-Basis, PLAYBOOK-Edit + Sync, Phase-Paketierung — 🟠
+- **Location:** `BRAINSTORM.md` (Abschnitt „Git integration & parallel phases — DECIDED"), AGENTS.md (Decision 14), PLAYBOOK (§0/§1/§4/§5, offen).
+- **Entscheidung (11/2026, Nutzer-Freigabe):** Workstream-Worktrees — je paralleler Phase ein Git-Worktree + Branch, Merge je Step zum Stamm (Pull→implement→Doku-Commit→Pull→Verify→Push; Push-Prüfpflicht Trunk-Kopf ∈ Vorfahren). 🔄-Commit schon bei Step-Start (WIP-Sichtbarkeit); Aktivität aus Git abgeleitet (Branch + letzte Commit-Zeit), keine Registry-Datei. Tool committet nur die vier Doku-Dateien; core bleibt git-blind, Git-Intelligenz in eigenem Satelliten-Paket, CLI-first (Skill-Ernährung) + MCP-optional. Feldtest-Leiter: Fixtures → Dogfood im eigenen Repo (M12/M13 als zwei Workstreams) → unkritisches Projekt explizit; **internal-pwa nie Testbed der Mechanik** (nur verbatim-Syncs + read-only Feldproben, Decision 13).
+- **Umfang (Rest):** (1) M15/M14 — PLAYBOOK/LESSONS-Drift aus internal-pwa übernehmen, **vor** den H5-PLAYBOOK-Edits (sonst überkreuzte Sync-Schläge); (2) PLAYBOOK-Edits §0/§1/§4/§5 auf dem M15-Basisstand + wortidentischer Sync in beide Kopien (SHA256-Evidenz, Muster 22.4/23.4); (3) Implementierungs-Steps paketieren (Phase 26: Satelliten-Paket, Sync-Tool, `--commit`, Overlap-Warnung, Docs) mit Dogfood-Abschlussstep — Freigabe-Gate je Phase.
+- **Acceptance:** Entscheidung dokumentiert ✓ (BRAINSTORM + Decision 14); PLAYBOOK/LESSONS wortidentisch auf M15+H5-Stand (SHA256-Evidenz beider Kopien); Phase 26 im PROGRESS paketiert mit Item→Step-Verweis; docs_validate beidseitig grün.
 
 ---
 
