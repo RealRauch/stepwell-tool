@@ -26,11 +26,6 @@
 - **27.7 .gitattributes text eol=lf for doc files + adoption hint in README [M19]**
 - **27.8 CLI: --root defaults to CWD + sync status single-tree setup hint [L14/L15]**
 - **27.9 PLAN_WITHOUT_WIP sharpening: purely planned phase = PHASE_PLANNED warning (ok stays true), orphaned block stays finding [M18]**
-### Phase 28 — Leak-Purge (öffentliches Repo häuten)
-
-**Umfang (Steps):**
-
-- **28.1 Relocate internal docs, anonymize references, history purge (files + name scrub incl. messages), force-push, resync frozen dir [K2]**
 
 
 
@@ -181,4 +176,4 @@
 | 27.7 | .gitattributes text eol=lf for doc files + adoption hint in README [M19] | ⬜ |
 | 27.8 | CLI: --root defaults to CWD + sync status single-tree setup hint [L14/L15] | ⬜ |
 | 27.9 | PLAN_WITHOUT_WIP sharpening: purely planned phase = PHASE_PLANNED warning (ok stays true), orphaned block stays finding [M18] | ⬜ |
-| 28.1 | Relocate internal docs, anonymize references, history purge (files + name scrub incl. messages), force-push, resync frozen dir [K2] | 🔄 |
+| 28.1 | Relocate internal docs, anonymize references, history purge (files + name scrub incl. messages), force-push, resync frozen dir [K2] | ✅ |

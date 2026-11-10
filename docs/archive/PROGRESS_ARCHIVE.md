@@ -522,3 +522,12 @@ nachholen oder einen anderen Pfad wählen.
 - **26.6 Docs: README architecture/ritual, SKILL ritual CLI-first, QUICKSTART pointer, CHANGELOG [H5]**
 - **26.7 Dogfood field test: M12+M13 as two parallel workstreams in this repo; archive M12+M13+H5 [H5]**
 **Verifikation:** Dogfood field test: M12 (workstream ws/m12: RED 34ddb4b -> GREEN 63d119c, archive + push) and M13 (workstream ws/m13: RED -> GREEN 07072fd, archive + push) ran as two parallel worktrees through the new mechanics - sync status/pull/push, --commit automation, activity report; trunk found the leaked mkdirSync fix the worktrees were missing (2e30b74). Suites green in both merged worktrees (385/385, 386/386), trunk 386/386, docs_validate clean. Verification: npm run typecheck && npm run test (386/386) + docs_validate OK
+
+---
+
+### Phase 28 — Leak-Purge (öffentliches Repo häuten)
+
+**Umfang (Steps):**
+
+- **28.1 Relocate internal docs, anonymize references, history purge (files + name scrub incl. messages), force-push, resync frozen dir [K2]**
+**Verifikation:** K2 executed: internal docs relocated to stepwell-internal/ (+ pre-purge backup bundle), AGENTS references privatized, history purge via git-filter-repo in two passes (file removal: docs/CONSUMERS.md + docs/feldtest-stadtpfad-pwa.md; text scrub stadtpfad-pwa->internal-pwa, datacraft->internal-consumer, session-recorder->internal-recorder, finnland-reiseapp->internal-app-1, Finnland 2026->internal-app-2, jpeg-tunnel->internal-app-3 across blobs AND commit messages). Verified: file history empty, pickaxe zero, messages zero; generic Stadtpfad lineage kept. Force-pushed dev (8eae5a2) + main (d20ff2d), frozen dir resynced to rewritten main. Known cost documented: all pre-rewrite SHA references resolve only via the backup bundle. Verification: npm run typecheck && npm run test + docs_validate green; git log --all checks clean
