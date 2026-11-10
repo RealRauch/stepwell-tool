@@ -150,6 +150,7 @@ describe("workstreamReport", () => {
     const clean = `${main}-clean`;
     mkdirSync(join(clean), { recursive: true });
     writeFileSync(join(clean, "BACKLOG.md"), "unrelated project copy");
+    dirs.push(huskDir, clean); // T7: fixture siblings registered too
 
     const result = workstreamReport(main);
 
