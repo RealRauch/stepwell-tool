@@ -158,7 +158,7 @@
 | 25.3 | Verification + first promotion (merge dev→main, build, field probe) | ✅ |
 | 26.1 | Satellite package + pull (guards, conflict abort, docs_validate post-merge) [H5] | ✅ |
 | 26.2 | Push (precondition, re-pull loop, trunk guards) [H5] | ✅ |
-| 26.3 | Commit automation: commit param on progress_update/archive_item, CLI --commit (four docs only) [H5] | ⬜ |
+| 26.3 | Commit automation: commit param on progress_update/archive_item, CLI --commit (four docs only) [H5] | ✅ |
 | 26.4 | Activity report + overlap warning (read-only git analysis) [H5] | ⬜ |
 | 26.5 | MCP transport: sync tool + commit param, contract tests (MINOR) [H5] | ⬜ |
 | 26.6 | Docs: README architecture/ritual, SKILL ritual CLI-first, QUICKSTART pointer, CHANGELOG [H5] | ⬜ |
