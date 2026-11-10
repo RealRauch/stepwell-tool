@@ -18,12 +18,6 @@
 
 ## 🟡 MEDIUM
 
-### [ ] M13 — Fremdes Repo: PROJECT_NOT_INITIALIZED-Meldung und SKILL-Klausel sind anweisend statt neutral (kein Auto-Init) — 🟡
-- **Location:** `packages/core/src/project-files.ts` (`ProjectNotInitializedError`, Meldungstext), `packages/core/src/status.ts` (Rückgabe als `warnings`), `packages/mcp/skills/stepwell/SKILL.md` (Aktivierungs-Klausel), `packages/core/tests` (M5-Fixture `project-empty`, `status.test.ts`/`validate.test.ts`).
-- **Problem:** Ein projektweit aktivierter MCP-Server läuft auch in Repos, die nie STEPWELL wollten. Der heutige Meldeweg ist anweisend statt neutral: `PROJECT_NOT_INITIALIZED` sagt „Lege `<Dateien>` an — Vorlagen: …", und die SKILL-Beschreibung aktiviert sich „when the target project contains the four STEPWELL files **or one is to be set up**". Beides kann einen Agenten in einem fremden Repo zu ungefragter Einrichtung drängen — genau das soll vermieden werden (Opt-in pro Projekt, Server passiv).
-- **Fix:** (a) Meldung entdramatisieren: „No STEPWELL project here — no action required unless you want to adopt STEPWELL; templates: `stepwell://templates/{kind}`" (alles-vier-fehlen = harmlos; Teilbestand bleibt harter Fehler, unverändert); (b) SKILL-Klausel auf „…contains the four STEPWELL files **or the user explicitly asks for STEPWELL**" umstellen, „or one is to be set up" streichen; (c) klarstellen/dokumentieren, dass Lesezugriffe in fremden Repos harmlos sind und keine Aktion auslösen; (d) Tests/Fixtures an den neuen Wortlaut anpassen (M5-Abnahme: genau ein Fund mit Guidance bleibt).
-- **Acceptance:** `PROJECT_NOT_INITIALIZED` ist als neutraler Hinweis formuliert (keine Aufforderung, ungefragt Dateien anzulegen); SKILL aktiviert sich nur bei vorhandenen vier Dateien oder explizitem STEPWELL-Wunsch; Auslösen des Hinweises in einem fremden Repo führt zu keiner Schreiboperation; Tests/Fixtures grün, `docs_validate` unverändert.
-
 ---
 
 ## 🟢 LOW
@@ -111,5 +105,6 @@
 - M14 — PLAYBOOK/LESSONS-Sync aus internal-pwa: Lesson 28 (CI-Sicht = Teil der Verifikation, Push-Intervall ≤ Phase) — erledigt (subsumed by M15 (commit 11a54bd) — Lesson 28 + §5 CI-verification bullet arrived with the full drift sync)
 - H5 — Workstream-Worktrees entschieden — Umsetzung: M15-Basis, PLAYBOOK-Edit + Sync, Phase-Paketierung — erledigt (commits 1ed1123 (decision docs) + 11a54bd/f36e7c7 (M15+M14 sync basis) + 2412a54/b5d19c30 (PLAYBOOK workstream model, both copies, SHA256 PLAYBOOK 861bc78a…/LESSONS 2d0b9ef2…) — Phase 26 packaged (26.1-26.7, item→step refs in scope); field-test ladder fixed: internal-pwa never a mechanics testbed)
 - M12 — Quick-Start ist für Agents nicht auffindbar (kein Kickoff-/SKILL-/README-Haken, nicht in Zielprojekten verteilt) — erledigt (workstream ws/m12 (dogfood 26.7) — commits 34ddb4b (RED) + 63d119c (GREEN: instructions + AGENTS step 0 + Decision 15 + SKILL/README hooks); pull merge brought trunk fix 2e30b74; suite 385/385 in merged worktree)
+- M13 — Fremdes Repo: PROJECT_NOT_INITIALIZED-Meldung und SKILL-Klausel sind anweisend statt neutral (kein Auto-Init) — erledigt (workstream ws/m13 (dogfood 26.7) — RED + GREEN in 07072fd chain; neutral message + explicit-ask SKILL clause + README passivity note; commit:true lands in the same call (ritual sequencing per M12 lesson); suite 386/386 in merged worktree)
 
 ---
