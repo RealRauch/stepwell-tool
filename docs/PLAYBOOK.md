@@ -82,7 +82,7 @@ append-only archive.
 
 - **Canonical** is the bullet one-liner per completed item: `- <ID> — <short text> — done in <sha> …` — all write paths (including tools) produce exactly this format.
 - **Tolerated when reading:** a Done Index as a table (`| Series | Item (short) | Commit/Phase |`) is recognised and parsed (column `Item` → ID + short text, column `Commit/Phase` → commit hash); it is not created anew — existing tables migrate to one-liners at the next natural edit.
-- **Compact lines are drift:** range lines (`L1–L11 …`) and collection lines (`R1 … + R1-A …`) do not count as a per-item index entry — validation reports every `[x]` archive block without its own one-liner as a finding.
+- **Compact lines are drift:** range lines (`L1–L11 …`) and collection lines (`R1 … + R1-… …`) do not count as a per-item index entry — validation reports every `[x]` archive block without its own one-liner as a finding.
 
 ### Adoption of existing projects (binding)
 
@@ -105,7 +105,9 @@ Introducing STEPWELL into a project **without** the four files (grey-/brownfield
 ## 5. Verification before completion
 
 - Type check (strict), unit/integration suite and E2E suite must run **without errors** (project-specific commands: see `AGENTS.md`).
+- **Zero errors, zero warnings (binding, 09/2026, M105):** the test suites must run **without stderr warnings** — `act(...)`-warnings, deprecations, unhandled rejections and similar count as findings, not as noise. Every warning trains the eye to overlook stderr, and exactly there land the real failures later; each warning is therefore fixed at its cause (await updates to completion, `fireEvent`/`userEvent` instead of raw DOM events, controlled fake-timer teardown) — never suppressed globally.
 - Never mark a step as "done" without passed verification.
+- **CI is part of verification (F7, 09/2026):** the local machine is one OS/scheduler — timing-dependent behaviour (concurrency, locks) and pipeline-only steps (workflow plumbing, `docker run`) are only exercised where CI actually runs. Projects with a CI pipeline therefore push **at every phase boundary at the latest** (push interval ≤ phase) and count the phase's CI run as part of its verification: a phase is not "done" until its commits have a green CI run.
 - **Optional — smell budget (quality gate):** for those who declare it in the `PROGRESS.md` header line, the following applies: (1) **soft smells** (feature envy, god concept, naming) are findings → items in `BACKLOG.md`, never gates. (2) **hard smells** (file/function length, complexity, duplication, lint rules) form a **delta budget**: a step must not increase the smell load of the files it touches; absolute thresholds only in greenfield from day 1, thresholds are only lowered and only updated at the natural occasion. (3) A delta report is release context, never a blocker — the gate stays binary (budget kept yes/no, checkable locally or in CI). Those who declare nothing have no budget.
 
 ### Intentionally accepted findings (inline marker)
@@ -115,7 +117,7 @@ finding points at** with `*(accepted: CODE[, CODE])*` (codes compared case-insen
 e.g.
 
 ```
-- R1-A — legacy index entry — done in `d4e5f6a` *(accepted: ID_CONVENTION)*
+- MILESTONE-Alpha — legacy index entry — done in `d4e5f6a` *(accepted: ID_CONVENTION)*
 ```
 
 Such findings move into a separate `acknowledged[]` list: they stay **visible** (the count
