@@ -41,6 +41,7 @@ describe("tool workstream_sync (H5/26.5)", () => {
     } finally {
       await c.close();
       rmSync(main, { recursive: true, force: true });
+      rmSync(`${main}-workstream`, { recursive: true, force: true }); // T7
     }
   });
 
@@ -61,6 +62,7 @@ describe("tool workstream_sync (H5/26.5)", () => {
     } finally {
       await c.close();
       rmSync(main, { recursive: true, force: true });
+      rmSync(`${main}-workstream`, { recursive: true, force: true }); // T7
     }
   });
 
@@ -79,6 +81,7 @@ describe("tool workstream_sync (H5/26.5)", () => {
     } finally {
       await c.close();
       rmSync(main, { recursive: true, force: true });
+      rmSync(`${main}-workstream`, { recursive: true, force: true }); // T7
     }
   });
 
@@ -95,6 +98,7 @@ describe("tool workstream_sync (H5/26.5)", () => {
     } finally {
       await c.close();
       rmSync(main, { recursive: true, force: true });
+      rmSync(`${main}-workstream`, { recursive: true, force: true }); // T7
     }
   });
 
@@ -114,6 +118,7 @@ describe("tool workstream_sync (H5/26.5)", () => {
     } finally {
       await c.close();
       rmSync(main, { recursive: true, force: true });
+      rmSync(`${main}-workstream`, { recursive: true, force: true }); // T7
     }
   });
 
@@ -126,6 +131,7 @@ describe("tool workstream_sync (H5/26.5)", () => {
     } finally {
       await c.close();
       rmSync(main, { recursive: true, force: true });
+      rmSync(`${main}-workstream`, { recursive: true, force: true }); // T7
     }
   });
 });

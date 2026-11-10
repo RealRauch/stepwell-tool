@@ -21,6 +21,7 @@ function makeWorktreePair(): { main: string; work: string } {
   gitc(main, ["add", "-A"]);
   gitc(main, ["commit", "-m", "init"]);
   const work = `${main}-workstream`;
+  dirs.push(main, work); // T7: both sides registered for afterEach cleanup
   gitc(main, ["worktree", "add", "-b", "feature", work]);
   return { main, work };
 }
@@ -43,8 +44,11 @@ function makeIo(): { stdout: string; stderr: string; io: { stdout: Writable; std
   return { get stdout() { return out; }, get stderr() { return err; }, io: { stdout, stderr } };
 }
 
+const dirs: string[] = [];
+
 afterEach(() => {
-  // cleanup happens via OS temp; explicit dirs not tracked here
+  // T7: register both sides of every worktree pair — no silent %TEMP% litter
+  for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true });
 });
 
 describe("runCli — sync (H5/26.5)", () => {

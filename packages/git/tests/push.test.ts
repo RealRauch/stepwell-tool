@@ -50,6 +50,7 @@ function makeWorkstream(): { main: string; work: string } {
   git(main, ["add", "-A"]);
   git(main, ["commit", "-m", "init stepwell docs"]);
   const work = `${main}-workstream`;
+  dirs.push(work); // T7: register the sibling — it must not leak into %TEMP%
   git(main, ["worktree", "add", "-b", "feature", work]);
   return { main, work };
 }
