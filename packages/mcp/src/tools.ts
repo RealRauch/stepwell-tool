@@ -26,7 +26,10 @@ import {
   type PhaseBlock,
   type Priority,
   type Status,
-} from "stepwell-core";type ToolResult = CallToolResult;
+} from "stepwell-core";
+import { commitDocs, docCommitMessage } from "stepwell-git";
+
+type ToolResult = CallToolResult;
 
 function textResult(value: unknown): ToolResult {
   return { content: [{ type: "text", text: JSON.stringify(value) }] };
@@ -92,6 +95,25 @@ const DETAIL_FIELD = z.enum(["summary", "diff"]).default("diff")
     "Plan detail level for dry-runs: \"diff\" (default) = full preview; \"summary\" = " +
       "headline + line counts (routine status maintenance). Apply responses are unchanged.",
   );
+const COMMIT_FIELD = z.boolean().default(false)
+  .describe(
+    "false (default): no git action. true: after a successful apply, commit ONLY the four doc " +
+      "files (deterministic staging — never code or other files; refused with COMMIT_BLOCKED when " +
+      "the index has pre-staged changes; a failed commit keeps the edits applied, code COMMIT_FAILED). " +
+      "Ignored for dry-runs. Result lands as a `commit` section in the response.",
+  );
+const COMMIT_MESSAGE_FIELD = z.string().optional()
+  .describe("Optional commit subject with commit: true; default: generated from the operation.");
+
+/** Attaches the commit section after a successful apply (never on a failed one). */
+function attachCommit(
+  result: Record<string, unknown>,
+  root: string,
+  message: string,
+): void {
+  if ((result as { verification?: { ok?: boolean } }).verification?.ok === false) return;
+  result.commit = commitDocs(root, { message });
+}
 
 /** Projiziert Dry-run-Pläne auf Headline + Zeilenzahlen (E1/12.2) — Apply bleibt unberührt. */
 function summarizePlan<T extends object>(plan: T): T {
@@ -336,9 +358,11 @@ export function registerDocsTools(server: McpServer): void {
         detail: DETAIL_FIELD,
         dryRun: z.boolean().default(true)
           .describe("true (default): plan/diff preview only; false: write the changes."),
+        commit: COMMIT_FIELD,
+        commitMessage: COMMIT_MESSAGE_FIELD,
       },
     },
-    ({ root, id, note, locale, structured, detail, dryRun }) =>
+    ({ root, id, note, locale, structured, detail, dryRun, commit, commitMessage }) =>
       asStructuredResult(() => {
         const plan = planArchiveItem(root, id, {
           dryRun,
@@ -346,6 +370,13 @@ export function registerDocsTools(server: McpServer): void {
           ...(locale !== undefined ? { locale: locale as Locale } : {}),
         });
         const result = plan.dryRun ? plan : applyArchivePlan(plan);
+        if (!plan.dryRun && commit) {
+          attachCommit(
+            result as unknown as Record<string, unknown>,
+            root,
+            commitMessage ?? docCommitMessage({ kind: "archive", id }),
+          );
+        }
         return detail === "summary" ? summarizePlan(result) : result;
       }, structured),
   );
@@ -377,9 +408,11 @@ export function registerDocsTools(server: McpServer): void {
         detail: DETAIL_FIELD,
         dryRun: z.boolean().default(true)
           .describe("true (default): plan/diff preview only; false: write the changes."),
+        commit: COMMIT_FIELD,
+        commitMessage: COMMIT_MESSAGE_FIELD,
       },
     },
-    ({ root, phase, step, status, title, note, checkpoint, locale, structured, detail, dryRun }) =>
+    ({ root, phase, step, status, title, note, checkpoint, locale, structured, detail, dryRun, commit, commitMessage }) =>
       asStructuredResult(() => {
         const steps = Array.isArray(step) ? step : [step];
         if (steps.length > 1 && dryRun) {
@@ -409,7 +442,13 @@ export function registerDocsTools(server: McpServer): void {
           const result = plan.dryRun ? plan : applyProgressPlan(plan);
           return detail === "summary" ? summarizePlan(result) : result;
         };
-        if (steps.length === 1) return runSingle(steps[0]!);
+        if (steps.length === 1) {
+          const result = runSingle(steps[0]!) as Record<string, unknown>;
+          if (!dryRun && commit) {
+            attachCommit(result, root, commitMessage ?? docCommitMessage({ kind: "progress", steps, status: status as string }));
+          }
+          return result;
+        }
         // M9/18.1: validate every step up-front (planning is read-only) so a bad
         // step fails before the first write; residual apply-time failures report
         // what was already persisted.
@@ -427,7 +466,12 @@ export function registerDocsTools(server: McpServer): void {
           const written = [...new Set(results.flatMap((r) => r.written))];
           const messages = results.flatMap((r) => r.verification.messages);
           const allOk = results.every((r) => r.verification.ok);
-          return { written, steps, verification: { ok: allOk, messages } };
+          const aggregate: Record<string, unknown> = { written, steps, verification: { ok: allOk, messages } };
+          // one doc commit for the whole batch (H5/26.3), only after a fully successful apply
+          if (commit) {
+            attachCommit(aggregate, root, commitMessage ?? docCommitMessage({ kind: "progress", steps, status: status as string }));
+          }
+          return aggregate;
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
           throw new Error(

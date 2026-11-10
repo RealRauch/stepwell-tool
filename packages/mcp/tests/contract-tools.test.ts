@@ -72,6 +72,8 @@ const CONTRACT: Record<string, { required: string[]; params: Record<string, unkn
       structured: boolWithDefault(false),
       detail: detailField,
       dryRun: boolWithDefault(true),
+      commit: boolWithDefault(false),
+      commitMessage: str,
     },
   },
   progress_update: {
@@ -88,6 +90,8 @@ const CONTRACT: Record<string, { required: string[]; params: Record<string, unkn
       structured: boolWithDefault(false),
       detail: detailField,
       dryRun: boolWithDefault(true),
+      commit: boolWithDefault(false),
+      commitMessage: str,
     },
   },
   backlog_add: {

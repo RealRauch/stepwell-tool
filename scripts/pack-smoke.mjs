@@ -38,10 +38,11 @@ const assertExists = (path) => {
 //    fehlschlagen. 13.1/N1: Fragilität sichtbar — npm pack triggert KEINEN Build.
 run("npm", ["run", "build"], { cwd: repoRoot });
 
-// 1) Tarballs bauen
-run("npm", ["pack", "--pack-destination", work, "./packages/core", "./packages/mcp"], { cwd: repoRoot });
+// 1) Tarballs bauen (H5/26.3: stepwell-git ist Abhängigkeit des mcp-Artefakts
+//    und muss mitgepackt werden, sonst schlägt die Installation mit E404 fehl)
+run("npm", ["pack", "--pack-destination", work, "./packages/core", "./packages/git", "./packages/mcp"], { cwd: repoRoot });
 const tarballs = readdirSync(work).filter((f) => f.endsWith(".tgz"));
-if (tarballs.length !== 2) fail(`expected 2 tarballs, got: ${tarballs.join(", ")}`);
+if (tarballs.length !== 3) fail(`expected 3 tarballs, got: ${tarballs.join(", ")}`);
 
 // 2) Tarballs installieren (löst auch die Workspace-Abhängigkeit über die Artefakte auf)
 run("npm", ["install", "--prefix", installDir, "--no-audit", "--no-fund", ...tarballs.map((t) => join(work, t))]);
@@ -49,9 +50,12 @@ run("npm", ["install", "--prefix", installDir, "--no-audit", "--no-fund", ...tar
 // 3) Artefakt-Inhalt statisch prüfen (seit 10.4/H1: compiled dist, kein src)
 const mcpRoot = join(installDir, "node_modules", "stepwell");
 const coreRoot = join(installDir, "node_modules", "stepwell-core");
+const gitRoot = join(installDir, "node_modules", "stepwell-git");
 for (const path of [
   join(coreRoot, "dist", "index.js"),
   join(coreRoot, "dist", "index.d.ts"),
+  join(gitRoot, "dist", "index.js"),
+  join(gitRoot, "dist", "index.d.ts"),
   join(mcpRoot, "dist", "serve.js"),
   join(mcpRoot, "dist", "cli.js"),
   join(mcpRoot, "dist", "tools.js"),
@@ -65,6 +69,9 @@ if (mcpManifest.bin?.["stepwell"] !== "./dist/cli.js") {
 }
 if (mcpManifest.dependencies?.["stepwell-core"] === undefined) {
   fail("installed mcp artifact lost its stepwell-core dependency");
+}
+if (mcpManifest.dependencies?.["stepwell-git"] === undefined) {
+  fail("installed mcp artifact lost its stepwell-git dependency (H5/26.3)");
 }
 
 // 4) stdio-Handshake gegen den installierten Server (H1: dist läuft aus node_modules)

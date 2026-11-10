@@ -18,6 +18,7 @@ import {
   type PlanChange,
   type ProgressUpdatePlan,
 } from "stepwell-core";
+import { commitDocs, docCommitMessage } from "stepwell-git";
 
 export interface CliIo {
   stdout: NodeJS.WritableStream;
@@ -32,6 +33,18 @@ export const JSON_SCHEMA_VERSION = 2;
 
 function jsonOut(payload: Record<string, unknown>): string {
   return `${JSON.stringify({ schema: JSON_SCHEMA_VERSION, ...payload }, null, 2)}\n`;
+}
+
+/** One-line commit outcome for human-readable output (H5/26.3). */
+function commitLine(outcome: Record<string, unknown>): string {
+  if (outcome.ok === true) {
+    const committed = outcome.committed === true;
+    return committed
+      ? `Committed ${(outcome.files as string[] | undefined)?.length ?? 0} doc file(s): ${outcome.sha ?? "?"}`
+      : "Nothing to commit (docs unchanged)";
+  }
+  const error = outcome.error as { code: string; message: string } | undefined;
+  return `Commit failed (${error?.code}): ${error?.message ?? "unknown cause"}`;
 }
 
 interface CliOptions {
@@ -49,6 +62,8 @@ interface CliOptions {
   step: string | undefined;
   locale: string | undefined;
   apply: boolean;
+  commit: boolean;
+  commitMessage: string | undefined;
 }
 
 const USAGE = `usage: stepwell <command> [options]
@@ -76,6 +91,11 @@ options:
                      the verification line of the archive block
   --locale <de|en>   Language for generated text (archive, progress-update; default: auto-detect)
   --apply            Write the changes (archive, progress-update; default: dry-run preview)
+  --commit           After a successful apply, commit ONLY the four doc files (archive,
+                     progress-update; ignored for dry-runs). Refused when the index has
+                     pre-staged changes (COMMIT_BLOCKED); a failed commit keeps the edits
+                     applied (COMMIT_FAILED) and the command exits 1.
+  --commit-message   Commit subject with --commit; default generated from the operation
   --json             Raw payloads instead of human-readable text
 `;
 
@@ -95,6 +115,8 @@ function parseArgs(argv: string[]): { command: string | undefined; options: CliO
     step: undefined,
     locale: undefined,
     apply: false,
+    commit: false,
+    commitMessage: undefined,
   };
   let command: string | undefined;
   for (let i = 0; i < argv.length; i++) {
@@ -136,6 +158,12 @@ function parseArgs(argv: string[]): { command: string | undefined; options: CliO
         break;
       case "--apply":
         options.apply = true;
+        break;
+      case "--commit":
+        options.commit = true;
+        break;
+      case "--commit-message":
+        options.commitMessage = next();
         break;
       case "--phase":
         options.phase = next();
@@ -373,12 +401,21 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
           return 0;
         }
         const result = applyArchivePlan(plan);
+        let commitOutcome: Record<string, unknown> | undefined;
+        if (options.commit) {
+          const outcome = commitDocs(root, {
+            message: options.commitMessage ?? docCommitMessage({ kind: "archive", id: options.id }),
+          });
+          commitOutcome = outcome as Record<string, unknown>;
+          (result as unknown as Record<string, unknown>).commit = commitOutcome;
+        }
         if (options.json) {
           io.stdout.write(jsonOut(result as unknown as Record<string, unknown>));
         } else {
           io.stdout.write(applyResultText(result));
+          if (commitOutcome !== undefined) io.stdout.write(`${commitLine(commitOutcome)}\n`);
         }
-        return result.verification.ok ? 0 : 1;
+        return result.verification.ok && (commitOutcome?.ok !== false) ? 0 : 1;
       }
       case "progress-update": {
         const root = requireRoot(options);
@@ -406,12 +443,22 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
           return 0;
         }
         const result = applyProgressPlan(plan);
+        let commitOutcome: Record<string, unknown> | undefined;
+        if (options.commit) {
+          const outcome = commitDocs(root, {
+            message: options.commitMessage ??
+              docCommitMessage({ kind: "progress", steps: [options.step], status: statusIcon }),
+          });
+          commitOutcome = outcome as Record<string, unknown>;
+          (result as unknown as Record<string, unknown>).commit = commitOutcome;
+        }
         if (options.json) {
           io.stdout.write(jsonOut(result as unknown as Record<string, unknown>));
         } else {
           io.stdout.write(applyResultText(result));
+          if (commitOutcome !== undefined) io.stdout.write(`${commitLine(commitOutcome)}\n`);
         }
-        return result.verification.ok ? 0 : 1;
+        return result.verification.ok && (commitOutcome?.ok !== false) ? 0 : 1;
       }
       default:
         io.stderr.write(USAGE);

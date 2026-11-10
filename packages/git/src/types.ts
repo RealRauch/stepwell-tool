@@ -8,7 +8,22 @@ export type SyncErrorCode =
   | "MERGE_REFUSED"
   | "STALE_BRANCH"
   | "TRUNK_DIRTY"
-  | "ON_TRUNK_BRANCH";
+  | "ON_TRUNK_BRANCH"
+  | "COMMIT_BLOCKED"
+  | "COMMIT_FAILED";
+
+/** Successful doc commit (Decision 14: exactly the four method docs). */
+export interface CommitDocsOk {
+  ok: true;
+  /** False when the four docs were unchanged (nothing to commit). */
+  committed: boolean;
+  /** Doc files included in the commit (empty when nothing was committed). */
+  files: string[];
+  /** Commit SHA when a commit was created. */
+  sha?: string;
+}
+
+export type CommitDocsResult = CommitDocsOk | { ok: false; error: SyncError };
 
 /** Structured failure of a sync operation — never a throw; callers render `message` verbatim. */
 export interface SyncError {
