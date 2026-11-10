@@ -4,6 +4,9 @@ CLI + MCP server for **reading, checking and managing** the project docs
 (`BACKLOG.md`, `PROGRESS.md`, `docs/archive/*`) in repos following the
 [STEPWELL method](docs/PLAYBOOK.md) — steps, archive pattern, test-first.
 
+> **New here?** Start from [`docs/QUICKSTART.md`](docs/QUICKSTART.md) — the
+> five-minute entry (core loop, the four files, the five rules).
+
 **Status:** 24 phases complete. Phase 1 — core library (fault-tolerant parsers,
 status/validation reports) · Phase 2 — MCP server + CLI (read tools, resources) ·
 Phase 3 — mutations (`archive_item`, `progress_update`, each dry-run + apply) ·

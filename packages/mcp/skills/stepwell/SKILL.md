@@ -9,6 +9,11 @@ Binding method: `docs/PLAYBOOK.md` in the target project (verbatim copy). Checkl
 `docs/LESSONS.md`. This skill file summarises **when to call which tool** —
 it does not replace the tools nor the method.
 
+**New to STEPWELL?** Start from `docs/QUICKSTART.md` in the tool repo (≤5 minutes:
+core loop, the four files, the five rules) — this pointer is the fast entry; the
+binding method remains PLAYBOOK.md (Decision 15: QUICKSTART is stepwell-local, not a
+distributed verbatim copy).
+
 ## The four files
 
 `BACKLOG.md` (only open items, priority sections 🔴→🔵), `PROGRESS.md` (progress table +
