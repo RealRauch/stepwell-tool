@@ -190,3 +190,35 @@ No direct API integration in the tool itself:
 
 As of 09/2026: brainstorming only, no implementation.
 
+---
+
+## Git integration & parallel phases per project
+
+Backlog root: `H5` (design item). Motivation: a project should be able to run
+**two phases at the same time**, and the tool should integrate more tightly
+with git. Neither the target picture nor the tool role is decided yet.
+
+**Open questions (design first, code later):**
+
+1. **Parallel phases — interleaved or branch-per-phase?**
+   - *Interleaved:* two 🔄 phases in one working tree / one PROGRESS table.
+     Cheap, no git mechanics — but mixed working state, no isolation.
+     Question: does the parser/validator tolerate two 🔄 phases today
+     (`WIP_WITHOUT_PLAN`/`STEP_DUPLICATE` semantics), or does the method
+     (PLAYBOOK §2 "committed phase sequence") need to change first?
+   - *Branch-per-phase:* each phase gets a branch/worktree with real
+     isolation. Hard part: the four method docs are single-rooted — status
+     flips on two branches diverge and the append-only archives collide at
+     merge time. Would need a docs-on-main-line + code-per-branch model or
+     git-aware tooling that merges doc state.
+2. **Git role of the tool:** none (status quo: agent commits per step),
+   commit-automation per step (`progress_update` apply → commit with
+   checkpoint SHA), branch helpers, or merge support? Each new tool needs
+   the Alternativprüfung (Decision 11); automation writing to git is
+   potentially a "High" content gate (Decision 9).
+3. **Method impact:** any decision here changes PLAYBOOK (§2 phase model,
+   §5 verification/push interval) ⇒ Cross-Repo-Sync-Pflicht with
+   internal-pwa (Decision 13, PLAYBOOK header SYNC rule), SHA256 evidence.
+
+As of 11/2026: design item open, no implementation.
+

@@ -1,4 +1,4 @@
-# BACKLOG.md — Open items (As of: 2026-09-28T19:29
+# BACKLOG.md — Open items (As of: 2026-11-10T19:53
 
 > **This file contains only OPEN items.** Completed items are moved to `docs/archive/BACKLOG_ARCHIVE.md` unchanged after completion; this file keeps only a one-liner per item in the Done Index (below). Findings/fix-ideas/decisions are not deleted — moved to the archive.
 > Legend: 🔴 critical · 🟠 high · 🟡 medium · 🟢 low · 🔵 test gap
@@ -13,6 +13,24 @@
 ---
 
 ## 🟠 HIGH
+
+### [ ] H3 — Konsum-Schutz: Decision 13 + CONSUMERS.md-Inventar + Upgrade-Runbook — 🟠
+- **Location:** `AGENTS.md` (Architektur-Entscheidungen + Kickoff), `docs/CONSUMERS.md` (neu).
+- **Problem:** Live-MCP-Konsumer sehen jede Änderung sofort: internal-pwa mit 4 pfadgekoppelten Registrierungen (3× `packages/mcp/src/serve.ts` via tsx, 1× `packages/mcp/dist/serve.js`, keine Versions-Pins), internal-consumer aktiv in Nutzung — Registrierung liegt außerhalb der Repo-Ebene (dateibasierte Discovery hat sie verfehlt: user-/session-scoped Registrierungen sind ein toter Winkel). Kein Release-Moment schützt die Konsumer.
+- **Umfang:** Decision 13 in AGENTS.md: Split-Modell (Clone `stepwell-tool-dev`/Branch `dev` = Entwicklungslinie; `main` im eingefrorenen Verzeichnis = Konsumer-Stand), Promotion-Ritual (6 Schritte: grün → Feldprobe → Merge dev→main → Build → bei MAJOR Konsumer-Koordination → Probe), Kontraktregeln (Tool-Namen/-Parameter/-JSON-Formen/Resource-URIs/Warning-Codes = MAJOR + Abstimmung; Message/Prosa frei), PLAYBOOK/LESSONS = Cross-Repo-Kontrakt, Alternativprüfung „kein Migrations-Tool" (Decisions 5/6/11) + Kickoff-Verweis. `docs/CONSUMERS.md`: Inventartabelle (pwa + internal-consumer live; internal-app-1, internal-recorder, internal-app-2, internal-app-3 als Doc-Adopter) mit Referenzen (Datei:Zeile), MAJOR-Upgrade-Runbook, Discovery-Hinweis.
+- **Acceptance:** Decision 13 in AGENTS.md vorhanden (inkl. Promotion-Ritual); CONSUMERS.md listet alle 6 Konsumer mit Kopplungsart + Referenzen; Kickoff verweist darauf; `docs_validate` grün.
+
+### [ ] H4 — Contract-Tests: Input-Schema-Lock (tools/list via InMemoryTransport) + serve.ts-Pfad-Lock — 🟠
+- **Location:** `packages/mcp/tests/contract-tools.test.ts` (neu), `packages/mcp/tests/packaging.test.ts` (Ergänzung).
+- **Problem:** Parameter-Renams oder optional→required-Drehen rutschen heute durch, solange kein Test genau diesen Parameter aufruft (kein Input-Schema-Lock). Zusätzlich kein Lock auf den Entry-Point-Pfad `packages/mcp/src/serve.ts` — hart verdrahtet in 3 pwa-Registrierungen; ein Move/Rename bricht alle drei.
+- **Umfang:** Echtes `tools/list` via `InMemoryTransport.createLinkedPair()` + SDK-Client; explizite Erwartungsstruktur für alle 13 Tools (Parametername, required/optional, Typ, Enum-Werte, Defaults wie `dryRun: true`, `locale: de|en`, `step: string|string[]`). `packaging.test.ts`: Assertion `packages/mcp/src/serve.ts` existiert + README referenziert genau diesen Pfad. Falls das listTools-Muster nicht greift: Schemas explizit in `tools.ts` exportieren (kleine, nicht-brechende Ergänzung). Sabotage-Check eingebaut: absichtlich falsche Erwartung muss ROT schlagen.
+- **Acceptance:** Test-First — Sabotage-Variante ROT, korrekte Erwartung GRÜN; jede Schema-Abweichung künftig = roter Test; Bestand (329 Tests) bleibt grün.
+
+### [ ] H5 — Design: Git-Integration + parallele Phasen je Projekt (Zielbild offen) — 🟠
+- **Location:** `BRAINSTORM.md` (Fließtext-Eintrag), Entscheidungsdoku → PLAYBOOK + Tool-Surface.
+- **Problem:** Zielbild „zwei Phasen gleichzeitig je Projekt" + „bessere Git-Einbindung" ist unbestimmt: interleaved (zwei 🔄 in einem Arbeitsverzeichnis) vs. Branch/Worktree-je-Phase? Git-Rolle des Tools: Commit-je-Step automatisiert, Branch-Handling, Merge-Hilfen? Das ist Methoden-Ebene (PLAYBOOK-Änderung ⇒ Cross-Repo-Sync-Pflicht mit internal-pwa) und potenziell MAJOR (neues Tool-Surface ⇒ Alternativprüfung Decision 11 je Tool).
+- **Umfang:** Erst Zielbild-Entscheidung dokumentieren (dieses Item + BRAINSTORM-Absatz), dann PLAYBOOK/LESSONS synchronisieren, erst danach Code-Steps paketieren. Tool-Surface-Guardrail beachten: kein Guide-/Meta-Tool; jedes neue Tool mit dokumentierter Alternativprüfung.
+- **Acceptance:** dokumentierte Entscheidung (Zielbild + Git-Rolle + Tool-Surface-Begründung); PLAYBOOK/LESSONS ggf. wortidentisch synchronisiert (SHA256-Evidenz); erst danach Implementierungs-Steps im PROGRESS.
 
 ---
 
@@ -36,6 +54,12 @@
 - **Problem:** Method-Drift — die Quellkopie (internal-pwa) hat per F7 (28.09.2026) ergänzt: Lesson 28 „CI is a verification lane — push interval ≤ phase, CI-Run zählt zur Phasen-Verifikation" sowie PLAYBOOK-§5-Bullet „CI is part of verification". Diese Kopie hat den Stand noch nicht.
 - **Umfang (Häppchen):** beide Textstellen 1:1 aus der Quellkopie übernehmen (textuell identisch, SYNC-Pflicht nach PLAYBOOK-Kopf), Commit + Sync-Vermerk.
 - **Acceptance:** beide Stellen wortgleich mit internal-pwa (Commit `docs`-Hash dort), `docs_validate` grün.
+
+### [ ] M15 — PLAYBOOK/LESSONS-Restdrift pwa↔tool: Differenz inventarisieren und wortidentisch synchronisieren — 🟡
+- **Location:** `docs/PLAYBOOK.md` + `docs/LESSONS.md` (dieses Repo) ↔ `D:\Development\internal-pwa\docs\PLAYBOOK.md` / `LESSONS.md` (Quellkopie).
+- **Problem:** Die Quellkopie (internal-pwa) ist deutlich neuer als die hiesige: LESSONS dort ~12,2 KB (Okt-Stand, Lesson 28+) vs. hier ~5,3 KB (Sep-Stand); PLAYBOOK dort u. a. „Zero errors, zero warnings (M105)" und „CI is part of verification (F7)". M14 deckt davon nur Lesson 28 + das §5-Bullet ab — der tatsächliche Restdrift ist größer (dreifacher Drift pwa > internal-recorder > dieses Repo).
+- **Umfang:** Vollständige Differenz inventarisieren (Diff pwa ↔ hier), **alle** Stellen wortidentisch aus der Quellkopie übernehmen, SYNC-Vermerk nach PLAYBOOK-Kopf, SHA256-Nachweis je Kopie (Muster: Step 22.4/23.4), Commit. Playbook-Sync-Schlag — kein npm-Release-Trigger.
+- **Acceptance:** PLAYBOOK/LESSONS hier wortgleich mit internal-pwa (SHA256-Evidenz je Datei), `docs_validate` beidseitig grün.
 
 ---
 
