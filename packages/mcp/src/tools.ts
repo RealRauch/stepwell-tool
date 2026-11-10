@@ -27,7 +27,7 @@ import {
   type Priority,
   type Status,
 } from "stepwell-core";
-import { commitDocs, docCommitMessage } from "stepwell-git";
+import { commitDocs, docCommitMessage, pullTrunk, pushTrunk, syncPreview, workstreamReport } from "stepwell-git";
 
 type ToolResult = CallToolResult;
 
@@ -617,6 +617,37 @@ export function registerDocsTools(server: McpServer): void {
         const result = plan.dryRun ? plan : applyPhasePlan(plan);
         return detail === "summary" ? summarizePlan(result) : result;
       }),
+  );
+
+  server.registerTool(
+    "workstream_sync",
+    {
+      annotations: { ...MUTATING_ANNOTATIONS },
+      title: "Workstream sync (dry-run)",
+      description:
+        "Git workstream sync (Decision 14/H5): pull merges the trunk into this worktree branch " +
+        "(the risky side — conflicts surface here as a clean abort with a structured report), push " +
+        "fast-forwards the trunk to this branch (precondition: trunk head already pulled — never a " +
+        "real merge on the trunk side), status returns the read-only workstream report (per-worktree " +
+        "liveness + conflict-candidate overlap, derived from git itself). Dry-run (default) runs the " +
+        "exact guard chain of the real operation and previews the effect without touching anything.",
+      inputSchema: {
+        root: ROOT_FIELD,
+        direction: z.enum(["pull", "push", "status"]).describe(
+          "pull: merge trunk → branch. push: fast-forward trunk → branch head. status: read-only report.",
+        ),
+        structured: STRUCTURED_FIELD,
+        dryRun: z.boolean().default(true)
+          .describe("true (default): pre-flight — guard chain + preview, no git mutation. false: execute pull/push. Ignored for status."),
+      },
+    },
+    ({ root, direction, structured, dryRun }) =>
+      asStructuredResult(() => {
+        if (direction === "status") return workstreamReport(root);
+        const preview = syncPreview(root, direction);
+        if (dryRun || !preview.ok) return preview;
+        return direction === "pull" ? pullTrunk(root) : pushTrunk(root);
+      }, structured),
   );
 }
 

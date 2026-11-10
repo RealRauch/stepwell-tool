@@ -18,7 +18,19 @@ import {
   type PlanChange,
   type ProgressUpdatePlan,
 } from "stepwell-core";
-import { commitDocs, docCommitMessage } from "stepwell-git";
+import {
+  commitDocs,
+  docCommitMessage,
+  pullTrunk,
+  pushTrunk,
+  syncPreview,
+  workstreamReport,
+  type PullPreviewOk,
+  type PushPreviewOk,
+  type SyncError,
+  type SyncPreviewOk,
+  type WorkstreamReportOk,
+} from "stepwell-git";
 
 export interface CliIo {
   stdout: NodeJS.WritableStream;
@@ -47,6 +59,54 @@ function commitLine(outcome: Record<string, unknown>): string {
   return `Commit failed (${error?.code}): ${error?.message ?? "unknown cause"}`;
 }
 
+// --- sync text renderers (H5/26.5) ----------------------------------------
+
+function syncErrorText(error: SyncError): string {
+  const files = error.files !== undefined && error.files.length > 0 ? ` (files: ${error.files.join(", ")})` : "";
+  return `sync failed (${error.code}): ${error.message}${files}\n`;
+}
+
+function syncStatusText(report: WorkstreamReportOk | { ok: false; error: SyncError }): string {
+  if (!report.ok) return syncErrorText(report.error);
+  const lines = [`Trunk: ${report.trunk}`, `Current branch: ${report.current}`];
+  if (report.worktrees.length === 0) {
+    lines.push("Workstreams: none (single-tree mode)");
+  } else {
+    lines.push("Workstreams:");
+    for (const ws of report.worktrees) {
+      const state = ws.branch === "" ? "(detached)" : `${ws.ahead} ahead / ${ws.behind} behind`;
+      const live = ws.lastSubject === "" ? "" : ` — last: "${ws.lastSubject}"`;
+      const overlap = ws.overlap.length > 0 ? ` — overlap: ${ws.overlap.join(", ")}` : "";
+      const dirty = ws.dirty ? " [dirty]" : "";
+      lines.push(`  ${ws.path} (${ws.branch}) ${state}${dirty}${live}${overlap}`);
+    }
+  }
+  return `${lines.join("\n")}\n`;
+}
+
+function syncPreviewText(preview: SyncPreviewOk): string {
+  if (preview.direction === "pull") {
+    const p: PullPreviewOk = preview;
+    return [
+      `pull preview (dry-run): trunk "${p.trunk}" → branch "${p.branch}"`,
+      `  behind: ${p.behind} commit(s), files: ${p.files.length === 0 ? "(none)" : p.files.join(", ")}`,
+      p.overlap.length > 0 ? `  overlap (likely conflicts): ${p.overlap.join(", ")}` : "  overlap: none",
+    ].join("\n") + "\n";
+  }
+  const p: PushPreviewOk = preview;
+  return [
+    `push preview (dry-run): branch "${p.branch}" → trunk "${p.trunk}"`,
+    `  ahead: ${p.ahead} commit(s), trunk would move to ${p.target}`,
+  ].join("\n") + "\n";
+}
+
+function syncApplyText(direction: "pull" | "push", outcome: { ok: true; fastForward?: boolean; mergedFiles?: number }): string {
+  if (direction === "pull") {
+    return `pulled trunk into branch: fast-forward=${outcome.fastForward === true}, files changed: ${outcome.mergedFiles ?? 0}\n`;
+  }
+  return "pushed branch to trunk: trunk fast-forwarded to the branch head\n";
+}
+
 interface CliOptions {
   root: string | undefined;
   json: boolean;
@@ -64,6 +124,7 @@ interface CliOptions {
   apply: boolean;
   commit: boolean;
   commitMessage: string | undefined;
+  positionals: string[];
 }
 
 const USAGE = `usage: stepwell <command> [options]
@@ -75,6 +136,8 @@ commands:
   validate         Check consistency (exit 1 on findings)
   archive          Move completed item into archive (dry-run; --apply to write)
   progress-update  Update step status incl. phase completion (dry-run; --apply to write)
+  sync <direction> Git workstream sync (H5): status (read-only report) | pull | push.
+                   pull/push are pre-flight previews by default; --apply executes.
 
 options:
   --root <dir>       Project root (required)
@@ -117,6 +180,7 @@ function parseArgs(argv: string[]): { command: string | undefined; options: CliO
     apply: false,
     commit: false,
     commitMessage: undefined,
+    positionals: [],
   };
   let command: string | undefined;
   for (let i = 0; i < argv.length; i++) {
@@ -177,6 +241,8 @@ function parseArgs(argv: string[]): { command: string | undefined; options: CliO
       default:
         if (command === undefined && !arg.startsWith("-")) {
           command = arg;
+        } else if (!arg.startsWith("-")) {
+          options.positionals.push(arg);
         } else {
           throw new UsageError(`unknown argument: ${arg}`);
         }
@@ -335,7 +401,7 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
     throw err;
   }
 
-  if (command === undefined || !["status", "backlog", "progress", "validate", "archive", "progress-update"].includes(command)) {
+  if (command === undefined || !["status", "backlog", "progress", "validate", "archive", "progress-update", "sync"].includes(command)) {
     io.stderr.write(USAGE);
     return 2;
   }
@@ -459,6 +525,42 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
           if (commitOutcome !== undefined) io.stdout.write(`${commitLine(commitOutcome)}\n`);
         }
         return result.verification.ok && (commitOutcome?.ok !== false) ? 0 : 1;
+      }
+      case "sync": {
+        const root = requireRoot(options);
+        const direction = options.positionals[0];
+        if (direction === undefined || options.positionals.length > 1) {
+          throw new UsageError("usage: stepwell sync <status|pull|push> (exactly one direction)");
+        }
+        if (direction !== "status" && direction !== "pull" && direction !== "push") {
+          throw new UsageError(`unknown sync direction: ${direction}`);
+        }
+        if (direction === "status") {
+          const report = workstreamReport(root);
+          if (options.json) {
+            io.stdout.write(jsonOut(report as unknown as Record<string, unknown>));
+          } else {
+            io.stdout.write(syncStatusText(report));
+          }
+          return report.ok ? 0 : 1;
+        }
+        const dryRun = !options.apply;
+        const preview = syncPreview(root, direction);
+        if (dryRun || !preview.ok) {
+          if (options.json) {
+            io.stdout.write(jsonOut({ direction, dryRun, ...preview } as unknown as Record<string, unknown>));
+          } else {
+            io.stdout.write(preview.ok ? syncPreviewText(preview) : syncErrorText(preview.error));
+          }
+          return preview.ok ? 0 : 1;
+        }
+        const outcome = direction === "pull" ? pullTrunk(root) : pushTrunk(root);
+        if (options.json) {
+          io.stdout.write(jsonOut({ direction, dryRun, ...outcome } as unknown as Record<string, unknown>));
+        } else {
+          io.stdout.write(outcome.ok ? syncApplyText(direction, outcome) : syncErrorText(outcome.error));
+        }
+        return outcome.ok ? 0 : 1;
       }
       default:
         io.stderr.write(USAGE);

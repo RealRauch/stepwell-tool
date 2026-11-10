@@ -29,6 +29,56 @@ function commitsTouching(root: string, base: string, tip: string, file: string):
   return Number.isNaN(n) ? 0 : n;
 }
 
+/** Count of commits in a rev-list range (0 when unparseable). */
+export function commitCount(root: string, range: string): number {
+  const out = runGit(root, ["rev-list", "--count", range]).stdout.trim();
+  const n = Number.parseInt(out, 10);
+  return Number.isNaN(n) ? 0 : n;
+}
+
+export type PullGuards = { ok: true; branch: string; trunk: string } | { ok: false; error: SyncError };
+
+function guardFail(error: SyncError): { ok: false; error: SyncError } {
+  return { ok: false, error };
+}
+
+
+/**
+ * Guard chain of the pull operation, shared by the real op and its dry-run
+ * preview — one source of truth so a dry-run can never disagree with the
+ * merge it forecasts.
+ */
+export function pullGuards(root: string): PullGuards {
+  const inside = runGit(root, ["rev-parse", "--is-inside-work-tree"]);
+  if (inside.status !== 0 || inside.stdout.trim() !== "true") {
+    if (inside.status === -1) {
+      return guardFail({ code: "GIT_MISSING", message: "git is not available on PATH", detail: inside.stderr });
+    }
+    return guardFail({ code: "NOT_A_GIT_REPO", message: `"${root}" is not inside a git work tree` });
+  }
+
+  const branch = runGit(root, ["branch", "--show-current"]).stdout.trim();
+  if (branch === "") {
+    return guardFail({ code: "DETACHED_HEAD", message: "HEAD is detached — a workstream needs a branch to merge into" });
+  }
+
+  const dirty = runGit(root, ["status", "--porcelain"]);
+  const dirtyFiles = splitLines(dirty.stdout).map((line) => line.slice(3).trim());
+  if (dirtyFiles.length > 0) {
+    return guardFail({
+      code: "DIRTY_TREE",
+      message: "working tree has uncommitted changes — commit or stash before syncing",
+      files: dirtyFiles,
+    });
+  }
+
+  const trunk = resolveTrunkBranch(root);
+  if (trunk === undefined) {
+    return guardFail({ code: "MERGE_REFUSED", message: "cannot determine the trunk branch (main worktree has no branch)" });
+  }
+  return { ok: true, branch, trunk };
+}
+
 /**
  * Pull (merge trunk → branch) inside the caller's workstream worktree —
  * the risky direction: code conflicts surface HERE, before trunk moves
@@ -38,34 +88,9 @@ function commitsTouching(root: string, base: string, tip: string, file: string):
  * re-validated as the mechanical net.
  */
 export function pullTrunk(root: string): PullResult {
-  const inside = runGit(root, ["rev-parse", "--is-inside-work-tree"]);
-  if (inside.status !== 0 || inside.stdout.trim() !== "true") {
-    if (inside.status === -1) {
-      return fail({ code: "GIT_MISSING", message: "git is not available on PATH", detail: inside.stderr });
-    }
-    return fail({ code: "NOT_A_GIT_REPO", message: `"${root}" is not inside a git work tree` });
-  }
-
-  const branch = runGit(root, ["branch", "--show-current"]).stdout.trim();
-  if (branch === "") {
-    return fail({ code: "DETACHED_HEAD", message: "HEAD is detached — a workstream needs a branch to merge into" });
-  }
-
-  const dirty = runGit(root, ["status", "--porcelain"]);
-  const dirtyFiles = splitLines(dirty.stdout).map((line) => line.slice(3).trim());
-  if (dirtyFiles.length > 0) {
-    return fail({
-      code: "DIRTY_TREE",
-      message: "working tree has uncommitted changes — commit or stash before syncing",
-      files: dirtyFiles,
-    });
-  }
-
-  const trunk = resolveTrunkBranch(root);
-  if (trunk === undefined) {
-    return fail({ code: "MERGE_REFUSED", message: "cannot determine the trunk branch (main worktree has no branch)" });
-  }
-
+  const guards = pullGuards(root);
+  if (!guards.ok) return guards;
+  const { branch, trunk } = guards;
   const headBefore = runGit(root, ["rev-parse", "HEAD"]).stdout.trim();
   const merge = runGit(root, [
     "merge",

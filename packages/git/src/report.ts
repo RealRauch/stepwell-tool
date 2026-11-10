@@ -69,7 +69,7 @@ function countCommits(root: string, range: string): number {
 }
 
 /** Files touched on both sides since the merge base — the conflict candidates. */
-function overlapFiles(root: string, branch: string, trunk: string): string[] {
+export function overlapFiles(root: string, branch: string, trunk: string): string[] {
   const base = runGit(root, ["merge-base", branch, trunk]).stdout.trim();
   if (base === "") return [];
   const mine = new Set(splitLines(runGit(root, ["diff", "--name-only", base, branch]).stdout));
