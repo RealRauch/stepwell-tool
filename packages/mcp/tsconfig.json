@@ -4,7 +4,8 @@
     "types": ["node"],
     "baseUrl": ".",
     "paths": {
-      "stepwell-core": ["../core/src/index.ts"]
+      "stepwell-core": ["../core/src/index.ts"],
+      "stepwell-git": ["../git/src/index.ts"]
     }
   },
   "include": ["src", "tests"]

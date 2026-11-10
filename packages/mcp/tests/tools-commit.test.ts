@@ -79,8 +79,11 @@ describe("tool commit automation (H5/26.3)", () => {
       expect(data.commit.ok).toBe(false);
       expect(data.commit.error.code).toBe("COMMIT_BLOCKED");
       // edits stay on disk (never a rollback): the archive move happened
-      const backlog = (await import("node:fs")).readFileSync(join(dir, "BACKLOG.md"), "utf8");
-      expect(backlog).toContain("### [x] H1");
+      const { readFileSync } = await import("node:fs");
+      const archive = readFileSync(join(dir, "docs", "archive", "BACKLOG_ARCHIVE.md"), "utf8");
+      expect(archive).toContain("### [x] H1 —");
+      const backlog = readFileSync(join(dir, "BACKLOG.md"), "utf8");
+      expect(backlog).toContain("- H1 —");
       // staged state untouched
       expect(git(dir, ["diff", "--cached", "--name-only"])).toContain("staged.txt");
     } finally {

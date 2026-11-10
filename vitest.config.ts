@@ -25,6 +25,7 @@ export default defineConfig({
     // gegen die AKTUELLE Quelle laufen (dist könnte stale sein), daher Alias.
     alias: {
       "stepwell-core": resolve(repoRoot, "packages/core/src/index.ts"),
+      "stepwell-git": resolve(repoRoot, "packages/git/src/index.ts"),
     },
   },
   test: {

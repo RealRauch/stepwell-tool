@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "stepwell-core": "*",
+    "stepwell-git": "*",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "zod": "^3.25.0"
   },
