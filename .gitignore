@@ -5,3 +5,7 @@ coverage/
 .env
 test-results/
 .zcode/
+
+# K2/Phase 28: internal-only docs — never publish
+docs/CONSUMERS.md
+docs/feldtest-*.md
