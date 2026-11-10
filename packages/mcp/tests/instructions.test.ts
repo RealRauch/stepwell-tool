@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { connect } from "./helper.ts";
 
@@ -20,5 +22,22 @@ describe("server instructions (M12)", () => {
     } finally {
       await c.close();
     }
+  });
+});
+
+/**
+ * SKILL activation clause (M13/26.7): the skill must not self-authorize in a
+ * foreign repo — activation = four files present OR the user explicitly asks
+ * for STEPWELL ("one is to be set up" invited exactly the unrequested setup
+ * the guardrail forbids).
+ */
+describe("skill activation clause (M13)", () => {
+  it("activates on existing files or explicit request, never on setup intent", () => {
+    const skill = readFileSync(
+      join(import.meta.dirname, "..", "skills", "stepwell", "SKILL.md"),
+      "utf8",
+    );
+    expect(skill).toContain("or the user explicitly asks for STEPWELL");
+    expect(skill).not.toContain("or one is to be set up");
   });
 });

@@ -287,7 +287,9 @@ describe("readBacklog — file loading", () => {
       const e = err as InstanceType<typeof ProjectNotInitializedError>;
       expect(e.code).toBe("PROJECT_NOT_INITIALIZED");
       expect(e.missing).toHaveLength(4);
-      expect(e.message).toMatch(/PLAYBOOK/);
+      // M13: neutral wording — no imperative setup instruction
+      expect(e.message).toContain("No action required");
+      expect(e.message).not.toMatch(/Lege /u);
     }
   });
 });

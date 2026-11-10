@@ -105,7 +105,9 @@ describe("docsValidate — project-empty (M5)", () => {
     expect(finding.line).toBeUndefined();
     expect(finding.message).toContain("BACKLOG.md");
     expect(finding.message).toContain("PROGRESS_ARCHIVE.md");
-    expect(finding.message).toMatch(/PLAYBOOK/);
+    // M13: neutral, non-prescriptive guidance (QUICKSTART/templates, no command)
+    expect(finding.message).toContain("No action required");
+    expect(finding.message).not.toMatch(/Lege /u);
     expect(result.warnings).toEqual([]);
     expect(result.ok).toBe(false);
   });

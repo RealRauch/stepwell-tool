@@ -122,7 +122,9 @@ describe("docsStatus — project-empty (M5)", () => {
     expect(status.nextPriority).toBeUndefined();
     expect(status.warnings).toHaveLength(1);
     expect(status.warnings[0]!.code).toBe("PROJECT_NOT_INITIALIZED");
-    expect(status.warnings[0]!.message).toMatch(/PLAYBOOK/);
+    // M13: neutral, non-prescriptive - guidance names QUICKSTART/templates, never commands
+    expect(status.warnings[0]!.message).toContain("No action required");
+    expect(status.warnings[0]!.message).not.toMatch(/Lege /u);
   });
 });
 
