@@ -1,4 +1,4 @@
-# BACKLOG.md — Open items (As of: 2026-11-10T23:55
+# BACKLOG.md — Open items (As of: 2026-11-11T00:01
 
 > **This file contains only OPEN items.** Completed items are moved to `docs/archive/BACKLOG_ARCHIVE.md` unchanged after completion; this file keeps only a one-liner per item in the Done Index (below). Findings/fix-ideas/decisions are not deleted — moved to the archive.
 > Legend: 🔴 critical · 🟠 high · 🟡 medium · 🟢 low · 🔵 test gap
@@ -20,6 +20,12 @@
 - **Fix:** (a) `insertIntoSection`: steht direkt im Sektionskörper ein `> No open items.`-Platzhalter (tolerant für DE/EN-Varianten), wird er beim ersten Item-Einfügen entfernt (nur wenn es DER einzige Marker in der Sektion ist). (b) Entfernungspfade (`backlog_remove`, `archive_item`): wird eine Sektion dadurch leer, bekommt sie den Platzhalter zurück (Template-Wortlaut, Locale-passend). (c) `docs_validate`: FINDING für Sektionen, die sowohl Items als auch Platzhalter tragen (`EMPTY_MARKER_STALE`) — entdeckt Bestands-Drift wie in internal-consumer (offene Dateien nur, Archiv ausgenommen wie gehabt).
 - **Acceptance:** RED→GRÜN-Tests: add in Platzhalter-Sektion entfernt den Marker; remove/archival des letzten Items stellt ihn wieder her; validate meldet `EMPTY_MARKER_STALE` für die internal-consumer-Form (Fixture) und bleibt sonst clean; internal-consumer-seitiger Bestand wird nach Promotion über den Fund sichtbar und dort per natürlichem Edit repariert.
 
+### [ ] H7 — Pull-Auto-Resolution: deterministische Doku-Konflikte (Archiv-Appends) mechanisch auflösen, Rest bleibt Abort+Report — 🟠
+- **Location:** `packages/git/src/sync.ts` (pullTrunk-Konfliktpfad), neue reine Block-Ordnungsfunktion in core; Fund: H5-Design (Leitregel „beide behalten, nach Abschluss-Zeitstempel" bisher nur manuell).
+- **Problem:** Der häufigste Doku-Konflikt (zwei Workstreams hängen Archive-Blöcke ans gleiche EOF) ist deterministisch, erfordert aber Handarbeit — Abort zwingt den Agenten zur Mechanik, die das Tool selbst kann.
+- **Fix:** Hunks beim Pull-Konflikt klassifizieren; Archiv-EOF-Appends (beide Seiten reine Additionen) → mechanisch auflösen: beide Blöcke, geordnet nach Abschluss-Zeitstempel (Core als Datenfunktion, Git bleibt im Satellit); danach docs_validate als Netz — Fehler ⇒ fallback auf Abort+Report wie gehabt. Alles andere (Tabellen-/Item-Konflikte, Code-Dateien, nicht parse-bare Appends) bleibt unverändert Abort+Report.
+- **Acceptance:** Kollisions-Fixtures → Pull läuft durch (resolved-Report, Reihenfolge nach Zeitstempel, validate clean); Tabellen-Konflikt-Fixture → Abort+Report unverändert; Suite grün.
+
 ---
 
 ## 🟡 MEDIUM
@@ -39,6 +45,18 @@
 ---
 
 ## 🟢 LOW
+
+### [ ] L14 — .gitattributes: Doku-Dateien auf text eol=lf pinnen (eigenes Repo + Adoption-Hinweis) — 🟢
+- **Location:** `.gitattributes` (neu, Repo-Root), README-Workstream-Abschnitt (Empfehlung für adoptierende Projekte).
+- **Problem:** Checkout-Verhalten variiert je Maschine (`autocrlf`-Einstellungen) — für Cross-Machine-Workstreams ist das Drift-/Flacker-Futter (pwa-CRLF-Warning beim Sync als Vorgeschmack). Core verträgt zwar beides (K1/R3), deterministisch ist trotzdem besser.
+- **Fix:** `.gitattributes` mit `text eol=lf` für die vier Doku-Dateien + Methoden-Kopien (PLAYBOOK/LESSONS/QUICKSTART/README); README-Hinweis mit dem Snippet für adoptierende Projekte. Dateiklasse Low.
+- **Acceptance:** Datei vorhanden + Inhalt gepinnt (kleiner Test); `git check-attr` liefert lf für die vier Dateien; Suite grün.
+
+### [ ] L15 — CLI-Ergonomie: --root-Default = CWD; sync status mit Workstream-Setup-Hinweis — 🟢
+- **Location:** `packages/mcp/src/cli.ts` (`requireRoot` wirft aktuell), `syncStatusText` (Single-Tree-Fall endet still).
+- **Problem:** Jeder CLI-Aufruf braucht `--root`, obwohl CWD-Default das natürliche Erwartungsverhalten ist; `sync status` ohne Workstreams gibt keinen Aufhänger, wie man einen anlegt.
+- **Fix:** `--root` fällt auf `process.cwd()` zurück (USAGE + README-Feldkontrakt-Doku anpassen, additiv); `syncStatusText` ergänzt bei `worktrees: []` einen Einzeiler-Hint (`git worktree add ../<proj>-<name> -b <name>`-Muster).
+- **Acceptance:** CLI-Tests: Command ohne `--root` im Projekt-CWD liefert Daten; Hint-Zeile im Single-Tree-Status; JSON-Kontrakt unverändert (additiv).
 
 ## 🔵 TEST GAPS
 
