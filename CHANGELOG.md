@@ -13,6 +13,25 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
 
 ## [Unreleased]
 
+### Phase 28 — Leak purge: internal inventory removed from public history (2026-11-11T00:30)
+
+#### Security
+- **Consumer inventory and field-test protocol purged from the public repo and its entire
+  history (K2/28.1):** two internal docs (consumer wiring inventory incl. local paths, and a
+  field-test protocol describing an internal project) had been public on GitHub since Phase 25 —
+  plain removal would have left them retrievable from history. Both files now live in a
+  local-only directory (never pushed), references were privatized, and a git-filter-repo pass
+  (two runs: blobs, then commit messages) removed the files from every commit and scrubbed
+  internal project names across the whole history (pseudonyms: `internal-pwa`,
+  `internal-consumer`, `internal-recorder`, `internal-app-1/2/3`; "Stadtpfad" as the generic
+  method origin intentionally stays). Known cost, documented: every pre-rewrite commit-SHA
+  reference in the Done Index/archives resolves only via the local pre-purge backup bundle.
+- **Force-push notice:** `dev` and `main` were force-pushed — published clones should
+  re-clone or `git fetch --prune` + reset. Consumers loading the MCP server from local paths
+  are unaffected.
+- The name↔pseudonym mapping lives in the private inventory directory, deliberately not in
+  this repo (a public mapping would have re-leaked what the purge removed).
+
 ### Phase 26 — Workstream worktrees: git satellite (2026-11-10T23:00)
 
 #### Added

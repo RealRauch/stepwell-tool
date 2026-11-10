@@ -46,7 +46,9 @@ alles andere (Prosa) editiert der Agent direkt in den Dateien.
 
 > **Konsum-Schutz (Decision 13, bindend):** Dieses Verzeichnis ist der **eingefrorene
 > Konsumer-Stand** — Änderungen nur im Dev-Clone `../stepwell-tool-dev` (Branch `dev`),
-> Promotion nur per Ritual; Konsumer-Inventar + Runbook: `docs/CONSUMERS.md`.
+> Promotion nur per Ritual; Konsumer-Inventar + Runbook: **privat gepflegt, außerhalb
+> des Repos** (aus Leak-Gründen nie published — K2/Phase 28; Mapping der Pseudonyme
+> ebenda).
 
 0. **Neu hier?** Zuerst `docs/QUICKSTART.md` (≤5 Minuten: was STEPWELL ist, Kernschleife,
    die vier Dateien, die fünf Regeln) — danach die vollständige Kickoff-Reihenfolge unten.
