@@ -167,6 +167,19 @@ describe("opencode.json repo-path (N1/13.4 prep, explicit Gate)", () => {
   });
 });
 
+describe("consumer entry-point path lock (H4/25.2, Decision 13)", () => {
+  it("keeps packages/mcp/src/serve.ts at its path (global user config + 3 pwa registrations are hard-wired)", () => {
+    expect(existsSync(join(repoRoot, "packages", "mcp", "src", "serve.ts"))).toBe(true);
+  });
+
+  it("README documents the src serve entry exactly at that path", () => {
+    const readme = readFileSync(join(repoRoot, "README.md"), "utf8");
+    expect(readme, "README references packages/mcp/src/serve.ts").toContain(
+      "packages/mcp/src/serve.ts",
+    );
+  });
+});
+
 describe("pack smoke wiring (L6, 9.8)", () => {
   it("provides the pack smoke script and wires it into CI", () => {
     expect(existsSync(join(repoRoot, "scripts", "pack-smoke.mjs"))).toBe(true);
