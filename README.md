@@ -331,6 +331,7 @@ is silently tolerated (stripped deterministically, T5/9.13) — no warning.
 | `WIP_WITHOUT_PLAN` (D11) | validate | 🔄 row without a matching detail block |
 | `PLAN_WITHOUT_WIP` (D12) | validate | detail block without a 🔄 step (orphaned or planned ahead via `progress_plan_phase`) |
 | `STEP_DUPLICATE` (R6) | validate | step number appears twice in the progress table — `progress_update` maintains only the first row |
+| `EMPTY_MARKER_STALE` (H6) | validate | section carries open items **and** a `> No open items.` placeholder — lying structure (invariant: placeholder ⟺ section empty; the mutations restore the invariant on add/remove, this finding surfaces pre-tool drift) |
 | `DATE_LEGACY` (D15) | validate | legacy `YYMMDD/HHMM` or `MM/YYYY` date in open files — canonical is ISO 8601 `YYYY-MM-DDTHH:mm` (e.g. `2026-09-07T15:23`) |
 | `PROJECT_NOT_INITIALIZED` (M5) | validate | root without a STEPWELL project (all four files missing) — exactly one finding with guidance instead of an error desert; `docs_status` returns the zero aggregate + this finding, read/mutation tools a structured error response (`code`/`message`/`missing`). Partial stock (a single file missing) stays a hard error per file. Contract exception: `file` carries the project root (directory) here, not a file path |
 

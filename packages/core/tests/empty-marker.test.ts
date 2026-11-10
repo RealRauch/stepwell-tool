@@ -48,7 +48,8 @@ describe("empty-marker invariant (H6/27.4)", () => {
     // first add removes the placeholder; second add must not re-introduce anything
     applyBacklogAddPlan(planBacklogAdd(dir, { section: "HIGH", title: "One", priority: "🟠", dryRun: false }));
     applyBacklogAddPlan(planBacklogAdd(dir, { section: "HIGH", title: "Two", priority: "🟠", dryRun: false }));
-    expect(backlog(dir)).not.toMatch(/No open items\./u);
+    const high = backlog(dir).slice(backlog(dir).indexOf("## 🟠"), backlog(dir).indexOf("## 🟡"));
+    expect(high).not.toMatch(/No open items\./u);
 
     // legacy German marker variant is tolerated on read and dropped on add
     const p = join(dir, "BACKLOG.md");

@@ -141,6 +141,7 @@ export function planArchiveItem(
     ) {
       lines.splice(start, 1);
     }
+    restoreEmptyMarker(lines, sectionHeadingLineAt(lines, item.section)); // H6/27.4
     return lines.join(eol);
   };
 
@@ -753,11 +754,54 @@ function sectionInsertAt(lines: string[], headingIdx: number): number {
   return insertAt;
 }
 
+/** H6/27.4: the templates' per-section placeholder, EN canonical, DE legacy tolerated on read. */
+const EMPTY_MARKER = /^>\s*(?:No open items\.|Keine offenen Punkte\.?)\s*$/u;
+const EMPTY_MARKER_CANONICAL = "> No open items.";
+
+/**
+ * H6/27.4 invariant: "placeholder ⟺ section empty". dropEmptyMarker runs when a
+ * section receives its first item — the stale placeholder (datacraft drift) must
+ * not survive next to real items.
+ */
+function dropEmptyMarker(lines: string[], headingIdx: number): void {
+  let end = headingIdx + 1;
+  while (end < lines.length && !SECTION_HEADING.test(lines[end]!) && !RULE_LINE.test(lines[end]!)) {
+    if (EMPTY_MARKER.test(lines[end]!)) {
+      lines.splice(end, 1);
+      if ((lines[end]?.trim() ?? "x") === "" && (lines[end - 1]?.trim() ?? "x") === "") {
+        lines.splice(end, 1);
+      }
+      return;
+    }
+    end += 1;
+  }
+}
+
+/**
+ * H6/27.4 invariant, symmetric side: when a section loses its last open item
+ * (archive/remove), the template's placeholder comes back so the section stays
+ * truthful ("placeholder ⟺ section empty").
+ */
+function restoreEmptyMarker(lines: string[], headingIdx: number): void {
+  if (headingIdx === -1) return;
+  let end = headingIdx + 1;
+  let hasItem = false;
+  let markerAt = -1;
+  while (end < lines.length && !SECTION_HEADING.test(lines[end]!) && !RULE_LINE.test(lines[end]!)) {
+    if (/^###\s+\[\s*\]/u.test(lines[end]!)) hasItem = true;
+    if (EMPTY_MARKER.test(lines[end]!)) markerAt = end;
+    end += 1;
+  }
+  if (hasItem || markerAt !== -1) return;
+  lines.splice(headingIdx + 1, 0, "", EMPTY_MARKER_CANONICAL, "");
+}
+
 function insertIntoSection(lines: string[], section: string, blockLines: string[]): void {
   const headingIdx = sectionHeadingLineAt(lines, section);
   if (headingIdx === -1) {
     throw new Error(`unknown section: ${section} (Sektions-Titel ohne Emoji, z. B. "HOCH")`);
   }
+  dropEmptyMarker(lines, headingIdx);
   const insertAt = sectionInsertAt(lines, headingIdx);
   lines.splice(insertAt, 0, "", ...blockLines);
 }
@@ -949,6 +993,7 @@ export function planBacklogUpdate(root: string, id: string, options: BacklogUpda
     const lines = splitLines(content);
     if (sectionChanged || targetSection !== item.section) {
       removeItemLines(lines, item.span);
+      restoreEmptyMarker(lines, sectionHeadingLineAt(lines, item.section)); // H6/27.4
       insertIntoSection(lines, targetSection, blockLines);
     } else {
       lines.splice(item.span.start - 1, item.span.end - item.span.start + 1, ...blockLines);
@@ -1019,6 +1064,7 @@ export function planBacklogRemove(root: string, id: string, options: BacklogRemo
   const editBacklog = (content: string, eol: string): string => {
     const lines = splitLines(content);
     removeItemLines(lines, item.span);
+    restoreEmptyMarker(lines, sectionHeadingLineAt(lines, item.section)); // H6/27.4
     appendIndexTail(
       lines,
       `- ${item.id} — ${item.title} — ${removedWord}${note !== undefined ? ` (${note})` : ""}`,

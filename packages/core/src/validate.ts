@@ -189,6 +189,41 @@ export function docsValidate(root: string): {
     }
   }
 
+  // H6/27.4: a section carrying open items AND a "No open items." placeholder is
+  // lying structure (pre-tool drift, e.g. hand-added items) — surface it.
+  const EMPTY_MARKER = /^>\s*(?:No open items\.|Keine offenen Punkte\.?)\s*$/u;
+  {
+    const lines = readFileSync(backlogPath, "utf8").split(/\r?\n/);
+    let sectionTitle = "";
+    let sectionStart = -1;
+    let hasItem = false;
+    let markerLine = -1;
+    const flush = (): void => {
+      if (hasItem && markerLine !== -1) {
+        findings.push({
+          code: "EMPTY_MARKER_STALE",
+          file: backlogPath,
+          line: markerLine + 1,
+          message: `Section "${sectionTitle}" carries open items but also a "No open items." placeholder — stale structure (invariant: placeholder ⟺ section empty).`,
+        });
+      }
+      hasItem = false;
+      markerLine = -1;
+    };
+    for (const [idx, line] of lines.entries()) {
+      if (/^##\s+/u.test(line)) {
+        flush();
+        sectionTitle = line.replace(/^##\s+/u, "").trim();
+        sectionStart = idx + 1;
+        continue;
+      }
+      if (/^###\s+\[\s*\]/u.test(line)) hasItem = true;
+      if (EMPTY_MARKER.test(line)) markerLine = idx;
+    }
+    flush();
+    void sectionStart;
+  }
+
   const runningSteps = progress.value.rows.filter((row) => row.status === "🔄");
   for (const row of runningSteps) {
     const hasPlan = progress.value.phases.some((block) => scopeSteps(block).includes(row.step));
