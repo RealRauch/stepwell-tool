@@ -244,3 +244,52 @@ describe("docsValidate — inline accepted marker (L13)", () => {
     expect(other.findings.map((f) => f.code)).toEqual(["ID_CONVENTION"]);
   });
 });
+
+describe("docsValidate — SCOPE_ROW_MISSING (M17/27.5)", () => {
+  it("reports a table row whose step is missing from the phase's detail-block scope", () => {
+    const dir = tempCopy("project-a");
+    const progressPath = join(dir, "PROGRESS.md");
+    // incident shape (11/2026): the block scope lost its 2.3 bullet while the row stayed
+    writeFileSync(
+      progressPath,
+      readFileSync(progressPath, "utf8").replace(
+        "- **2.3 U22 Ladezustände",
+        "- **2.3 REMOVED-BY-INCIDENT",
+      ).replace(
+        "- **2.3 REMOVED-BY-INCIDENT",
+        "",
+      ),
+      "utf8",
+    );
+
+    const result = docsValidate(dir);
+    const finding = result.findings.find((f) => f.code === "SCOPE_ROW_MISSING");
+    expect(finding).toBeDefined();
+    expect(finding?.message).toContain("2.3");
+  });
+
+  it("does not flag rows of phases without any detail block (adoption/legacy exemption)", () => {
+    const dir = tempCopy("project-a");
+    const progressPath = join(dir, "PROGRESS.md");
+    writeFileSync(
+      progressPath,
+      readFileSync(progressPath, "utf8").replace(
+        "## Progress",
+        "## Progress",
+      ).replace(
+        "| 0.1 | Projekt einrichten | ✅ |",
+        "| 9.9 | Legacy ohne Block | ✅ |\n| 0.1 | Projekt einrichten | ✅ |",
+      ),
+      "utf8",
+    );
+
+    const result = docsValidate(dir);
+    expect(result.findings.filter((f) => f.code === "SCOPE_ROW_MISSING")).toEqual([]);
+  });
+
+  it("stays silent when every row of a block-bearing phase has its scope bullet", () => {
+    const dir = tempCopy("project-a");
+    const result = docsValidate(dir);
+    expect(result.findings.filter((f) => f.code === "SCOPE_ROW_MISSING")).toEqual([]);
+  });
+});
