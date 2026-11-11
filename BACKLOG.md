@@ -34,12 +34,6 @@
 
 ## 🟢 LOW
 
-### [ ] L15 — CLI-Ergonomie: --root-Default = CWD; sync status mit Workstream-Setup-Hinweis — 🟢
-- **Location:** `packages/mcp/src/cli.ts` (`requireRoot` wirft aktuell), `syncStatusText` (Single-Tree-Fall endet still).
-- **Problem:** Jeder CLI-Aufruf braucht `--root`, obwohl CWD-Default das natürliche Erwartungsverhalten ist; `sync status` ohne Workstreams gibt keinen Aufhänger, wie man einen anlegt.
-- **Fix:** `--root` fällt auf `process.cwd()` zurück (USAGE + README-Feldkontrakt-Doku anpassen, additiv); `syncStatusText` ergänzt bei `worktrees: []` einen Einzeiler-Hint (`git worktree add ../<proj>-<name> -b <name>`-Muster).
-- **Acceptance:** CLI-Tests: Command ohne `--root` im Projekt-CWD liefert Daten; Hint-Zeile im Single-Tree-Status; JSON-Kontrakt unverändert (additiv).
-
 ### [ ] L16 — progress_update --title verdoppelt das "Phase <N> —"-Präfix im Block-Heading (Rename konkateniert blind) — 🟢
 - **Location:** `packages/core/src/mutations.ts` (`planProgressUpdate` Titel-Rename: `### ${block.name} — ${newTitle}`; Archiv-Variante im Phasen-Abschluss). Fund: eigene Session 11/2026 — live Heading "### Phase 27 — Phase 27 — Sammel-Batch: …" seit `d47102c`.
 - **Problem:** Wird der vollständige Heading-Text als `--title` übergeben ("Phase 27 — Sammel-Batch: …"), entsteht "Phase 27 — Phase 27 — …" — der Rename konkateniert blind. Kosmetisch, aber der verdoppelte Heading wandert beim Phasen-Abschluss verbatim ins Archiv und macht Block-Namen inkonsistent.
@@ -138,5 +132,6 @@
 - H6 — Stale „No open items."-Platzhalter: backlog_add entfernt ihn nicht (Invariante „Platzhalter ⟺ Sektion leer" fehlt) — internal-consumer lebt den Drift — erledigt (phase 27/27.4 (RED fa5e915 + feat 5be45cd) — add drops the stale placeholder, last-removal restores it, EMPTY_MARKER_STALE surfaces pre-tool drift; datacraft/internal-consumer stock becomes visible after promotion, repaired there per natural edit)
 - M18 — PLAN_WITHOUT_WIP-Schärfung: rein geplante Phase = Warning (PHASE_PLANNED), verwaister Block bleibt Finding — erledigt (phase 27/27.9 (RED 3c88f8d + feat 1e9d648) — purely planned = PHASE_PLANNED warning (ok stays true), mixed orphaned state + scope-less blocks stay PLAN_WITHOUT_WIP finding; new warning code additive (MINOR, Decision 10); SKILL lists no warning codes (checked))
 - L14 — .gitattributes: Doku-Dateien auf text eol=lf pinnen (eigenes Repo + Adoption-Hinweis) — erledigt (phase 27/27.7 (test e0d1a08 + docs de34bd6) — acceptance refined during implementation: the glob '* text=auto eol=lf' predates the step (repo founding) and already pins all text files incl. the four docs + method copies; contract test locks the effective attribute (check-attr eol=lf); per-file lines skipped as redundant; README adoption snippet added)
+- L15 — CLI-Ergonomie: --root-Default = CWD; sync status mit Workstream-Setup-Hinweis — erledigt (phase 27/27.8 (RED 91fac8b + feat afcfbf1) — runCli gains an injectable defaultRoot (undefined keeps the usage-error contract), CWD fallback lives at the direct-run entry; single-tree sync status appends the git worktree add hint; JSON contract unchanged)
 
 ---

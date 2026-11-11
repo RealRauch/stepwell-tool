@@ -813,3 +813,12 @@
 - **Fix:** `.gitattributes` mit `text eol=lf` für die vier Doku-Dateien + Methoden-Kopien (PLAYBOOK/LESSONS/QUICKSTART/README); README-Hinweis mit dem Snippet für adoptierende Projekte. Dateiklasse Low.
 - **Acceptance:** Datei vorhanden + Inhalt gepinnt (kleiner Test); `git check-attr` liefert lf für die vier Dateien; Suite grün.
 - **Erledigt:** phase 27/27.7 (test e0d1a08 + docs de34bd6) — acceptance refined during implementation: the glob '* text=auto eol=lf' predates the step (repo founding) and already pins all text files incl. the four docs + method copies; contract test locks the effective attribute (check-attr eol=lf); per-file lines skipped as redundant; README adoption snippet added
+
+---
+
+### [x] L15 — CLI-Ergonomie: --root-Default = CWD; sync status mit Workstream-Setup-Hinweis — 🟢
+- **Location:** `packages/mcp/src/cli.ts` (`requireRoot` wirft aktuell), `syncStatusText` (Single-Tree-Fall endet still).
+- **Problem:** Jeder CLI-Aufruf braucht `--root`, obwohl CWD-Default das natürliche Erwartungsverhalten ist; `sync status` ohne Workstreams gibt keinen Aufhänger, wie man einen anlegt.
+- **Fix:** `--root` fällt auf `process.cwd()` zurück (USAGE + README-Feldkontrakt-Doku anpassen, additiv); `syncStatusText` ergänzt bei `worktrees: []` einen Einzeiler-Hint (`git worktree add ../<proj>-<name> -b <name>`-Muster).
+- **Acceptance:** CLI-Tests: Command ohne `--root` im Projekt-CWD liefert Daten; Hint-Zeile im Single-Tree-Status; JSON-Kontrakt unverändert (additiv).
+- **Erledigt:** phase 27/27.8 (RED 91fac8b + feat afcfbf1) — runCli gains an injectable defaultRoot (undefined keeps the usage-error contract), CWD fallback lives at the direct-run entry; single-tree sync status appends the git worktree add hint; JSON contract unchanged
