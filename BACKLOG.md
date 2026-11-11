@@ -1,4 +1,4 @@
-# BACKLOG.md — Open items (As of: 2026-11-11T00:16
+# BACKLOG.md — Open items (As of: 2026-11-11T15:57
 
 > **This file contains only OPEN items.** Completed items are moved to `docs/archive/BACKLOG_ARCHIVE.md` unchanged after completion; this file keeps only a one-liner per item in the Done Index (below). Findings/fix-ideas/decisions are not deleted — moved to the archive.
 > Legend: 🔴 critical · 🟠 high · 🟡 medium · 🟢 low · 🔵 test gap
@@ -19,6 +19,12 @@
 - **Problem:** `planBacklogAdd` fügt den Item-Block ins Sektionsende ein, ohne den `> No open items.`-Platzhalter zu entfernen — jedes frische STEPWELL-Projekt bekommt lügende Struktur-Marker („Sektion leer" despite Items), Agenten/Leser werden an der Datei irregeführt. Symmetrisch fehlt die Wiederherstellung: nach Entfernen des letzten Items bleibt die Sektion ohne Marker. Die Invariante „Platzhalter ⟺ Sektion leer" wird nirgends erzwungen und nirgends geprüft.
 - **Fix:** (a) `insertIntoSection`: steht direkt im Sektionskörper ein `> No open items.`-Platzhalter (tolerant für DE/EN-Varianten), wird er beim ersten Item-Einfügen entfernt (nur wenn es DER einzige Marker in der Sektion ist). (b) Entfernungspfade (`backlog_remove`, `archive_item`): wird eine Sektion dadurch leer, bekommt sie den Platzhalter zurück (Template-Wortlaut, Locale-passend). (c) `docs_validate`: FINDING für Sektionen, die sowohl Items als auch Platzhalter tragen (`EMPTY_MARKER_STALE`) — entdeckt Bestands-Drift wie in internal-consumer (offene Dateien nur, Archiv ausgenommen wie gehabt).
 - **Acceptance:** RED→GRÜN-Tests: add in Platzhalter-Sektion entfernt den Marker; remove/archival des letzten Items stellt ihn wieder her; validate meldet `EMPTY_MARKER_STALE` für die internal-consumer-Form (Fixture) und bleibt sonst clean; internal-consumer-seitiger Bestand wird nach Promotion über den Fund sichtbar und dort per natürlichem Edit repariert.
+
+### [ ] H8 — progress_update mit reiner Phasennummer (--phase 27) matcht den Detail-Block nicht (phaseMatches = exakte Gleichheit) und legt still ein Phantom-Skeleton an — 🟠
+- **Location:** `packages/core/src/mutations.ts` (`phaseMatches`, exakte Gleichheit; 🔄-Skeleton-Fallback in `planProgressUpdate`, Prefix-Guard setzt "Phase"-Form voraus). Fund: eigene Session 11/2026, Sandbox-Repro am Stand `c319d79` (nicht durch 27.4/27.6 regressiert — 27.1-Flip lief mit `--phase "Phase 27"` sauber).
+- **Problem:** `phaseMatches` vergleicht exakt (`name === phase || title === phase || name — title === phase`). Der natürliche CLI-Aufruf `progress-update --phase 27` missmatcht den Block (Name = "Phase 27") → `block === undefined`; der Status 🔄 triggert keinen Fehler-Wurf, der Code fällt in den Skeleton-Pfad und INSERTIERT still `### 27` + `**Umfang (Steps):**` + Bullet — stille Doku-Korruption statt Fehler, während die Tabellen-Zeile parallel korrekt geflippt wird (Schaden bleibt unauffällig). Bestehende Prefix-Guards (`/Phase\s+(\d+)/`) greifen bei reiner Nummer nicht.
+- **Fix:** (a) Matching-Toleranz: reine Nummer `27` matcht `Phase 27` (Normalisierung in `phaseMatches`). (b) Scharfstellung: `block === undefined && row !== undefined` (Step steht bereits in der Tabelle) darf kein Skeleton anlegen — Fehler statt stiller Insert; Skeleton bleibt dem echten Neu-Anlegen vorbehalten (Step noch nicht in der Tabelle).
+- **Acceptance:** RED→GRÜN: `--phase 27` matcht "Phase 27" (Flip nur Row, kein Insert); Step in Tabelle + kein Block-Match → strukturierter Fehler; Suite grün; README/SKILL-Phase-Parameter-Doku nachgezogen.
 
 ---
 
@@ -45,6 +51,12 @@
 - **Problem:** Jeder CLI-Aufruf braucht `--root`, obwohl CWD-Default das natürliche Erwartungsverhalten ist; `sync status` ohne Workstreams gibt keinen Aufhänger, wie man einen anlegt.
 - **Fix:** `--root` fällt auf `process.cwd()` zurück (USAGE + README-Feldkontrakt-Doku anpassen, additiv); `syncStatusText` ergänzt bei `worktrees: []` einen Einzeiler-Hint (`git worktree add ../<proj>-<name> -b <name>`-Muster).
 - **Acceptance:** CLI-Tests: Command ohne `--root` im Projekt-CWD liefert Daten; Hint-Zeile im Single-Tree-Status; JSON-Kontrakt unverändert (additiv).
+
+### [ ] L16 — progress_update --title verdoppelt das "Phase <N> —"-Präfix im Block-Heading (Rename konkateniert blind) — 🟢
+- **Location:** `packages/core/src/mutations.ts` (`planProgressUpdate` Titel-Rename: `### ${block.name} — ${newTitle}`; Archiv-Variante im Phasen-Abschluss). Fund: eigene Session 11/2026 — live Heading "### Phase 27 — Phase 27 — Sammel-Batch: …" seit `d47102c`.
+- **Problem:** Wird der vollständige Heading-Text als `--title` übergeben ("Phase 27 — Sammel-Batch: …"), entsteht "Phase 27 — Phase 27 — …" — der Rename konkateniert blind. Kosmetisch, aber der verdoppelte Heading wandert beim Phasen-Abschluss verbatim ins Archiv und macht Block-Namen inkonsistent.
+- **Fix:** Rename setzt das Präfix nur, wenn `newTitle` es nicht bereits trägt (Duplicate-Präfix-Guard), oder Konvention dokumentieren (newTitle ohne "Phase <N> —"-Präfix) + Warnung bei Dopplung.
+- **Acceptance:** RED→GRÜN: Rename mit bereits präfixiertem Titel erzeugt keine Dopplung; Suite grün; der bestehende Dopplungs-Heading wird beim natürlichen Edit repariert (open files, kein Archiv-Edit).
 
 ## 🔵 TEST GAPS
 
