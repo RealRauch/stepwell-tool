@@ -235,10 +235,24 @@ export function docsValidate(root: string): {
       });
     }
   }
+  const validateWarnings: Warning[] = [];
   for (const block of progress.value.phases) {
     const steps = new Set(scopeSteps(block));
     const isRunning = runningSteps.some((row) => steps.has(row.step));
-    if (!isRunning) {
+    if (isRunning) continue;
+    // M18/27.9: a purely planned phase (every table step still ⬜) is legitimate
+    // forward planning (T4) — a warning, never a finding. A mixed state without a
+    // 🔄 (some steps done, none running) stays a finding: an orphaned block.
+    const blockRows = progress.value.rows.filter((row) => steps.has(row.step));
+    const purelyPlanned = blockRows.length > 0 && blockRows.every((row) => row.status === "⬜");
+    if (purelyPlanned) {
+      validateWarnings.push({
+        code: "PHASE_PLANNED",
+        file: progressPath,
+        line: block.span.start,
+        message: `Detail block "${block.name}" is fully planned but not started yet (no 🔄 step) — start it with progress_update when work begins.`,
+      });
+    } else {
       findings.push({
         code: "PLAN_WITHOUT_WIP",
         file: progressPath,
@@ -297,7 +311,7 @@ export function docsValidate(root: string): {
   scanLegacyDates(backlogPath, backlogPath, findings);
   scanLegacyDates(progressPath, progressPath, findings);
 
-  const warnings = [...backlog.warnings, ...progress.warnings];
+  const warnings = [...backlog.warnings, ...progress.warnings, ...validateWarnings];
   const split = splitAcknowledged(findings);
 
   return { findings: split.findings, acknowledged: split.acknowledged, warnings, ok: split.findings.length === 0 };
