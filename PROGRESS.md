@@ -9,6 +9,18 @@
 > are moved to `docs/archive/PROGRESS_ARCHIVE.md` unchanged after completion.
 
 ## Active Phases
+### Phase 30 — Validator repair path: docs_repair tool split (compatibility-first)
+
+**Goal:** H9 als kompatibilitäts-erhaltenden Tool-Split umsetzen: ein neues `docs_repair` (MCP + CLI, dry-run-first, DESTRUCTIVE-Annotations) orchestriert mechanische Reparaturen über die zuständigen Planner; `docs_validate` bleibt byte-identisch (H4-Schema-Lock, READ_ONLY-Annotation, Read-Konsumenten-Flows unangetastet — Entscheidung Nutzer 11/2026 gegen den fix-Parameter).
+
+**Acceptance (je Step test-first):** `npm run typecheck` + `npm run test` grün; je repariertem Code: Fix entfernt genau diesen Fund und keinen anderen; dry-run-Default schreibt nichts; Fix-Ergebnis 1:1 Planner-Output; Kompatibilitäts-Nachweis: H4-Eintrag + Annotations-Test unverändert grün, contract-tools nur um `docs_repair` erweitert; docs_validate clean; H9 archiviert; Doc-Sync vor dem Abschluss-Flip.
+
+**Umfang (Steps):**
+
+- **30.1 core: docsRepair orchestration over existing planners + new extraction planners (H6 marker removal, DATE_LEGACY YYMMDD/HHMM → ISO only, ARCHIVE_WITHOUT_INDEX index line after counting) — RED→GRÜN with project-b-drift + new fixtures [H9]**
+- **30.2 transport: docs_repair MCP tool (DESTRUCTIVE_ANNOTATIONS, dryRun default true) + CLI repair command + contract-tools test extended ONLY with the docs_repair entry — docs_validate H4 lock + annotations test byte-identical green (compatibility proof) [H9]**
+- **30.3 Verification: typecheck + suite + docs_validate clean; doc-sync (README tool table + M4 justification, CHANGELOG); archive H9; phase completion**
+
 
 
 
@@ -165,3 +177,6 @@
 | 29.2 | suite stability: diagnose Windows worker-load flakes (git subprocess + coverage gate), fix at the cause, no suppressed warnings, no leaked temp dirs [M19] | ✅ |
 | 29.3 | progress_update --title: duplicate "Phase <N> —" prefix guard [L16] | ✅ |
 | 29.4 | Verification: typecheck + full suite + docs_validate clean; doc-sync (CHANGELOG/README/SKILL); archive H8/M19/L16; phase completion | ✅ |
+| 30.1 | core: docsRepair orchestration over existing planners + new extraction planners (H6 marker removal, DATE_LEGACY YYMMDD/HHMM → ISO only, ARCHIVE_WITHOUT_INDEX index line after counting) — RED→GRÜN with project-b-drift + new fixtures [H9] | ⬜ |
+| 30.2 | transport: docs_repair MCP tool (DESTRUCTIVE_ANNOTATIONS, dryRun default true) + CLI repair command + contract-tools test extended ONLY with the docs_repair entry — docs_validate H4 lock + annotations test byte-identical green (compatibility proof) [H9] | ⬜ |
+| 30.3 | Verification: typecheck + suite + docs_validate clean; doc-sync (README tool table + M4 justification, CHANGELOG); archive H9; phase completion | ⬜ |
