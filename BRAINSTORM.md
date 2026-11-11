@@ -276,3 +276,185 @@ mode in internal-pwa is a separate, explicit decision.
 As of 11/2026: decision documented, implementation not started (Phase 26
 packaging follows; PLAYBOOK sync on the M15-synced basis first).
 
+---
+
+## Decisions as a structured fifth document (ADR file) — idea
+
+Backlog root: none yet (this is a *method* question, not a tool feature).
+Trigger: comparison with MrLesk/Backlog.md 11/2026 (`backlog decision create
+--context --decision --consequences --alternatives --superseded-by`).
+
+### Problem
+
+STEPWELL *has* decisions as a concept — `AGENTS.md` carries Decisions 1–16,
+superseded/duplicate ones live in `docs/archive/AGENTS-decisions-history.md`
+(append-only). But they are prose: not parsed, not validated, no query path.
+Consequences:
+
+- An agent asking "why is core git-blind?" must know that AGENTS.md is the
+  place and then read the whole file (or trust the hash fast path).
+- Superseding is a narrative act. "Which decisions are still live?" has no
+  mechanical answer, and a reference to a dead decision cannot be detected.
+- Project-specific decisions have no home at all: `AGENTS.md` is written by
+  the adopting project, but its decision section is not part of the four
+  mandatory files, so nothing checks it.
+
+Backlog.md solves this with a first-class decision record (context / decision
+/ consequences / alternatives / superseded-by, status, archive+restore).
+
+### Shape that would fit the method
+
+- **Optional fifth file** `docs/DECISIONS.md` — projects without it stay
+  finding-free (`PROJECT_NOT_INITIALIZED` still keys on the four mandatory
+  files; the fifth is opt-in, exactly like the locale tolerance layer).
+- **Block format, not frontmatter** — same reasoning as backlog items: the
+  file must stay readable without a parser. One `### DEC-<n> — <title>` block
+  with the role bullets `Context / Decision / Consequences / Alternatives /
+  Superseded by / Status`. IDs live in their own namespace (`DEC-<n>`), so the
+  item convention `^[A-Z][0-9]+$` and the historical validate codes `D1…D16`
+  stay untouched.
+- **Read path first, write path never (M4):** resource
+  `stepwell://{root}/decisions` + a `docs_status` include (`liveDecisions`)
+  answer the query case; prose edits stay with the agent, like all non-structure
+  text. Write tools (`decision_add`, `decision_supersede`) only if field probes
+  show repeated hand-editing errors — the read/validate layer is cheap, the
+  mutation layer is the expensive half.
+- **Validate codes:** `DECISION_SUPERSEDES_UNKNOWN`, `DECISION_SUPERSEDED_IN_USE`
+  (a superseded decision is still cited as `active` elsewhere),
+  `DECISION_DUPLICATE_ID`, `DECISION_STATUS_UNKNOWN` — warning level, never
+  blocking (decisions are context, not structure).
+
+### Design tensions (why this is not just a feature)
+
+1. **Append-only vs. in place.** The archive doctrine (Decision 12, PLAYBOOK
+   §3) says history is never rewritten; Backlog.md *edits* decisions and only
+   archives on demand. A STEPWELL variant would keep every decision block
+   forever and let `Superseded by` do the work — but then the file grows
+   unbounded and needs its own growth limit.
+2. **Where do existing decisions go?** Migrating `AGENTS.md` Decisions 1–16
+   into the new file would be a real doc migration with cross-repo sync
+   (PLAYBOOK/LESSONS copies, SHA256 evidence) — the Q4 consolidation precedent
+   shows the effort, and AGENTS.md is project-authored, not a verbatim copy.
+3. **Four files vs. five.** The "four mandatory files" is load-bearing in
+   `project-files.ts`, in `PROJECT_NOT_INITIALIZED`, in the init templates and
+   in the method text. A fifth file is a **method** change, so it passes the
+   human gate (Decision 7) and the verbatim-sync ritual — not a tool patch.
+
+### Revisit criterion
+
+Re-evaluate when a real project accumulates decision context it cannot keep in
+`AGENTS.md` (e.g. more than ~15 project decisions, or two decisions that
+supersede each other), or when field probes show agents re-deriving the same
+rationale. Until then: `AGENTS.md` prose + the append-only history file stay
+the answer.
+
+As of 11/2026: brainstorming only, no implementation, no backlog root.
+
+---
+
+## GitHub Pull Requests — workstream transport (PARKED 11/2026: separate satellite package)
+
+**Status: parked, no backlog root.** Design decided 11/2026 (satellite package,
+silence invariant) and then deliberately shelved; the former roots M22
+(read-only PR state), L20 (derived PR body) and L21 (review-to-item ingest)
+were removed from the open backlog and rest in `BACKLOG_ARCHIVE` without a
+Done marker. Reactivation: when a project that actually works in PRs adopts
+STEPWELL, or before 1.0.0 if the field test shows the loop needs it.
+
+Trigger: comparison with MrLesk/Backlog.md 11/2026.
+
+**Framing:** a PR is the remote form of a workstream. The branch already
+exists (`ws/m12`, `ws/m13` in this repo), the docs stay the authority, the PR
+is transport plus review surface. One direction per lifecycle phase, no
+bidirectional field sync — same core rule as the Jira/GitHub Issues bridge.
+
+### Design law: silent when unused (binding)
+
+An optional integration must cost a project that does not use it **nothing**.
+This is the acceptance criterion every design choice below is measured against:
+
+1. **No new mandatory file, no config, no init step.** A project without
+   GitHub never learns that the satellite exists.
+2. **No schema in the four doc files.** PR state is derived and read-only; it
+   is never written back into `BACKLOG.md`/`PROGRESS.md`.
+3. **No `docs_validate` finding about PRs — ever.** No `REMOTE_PR_MISSING`,
+   no traceability gate, no opt-in switch either (a switch is a decision
+   surface; we do not want one).
+4. **No growth of the main server's surface.** `stepwell` (MCP) and
+   `stepwell sync` stay byte-identical; the H4 `tools/list` contract test
+   remains the lock. The satellite ships its own binary/server.
+5. **Pull-only.** Nothing runs on its own: no git hooks, no daemons, no
+   webhooks, no polling. Coupling exists only while a command is invoked.
+6. **Degradation is local.** Missing `gh`, missing auth, rate limit → a
+   structured error from that one command; every other command behaves
+   exactly as before.
+
+### Package
+
+`packages/github` → published as `stepwell-github`, depending on
+`stepwell-core` + `stepwell-git`, depending on no transport. **No SDK** —
+`gh` CLI is shelled out the same way `runGit` shells out to git, so the
+zero-dependency rule of core is untouched and auth stays where the platform
+already keeps it.
+
+### Patterns
+
+#### Pattern 0 — CI template (zero coupling, no auth in the tool)
+A GitHub Action template (like the optional `ci.yml` template from D1) reads
+`BACKLOG.md`/`PROGRESS.md` from the PR diff and comments the step scope,
+acceptance and verification expectation. No package needed, works for repos
+that only adopt the file convention. Informational only — carries no state.
+
+#### Pattern 1 — read-only PR state (backlog root `M22`)
+`stepwell-github pr status` maps each registered worktree branch to
+`gh pr list --head <branch> --json number,url,state,isDraft,reviewDecision,mergeable,statusCheckRollup,headRefOid`
+and returns `pr?: { … }` per workstream. The agent sees red checks or
+"changes requested" without leaving the loop. Missing `gh` → `GH_MISSING` in
+that response only; the field is omitted (not `null`-noise) when a branch has
+no PR.
+
+#### Pattern 2 — derived PR body (backlog root `L20`)
+`stepwell-github pr sync <branch>` creates/updates the body from the phase
+block plus item text (Location/Problem/Fix/Acceptance) and the verification
+expectation — written **only** between `<!-- stepwell:pr:begin -->` and
+`<!-- stepwell:pr:end -->`, so hand-written review text outside survives.
+Direction is strictly docs → PR; nothing is written back. Creating or updating
+a PR is outward-facing → extends the content-gate matrix (Decision 9) with
+"public write operation = high", dry-run default.
+
+**Merge strategy note (belongs in README/SKILL with Pattern 2):** `push`
+requires "trunk head ∈ ancestors(branch)" and uses `--ff-only`. A GitHub
+**squash merge** rewrites the content, so the branch head is no longer an
+ancestor of the new trunk head and the next `push` correctly refuses with
+"re-pull necessary". Workstream PRs therefore use **merge commits**; squash
+requires an explicit `sync pull` afterwards.
+
+#### Pattern 3 — review-to-item ingest (backlog root `L21`)
+`stepwell-github pr ingest <n> --dry-run` reads **unresolved** review threads
+and proposes items via `planBacklogAdd` (default 🟡, provenance
+`PR #<n> review <comment-id>` as a dedupe marker in the item text). No
+webhook, no bot, no polling; creation only after explicit confirmation;
+already-ingested comment IDs are skipped by searching the marker across open
+files and archives. This is the Issues-bridge Pattern 2 with reviews as the
+source.
+
+### Guardrails
+
+1. **Archiving stays with the tool.** `pr.state == MERGED` is a signal
+   ("trunk carries stand X"), never a trigger for `archive_item` or phase
+   completion — completion requires verification (typecheck/test/validate),
+   not a review event.
+2. **No findings crossing layers.** Codes such as `GH_MISSING`,
+   `GH_UNAUTHENTICATED`, `GH_RATE_LIMIT` live in the satellite's own result
+   namespace and never appear in `docs_validate`.
+3. **Field-test ladder unchanged:** fixtures → dogfood in this repo (the
+   `ws/*` branches already exist) → one explicitly chosen non-critical
+   project. **internal-pwa is never a testbed** (Decision 14).
+4. **Versioning:** the new package should ride the lockstep version
+   (Decision 10) rather than introduce a compatibility matrix — if it ships
+   at all, it ships in the same version. Confirm at packaging time.
+
+As of 11/2026: parked — design recorded (satellite package, silence invariant),
+implementation not started, no open backlog item. Nothing here is binding until
+a reactivation decides the package surface.
+
