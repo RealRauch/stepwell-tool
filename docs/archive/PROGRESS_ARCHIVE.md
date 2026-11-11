@@ -567,3 +567,23 @@ nachholen oder einen anderen Pfad wählen.
 - **29.3 progress_update --title: duplicate "Phase <N> —" prefix guard [L16]**
 - **29.4 Verification: typecheck + full suite + docs_validate clean; doc-sync (CHANGELOG/README/SKILL); archive H8/M19/L16; phase completion**
 **Verifikation:** Verification: npm run typecheck (green) && npm run test (415/415, 42 files) x 10 consecutive full runs, all exit=0, stderr-free, 0 %TEMP% litter; docs_validate clean before completion; L16 dogfood: full heading as --title lands without prefix doubling (checkpoint: 8f25345)
+
+---
+
+### Phase 30 — Validator repair path + workstream foresight: docs_repair, files[], idCollisions, dependencies, position
+
+**Goal:** YOLO-Batch (Entscheid Nutzer 11/2026): alles Code-hafte der offenen Items, das keine Nutzer-Entscheidung braucht — H9 als kompatibilitäts-erhaltenden Tool-Split (`docs_repair` statt fix-Parameter; `docs_validate` bleibt byte-identisch), H10 (`files[]` + `predictedOverlap`), M20 (`idCollisions` + `considerWorktrees`, Default byte-gleich), M21 (toleranter Depends-on-Bullet + `ready`-Filter, keine Semantik-Änderung), L17 (`position`-Parameter). L18 (Bedarfsbeleg = Nutzer-Entscheid) und L19 (kein Code) bleiben offen.
+
+**Acceptance (je Step test-first):** `npm run typecheck` + `npm run test` grün; je repariertem Code: Fix entfernt genau diesen Fund und keinen anderen; dry-run-Defaults schreiben nichts; additiver Kontrakt (MINOR) mit byte-gleichen Default-Pfaden; Kompatibilitäts-Nachweis H9: H4-Eintrag + Annotations-Test unverändert grün, contract-tools nur erweitert; docs_validate clean; Items je Step archiviert; Doc-Sync vor dem Abschluss-Flip.
+
+**Umfang (Steps):**
+
+- **30.1 core: docsRepair orchestration over existing planners + new extraction planners (H6 marker removal, DATE_LEGACY YYMMDD/HHMM → ISO only, ARCHIVE_WITHOUT_INDEX index line after counting) — RED→GRÜN with project-b-drift + new fixtures [H9]**
+- **30.2 transport: docs_repair MCP tool (DESTRUCTIVE_ANNOTATIONS, dryRun default true) + CLI repair command + contract-tools test extended ONLY with the docs_repair entry — docs_validate H4 lock + annotations test byte-identical green (compatibility proof) [H9]**
+- **30.3 Verification H9: suite + docs_validate clean; archive H9 (phase completion follows at 30.8)**
+- **30.4 H10: files[] from Location bullets (tolerant path extraction, no globs) + backlog_list fields extension + workstreamReport predictedOverlap (branch/trunk open-item file intersection, read-only) — overlap[] byte-identical [H10]**
+- **30.5 M20: workstreamReport idCollisions (newly added IDs/steps in merge-base..branch ∩ merge-base..trunk) + optional considerWorktrees on backlog_add/progress_plan_phase (transport resolves via satellite, core stays git-blind, fallback with warning) — default path byte-identical [M20]**
+- **30.6 M21: tolerant Depends-on bullet (union-matched synonyms) + derived dependsOn/blockedBy/ready + DEP_UNKNOWN warning + DEP_CYCLE finding + backlog_list ready filter + fields extension + fixture project-l-deps [M21]**
+- **30.7 L17: position parameter (top/bottom/index) on backlog_update — byte-identical block move within section, section+position combination, out-of-range = structured error (documented in item close) [L17]**
+- **30.8 Verification: typecheck + full suite + docs_validate clean; doc-sync (CHANGELOG/README/SKILL); phase completion with title/note/checkpoint**
+**Verifikation:** Verification: npm run typecheck (green) && npm run test (456/456, 46 files) green && docs_validate clean; doc-sync BEFORE the completion flip (CHANGELOG Phase-30 section, SKILL tool mentions, README tool table); YOLO batch released by user — H9/H10/M20/M21/L17 implemented test-first (RED->GRÜN each), all archived with refined acceptance notes, F1 fixed via the inline-fix lane; L18 (needs need-evidence) + L19 (not code) stay open by design (checkpoint: 544f21b)
