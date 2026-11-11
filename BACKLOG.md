@@ -1,4 +1,4 @@
-# BACKLOG.md — Open items (As of: 2026-11-11T16:52
+# BACKLOG.md — Open items (As of: 2026-11-11T17:13
 
 > **This file contains only OPEN items.** Completed items are moved to `docs/archive/BACKLOG_ARCHIVE.md` unchanged after completion; this file keeps only a one-liner per item in the Done Index (below). Findings/fix-ideas/decisions are not deleted — moved to the archive.
 > Legend: 🔴 critical · 🟠 high · 🟡 medium · 🟢 low · 🔵 test gap
@@ -175,5 +175,8 @@
 - M18 — PLAN_WITHOUT_WIP-Schärfung: rein geplante Phase = Warning (PHASE_PLANNED), verwaister Block bleibt Finding — erledigt (phase 27/27.9 (RED 3c88f8d + feat 1e9d648) — purely planned = PHASE_PLANNED warning (ok stays true), mixed orphaned state + scope-less blocks stay PLAN_WITHOUT_WIP finding; new warning code additive (MINOR, Decision 10); SKILL lists no warning codes (checked))
 - L14 — .gitattributes: Doku-Dateien auf text eol=lf pinnen (eigenes Repo + Adoption-Hinweis) — erledigt (phase 27/27.7 (test e0d1a08 + docs de34bd6) — acceptance refined during implementation: the glob '* text=auto eol=lf' predates the step (repo founding) and already pins all text files incl. the four docs + method copies; contract test locks the effective attribute (check-attr eol=lf); per-file lines skipped as redundant; README adoption snippet added)
 - L15 — CLI-Ergonomie: --root-Default = CWD; sync status mit Workstream-Setup-Hinweis — erledigt (phase 27/27.8 (RED 91fac8b + feat afcfbf1) — runCli gains an injectable defaultRoot (undefined keeps the usage-error contract), CWD fallback lives at the direct-run entry; single-tree sync status appends the git worktree add hint; JSON contract unchanged)
+- M22 — stepwell-github als Satellit: read-only PR-Status im Workstream-Loop (stille Kopplung, kein Surface-Zuwachs am Haupt-Server) — entfernt (parked 11/2026 — design bleibt in BRAINSTORM.md (Abschnitt „GitHub Pull Requests"); kein offener Arbeitsbedarf)
+- L20 — PR-Body aus der Doku ableiten (Marker-Block, strikt einseitig) + Merge-Commit-vs-Squash gegen die ff-only-Precondition dokumentieren — entfernt (parked 11/2026 — design bleibt in BRAINSTORM.md (Abschnitt „GitHub Pull Requests"); kein offener Arbeitsbedarf)
+- L21 — Review-Befunde als Items: pr ingest (dry-run, keine Webhooks) — Issues-Bridge-Pattern 2 mit Review-Threads als Quelle — entfernt (parked 11/2026 — design bleibt in BRAINSTORM.md (Abschnitt „GitHub Pull Requests"); kein offener Arbeitsbedarf)
 
 ---
