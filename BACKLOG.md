@@ -1,4 +1,4 @@
-# BACKLOG.md — Open items (As of: 2026-11-11T21:38
+# BACKLOG.md — Open items (As of: 2026-11-11T23:32
 
 > **This file contains only OPEN items.** Completed items are moved to `docs/archive/BACKLOG_ARCHIVE.md` unchanged after completion; this file keeps only a one-liner per item in the Done Index (below). Findings/fix-ideas/decisions are not deleted — moved to the archive.
 > Legend: 🔴 critical · 🟠 high · 🟡 medium · 🟢 low · 🔵 test gap
@@ -23,6 +23,12 @@
 
 > No open items.
 
+### [ ] M23 — PLAN_WITHOUT_WIP feuert transient bei JEDEM Step-Übergang (✅ geflippt, nächster ⬜ noch nicht 🔄) — sequentieller Zwischenzustand ist legitimer Fortschritt — 🟡
+- **Location:** `packages/core/src/validate.ts` (M18-Semantik: gemischt ohne 🔄 = PLAN_WITHOUT_WIP-Finding). Fund: eigene Session 11/2026, Phase 30 — bei JEDEM Step-Übergang (Step N ✅ geflippt, Step N+1 noch ⬜) feuert das Finding transient; ein `docs_validate` in diesem Fenster bricht `&&`-Ketten (exit 1), wie beim 30.3-Flip geschehen.
+- **Problem:** M18 unterscheidet rein geplant (Warning) und verwaist (Finding) — aber den dritten legitimen Zustand „Phase läuft, zwischen zwei Steps" (✅…✅ gefolgt von ⬜…⬜, kein 🔄) behandelt sie als Verwaist-Finding. Bei aktiver Arbeit ist das kein Inkonsistenz-Fund, sondern ein Timing-Artefakt der Step-Flips; CI-Validates zwischen Flips würden fälschlich rot.
+- **Fix:** Sequentiellen Fortschritt erkennen: alle ✅ liegen vor allen ⬜ in der Tabellen-Ordnung der Phase und kein ⛔/🔄 dazwischen → neues Warning `PHASE_MIDWAY` (kippt kein ok); echtes Verwaist-Sein (✅ NACH ⬜ in Tabellen-Ordnung, oder ⛔-Insel) bleibt PLAN_WITHOUT_WIP-Finding. Code bleibt im Kontrakt (Decision 10), semantisch MINOR + Release-Note; README-Warning-Tabelle nachziehen.
+- **Acceptance:** RED→GRÜN-Fixtures: sequentieller Zwischenzustand → nur Warning, ok:true; verwaister Block (✅ nach ⬜) → Finding, ok:false; M18-Fälle unverändert; Suite grün.
+
 
 ---
 
@@ -39,6 +45,18 @@
 - **Problem:** „Haben wir das schon entschieden/gebaut?" ist heute nur per grep über sechs Dateien beantwortbar; grep liefert Text, aber keinen Item-Status (offen/erledigt/entfernt) und keine Blockgrenzen. Backlog.md hat dafür eine Suche. Gleichzeitig gilt M4: kein Surface-Zuwachs ohne belegten Fund — Agenten greppen die Dateien nativ, ein Such-Tool wäre teilweise redundant.
 - **Fix (Entscheidungs-Item, Muster L5/docs_review):** Alternativprüfung dokumentieren, Ergebnis entweder (a) **kein Tool** — Begründung: grep + `backlog_show` decken den Fall, jeder Suchindex wäre eine zweite Wahrheit; Reaktivierungs-Kriterium: Feldproben zeigen wiederholtes Fehlgreifen (z. B. archivierte Treffer übersehen, falsche ID-Rekonstruktion), dann (b) minimaler Kandidat: Parameter `query` an `backlog_list` (Titel/ID/Text, optional `includeArchived: true`), Treffer als `{ id, status, file, line, snippet }` — kein Fuzzy-Ranking, keine Fremddateien, kein neues Tool.
 - **Acceptance:** dokumentierter Entscheid in README/AGENTS inkl. Reaktivierungs-Kriterium (wie L5); falls (b) gebaut wird: RED→GRÜN für offen/archiviert/entfernt und `status` im Treffer; keine neue Abhängigkeit; Suite + typecheck grün.
+
+### [ ] L22 — Doppelte Parses im Workstream-Report: foreignDocState parst BACKLOG je Branch zweimal, idCollisions berechnet den base-State doppelt — 🟢
+- **Location:** `packages/git/src/report.ts` (`foreignDocState`: `parseBacklog` wird je Branch zweimal aufgerufen — items- und doneIndex-Loop parsen denselben String; `idCollisions`/`freshSince`: der base-State wird je Vergleichsseite erneut berechnet). Fund: eigene Session 11/2026, Selbst-Review nach 30.5.
+- **Problem:** Doppelte Parses pro Worktree — funktional korrekt, aber verschwendete Arbeit in einer Read-Fläche, die Konsumenten je Status-Call mehrfach treffen (der Report wächst mit H10/M20).
+- **Fix:** `parseBacklog` einmal je Branch (items + doneIndex aus einem Parse); base-State in `idCollisions` einmal berechnen und an beide Seiten reichen. Reine Refaktorung, byte-gleiches Verhalten, bestehende Tests als Absicherung.
+- **Acceptance:** Suite grün ohne Verhaltensänderung; Refaktor-Note im Item-Close.
+
+### [ ] L23 — README-CLI-Block unvollständig: repair (30.2) und sync (26.x) fehlen in der Command-Referenzliste — 🟢
+- **Location:** `README.md` CLI-Referenzblock (Bash-Beispielblock im CLI-Abschnitt). Fund: eigene Session 11/2026, Selbst-Review nach Phase 30.
+- **Problem:** Der CLI-Block listet `status`/`backlog`/`progress`/`validate`/`archive`/`progress-update` — aber NICHT `repair` (seit 30.2/H9) und nicht `sync` (seit 26.x; nur im Workstream-Abschnitt dokumentiert). Die Referenzliste ist unvollständig — Konsumenten suchen Commands dort und verfehlen die neuen.
+- **Fix:** `repair`- und `sync`-Zeilen in den CLI-Block aufnehmen (additiv; Details verweisen auf die Tool-Tabelle bzw. den Workstream-Abschnitt).
+- **Acceptance:** README-CLI-Block enthält beide Commands; docs_validate clean.
 
 ## 🔵 TEST GAPS
 

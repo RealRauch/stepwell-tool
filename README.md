@@ -274,12 +274,18 @@ node packages/mcp/src/cli.ts progress --root <project> [--status done] [--json]
 # Consistency check (exit 1 on findings — CI-suitable)
 node packages/mcp/src/cli.ts validate --root <project> [--json]
 
+# Mechanically repair validate findings (details: docs_repair in the tool table)
+node packages/mcp/src/cli.ts repair --root <project> [--apply] [--json]
+
 # Archive a completed item (dry-run preview, then --apply)
 node packages/mcp/src/cli.ts archive --root <project> --id H1 [--note "Commit abc1234"] [--locale en] [--apply]
 
 # Maintain step status (dry-run preview, then --apply) — --title renames the block heading;
 # --phase accepts the block name/title or a bare number ("Phase 2" or "2", H8/29.1)
 node packages/mcp/src/cli.ts progress-update --root <project> --phase "Phase 2" --step 2.2 --status running [--title "New title"] [--note "…"] [--checkpoint <sha>] [--locale en] [--apply]
+
+# Git workstream sync (details: the Workstreams section below)
+node packages/mcp/src/cli.ts sync <status|pull|push> --root <worktree> [--apply] [--json]
 ```
 
 Invalid values exit with code 2 and the list of allowed aliases (e.g.
