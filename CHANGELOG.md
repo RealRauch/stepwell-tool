@@ -13,6 +13,48 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
 
 ## [Unreleased]
 
+### Phase 27 — Sammel-Batch: Hygiene & Workstream-Härtung (2026-11-11T16:30)
+
+#### Fixed
+- **Test temp hygiene (T7/27.1+27.3):** worktree-pair fixtures register both sides for
+  after-each cleanup; sweep evidence: clean baseline → full suite → `0` new
+  `%TEMP%/stepwell-*` directories per run.
+- **Workstream husk detection (M16/27.2):** `workstreamReport` surfaces leftover
+  worktree husk directories mechanically — `husks[]` (stale `.git` pointer into this
+  repo's admin area) and `prunable[]` (registrations git wants pruned); ritual
+  verify/prune note in SKILL + README. Plain untracked-content leftovers stay
+  ritual-covered (mechanically indistinguishable from real sibling projects).
+- **Empty-marker invariant (H6/27.4):** `backlog_add` drops a stale `> No open items.`
+  placeholder when a section receives its first item; archiving/removing/moving the last
+  item restores it; `docs_validate` reports `EMPTY_MARKER_STALE` for pre-tool drift
+  (offene Dateien only). The drift datacraft/internal-consumer live with becomes visible
+  after the next promotion and is repaired there per natural edit.
+- **`SCOPE_ROW_MISSING` (M17/27.5):** validate finding for a progress-table row whose
+  active detail block carries no scope entry (the lost-scope-bullet incident shape);
+  active blocks only — archives and adoption/legacy rows stay exempt (W2).
+- **Pull auto-resolution (H7/27.6):** provably mechanical doc conflicts resolve in
+  `sync pull` — parallel appends (ordered by completion timestamps, archives AND section
+  items) and disjoint deletions (union of kept lines; emptied sections restore the H6
+  marker); single-line As-of stamp pairs take the later stamp. Everything else
+  (table-row edits, real content conflicts) still aborts cleanly; the resolver never
+  guesses content semantics, `docs_validate` remains the post-merge gate.
+- **`PHASE_PLANNED` warning vs `PLAN_WITHOUT_WIP` finding (M18/27.9):** a purely planned
+  phase (block exists, every table step ⬜ — the `progress_plan_phase` state) is now a
+  warning that does not flip `ok` instead of permanent finding-nagging; a mixed state
+  (✅ + ⬜, none running — orphaned block) stays a finding. New warning code is additive
+  (MINOR, Decision 10).
+
+#### Added
+- **`.gitattributes` EOL contract test + adoption snippet (L14/27.7):** the repo-wide
+  `* text=auto eol=lf` glob predates this step; the new test locks the effective
+  contract (`git check-attr eol` → `lf` for the four doc files + method copies) and the
+  README workstream section carries the one-glob adoption hint for target projects.
+- **CLI ergonomics (L15/27.8):** `runCli` accepts an injectable `defaultRoot`; the
+  direct-run entry falls back to `process.cwd()` so `stepwell status` works inside a
+  project without `--root` (library callers without a default keep the usage-error
+  contract; JSON unchanged). `sync status` in single-tree mode appends a one-line
+  `git worktree add` setup hint.
+
 ### Phase 28 — Leak purge: internal inventory removed from public history (2026-11-11T00:30)
 
 #### Security
