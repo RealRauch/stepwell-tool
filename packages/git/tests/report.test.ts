@@ -229,6 +229,64 @@ describe("workstreamReport predictedOverlap (H10/30.4)", () => {
     if (!result.ok) return;
     const ws = result.worktrees.find((w) => w.branch === "feature");
     expect(ws?.predictedOverlap).toEqual([]);
-    expect(ws?.overlap).toEqual([]);
+    // factual overlap: both sides committed their BACKLOG.md — the prognosis is
+    // empty because the ITEMS' paths are disjoint (the two signals are orthogonal)
+    expect(ws?.overlap).toEqual(["BACKLOG.md"]);
+  });
+});
+
+describe("workstreamReport idCollisions (M20/30.5)", () => {
+  const backlogWith = (id: string, file: string): string =>
+    [
+      "# BACKLOG.md — Open items (As of: 2026-11-11T10:00",
+      "",
+      "## 🟠 HIGH",
+      "",
+      `### [ ] ${id} — Collision fixture — 🟠`,
+      `- **Location:** \`${file}\``,
+      "- **Problem:** id collision fixture",
+      "",
+      "## ✅ DONE INDEX",
+      "",
+      "> (One line per completed item, with commit hash; details in archive.)",
+    ].join("\n");
+
+  const progressWith = (step: string): string =>
+    [
+      "# Project tracking: Collision fixture",
+      "",
+      "## Progress",
+      "",
+      "| # | Step | Status |",
+      "|---|------|--------|",
+      `| ${step} | Collision step | ⬜ |`,
+    ].join("\n");
+
+  it("detects ids and steps both sides added since the merge base", () => {
+    const { main, work } = makeWorkstream();
+    commitFile(work, "BACKLOG.md", backlogWith("M20", "src/branch.ts"), "branch adds M20");
+    commitFile(work, "PROGRESS.md", progressWith("30.1"), "branch adds step 30.1");
+    commitFile(main, "BACKLOG.md", backlogWith("M20", "src/trunk.ts"), "trunk adds M20 too");
+    commitFile(main, "PROGRESS.md", progressWith("30.1"), "trunk adds 30.1 too");
+
+    const result = workstreamReport(main);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const ws = result.worktrees.find((w) => w.branch === "feature");
+    expect(ws?.idCollisions).toEqual(["M20", "30.1"]);
+  });
+
+  it("stays empty for distinct additions", () => {
+    const { main, work } = makeWorkstream();
+    commitFile(work, "BACKLOG.md", backlogWith("M20", "src/branch.ts"), "branch adds M20");
+    commitFile(main, "BACKLOG.md", backlogWith("M21", "src/trunk.ts"), "trunk adds M21");
+
+    const result = workstreamReport(main);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const ws = result.worktrees.find((w) => w.branch === "feature");
+    expect(ws?.idCollisions).toEqual([]);
   });
 });

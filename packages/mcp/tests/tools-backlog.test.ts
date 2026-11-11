@@ -1,7 +1,7 @@
-import { rmSync } from "node:fs";
+import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { callTool, connect, payload, projectA, projectDrift, tempProject } from "./helper.ts";
+import { callTool, connect, git, payload, projectA, projectDrift, tempGitProject, tempProject } from "./helper.ts";
 
 describe("tool backlog_list (2.2)", () => {
   it("lists all open items without raw payload", async () => {
@@ -158,6 +158,60 @@ describe("tool backlog_show (2.2)", () => {
       const result = await callTool(c, "backlog_show", { root: projectA, id: "NOPE" });
       expect(result.isError).toBe(true);
       expect(result.content[0]?.text).toContain("NOPE");
+    } finally {
+      await c.close();
+    }
+  });
+});
+
+describe("backlog_add considerWorktrees (M20/30.5)", () => {
+  it("skips ids occupied in foreign worktree doc states", async () => {
+    const c = await connect();
+    const main = tempGitProject("project-a");
+    const work = `${main}-ws`;
+    git(main, ["worktree", "add", "-b", "feature", work]);
+    const backlogPath = join(work, "BACKLOG.md");
+    writeFileSync(
+      backlogPath,
+      readFileSync(backlogPath, "utf8").replace(
+        "## 🟡 MEDIUM\n\n> Keine offenen Items.",
+        "## 🟡 MEDIUM\n\n### [ ] M20 — Fremder Worktree hat diese Nummer — 🟡\n- **Location:** `src/foreign.ts`\n- **Problem:** Kollisions-Fixture",
+      ),
+      "utf8",
+    );
+    git(work, ["add", "-A"]);
+    git(work, ["commit", "-m", "foreign M20"]);
+    try {
+      const result = await callTool(c, "backlog_add", {
+        root: main,
+        section: "MEDIUM",
+        title: "Kollisions-Kandidat",
+        priority: "🟡",
+        considerWorktrees: true,
+      });
+      expect(result.isError).toBeFalsy();
+      const data = payload(result) as { id: string };
+      expect(data.id).toBe("M21");
+    } finally {
+      await c.close();
+    }
+  });
+
+  it("falls back with a warning when the root is not a git repo", async () => {
+    const c = await connect();
+    const dir = tempProject("project-a");
+    try {
+      const result = await callTool(c, "backlog_add", {
+        root: dir,
+        section: "MEDIUM",
+        title: "Ohne git",
+        priority: "🟡",
+        considerWorktrees: true,
+      });
+      expect(result.isError).toBeFalsy();
+      const data = payload(result) as { id: string; worktreeWarnings: string[] };
+      expect(data.id).toBe("M1");
+      expect(data.worktreeWarnings[0]).toMatch(/considerWorktrees/iu);
     } finally {
       await c.close();
     }
