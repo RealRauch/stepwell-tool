@@ -1,4 +1,4 @@
-# BACKLOG.md — Open items (As of: 2026-11-11T15:57
+# BACKLOG.md — Open items (As of: 2026-11-11T16:22
 
 > **This file contains only OPEN items.** Completed items are moved to `docs/archive/BACKLOG_ARCHIVE.md` unchanged after completion; this file keeps only a one-liner per item in the Done Index (below). Findings/fix-ideas/decisions are not deleted — moved to the archive.
 > Legend: 🔴 critical · 🟠 high · 🟡 medium · 🟢 low · 🔵 test gap
@@ -35,6 +35,12 @@
 - **Problem:** Die Semantik unterscheidet nicht zwischen legitimer Planung (alle Steps ⬜) und echter Inkonsistenz (⬜+✅ gemischt, kein 🔄 = verwaister Block). Beides fällt unter denselben Code und kippt ok.
 - **Fix:** Reiner Plan-Zustand (Block existiert, alle seine Tabellen-Steps ⬜) → neues **Warning** `PHASE_PLANNED` (berichtet, kippt kein ok); gemischter Zustand ohne 🔄 → bleibt **Finding** `PLAN_WITHOUT_WIP` (Code bleibt im Kontrakt, Decision 10; semantisch MINOR, Release-Note). L13-Acknowledgement unverändert.
 - **Acceptance:** Fixtures: rein geplante Phase → nur Warning, ok:true; verwaister Block → Finding, ok:false; SKILL/README-Semantik-Tabellen nachgezogen; Suite grün.
+
+### [ ] M19 — Suite flaky unter Windows-Worker-Load: git-Subprocess-Tests + nested coverage-gate brechen intermittierend, Subprocess-stderr-Pumpen als §5-Verstoß — 🟡
+- **Location:** `packages/git/tests/push.test.ts` (5000ms-Timeout), `packages/mcp/tests/cli-sync.test.ts` (git add/commit in Temp-Repos), `packages/core/tests/coverage-gate.test.ts` (nested vitest, Threshold-Assert), Vitest-Worker-Pool-Konfiguration. Fund: eigene Session 11/2026, Windows — 2 von 4 Full-Suite-Runs brachen unter Worker-Load mit `failed to write commit object` / Test-Timeouts / Coverage-Gate-Assert (148 s nested run); dieselben Dateien einzeln laufen grün.
+- **Problem:** Die lokale Verifikations-Lane liefert intermittierende Fehlalarme (Lesson-31-Familie: grün einzeln, rot nur in der vollen Lane). Ursache ungeklärt (Kandidaten: Windows file-locking durch AV/Indexer auf den %TEMP%-Git-Repos, Worker-Konkurrenz um git-Subprozesse, Zeitkontingent des nested coverage-gate-Runs). Zusätzlich pumpt die Suite git-Subprocess-stderr (LF→CRLF-Warnings) in die Shell-Ausgabe — ein §5-Sichtbarkeitsverstoß, der die echten Fehler überdeckt.
+- **Fix:** Ursachen klären (eingeschränkte Repro-Serie), dann Abhilfe an der Ursache: Temp-Repos außerhalb indexer-/AV-Pfade oder git-nähe Suiten mit reduzierter Worker-Parallelität (per-file pool/isolate), Coverage-Gate-Zeitkontingent klären; Subprocess-stderr aufsaugen bzw. auf Fehlerfälle beschränken (keine globalen Suppressionen, kein blanket-retry).
+- **Acceptance:** 10 Full-Runs in Serie ohne Fehlalarm (Lokal-Repro dokumentiert); Ursachen-Befund im Item/Archiv; CI (ubuntu) bleibt die bindende Verifikationssicht (Lesson 28); Suite-Stderr ohne Subprocess-Noise.
 
 ---
 

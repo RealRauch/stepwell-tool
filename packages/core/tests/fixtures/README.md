@@ -64,6 +64,11 @@ fixtures/
 │   └── docs/archive/           #   fully ✅ in the table. Completion must remove exactly
 │       ├── BACKLOG_ARCHIVE.md  #   Phase 7's own block; the test also injects mixed line
 │       └── PROGRESS_ARCHIVE.md #   endings (CRLF + stray LF) → span misalignment (K1).
+├── project-k-planned/      # M18/27.9: purely planned phase (Phase 9, all table steps ⬜,
+│   ├── BACKLOG.md          #   full detail block) → docs_validate reports the PHASE_PLANNED
+│   ├── PROGRESS.md         #   warning without flipping ok (ok stays true). The mixed
+│   └── docs/archive/       #   state (✅ + ⬜, no 🔄) is derived in the test via tempCopy
+│       ├── BACKLOG_ARCHIVE.md  # + override → stays a PLAN_WITHOUT_WIP finding (ok false).
 
 project-empty/             # empty directory (.gitkeep only; M5/9.3) — root WITHOUT a
                            #   STEPWELL project: docs_validate/docs_status → exactly

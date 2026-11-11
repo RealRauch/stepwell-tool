@@ -704,9 +704,10 @@ describe("phase planning (T4, 6.10)", () => {
     expect(block?.title).toBe("Rundung");
     expect(block?.scope).toHaveLength(3);
 
-    // PLAN_WITHOUT_WIP ist bis zum ersten 🔄 erwartbar:
+    // M18/27.9: pure planning is a PHASE_PLANNED warning, not a finding:
     const validation = docsValidate(dir);
-    expect(validation.findings.some((f) => f.code === "PLAN_WITHOUT_WIP" && f.message.includes("Phase 7"))).toBe(true);
+    expect(validation.findings.some((f) => f.code === "PLAN_WITHOUT_WIP" && f.message.includes("Phase 7"))).toBe(false);
+    expect(validation.warnings.some((w) => w.code === "PHASE_PLANNED" && w.message.includes("Phase 7"))).toBe(true);
 
     // Integration: erster 🔄-Step übernimmt den bestehenden Scope ohne Workaround
     const start = planProgressUpdate(dir, "Phase 7", "7.1", "🔄", { dryRun: false });

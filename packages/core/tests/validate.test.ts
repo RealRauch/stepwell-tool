@@ -290,3 +290,28 @@ describe("docsValidate — SCOPE_ROW_MISSING (M17/27.5)", () => {
     expect(result.findings.filter((f) => f.code === "SCOPE_ROW_MISSING")).toEqual([]);
   });
 });
+
+describe("docsValidate — PHASE_PLANNED vs PLAN_WITHOUT_WIP (M18/27.9)", () => {
+  it("reports a purely planned phase as a warning without flipping ok", () => {
+    const result = docsValidate(join(fixtures, "project-k-planned"));
+    expect(result.findings).toEqual([]);
+    expect(result.warnings.map((w) => w.code)).toEqual(["PHASE_PLANNED"]);
+    expect(result.warnings[0]?.message).toContain("Phase 9");
+    expect(result.ok).toBe(true);
+  });
+
+  it("keeps a mixed state (✅ + ⬜, no 🔄) a PLAN_WITHOUT_WIP finding (contract anchor)", () => {
+    const dir = tempCopy("project-k-planned");
+    const progressPath = join(dir, "PROGRESS.md");
+    writeFileSync(
+      progressPath,
+      readFileSync(progressPath, "utf8").replace("| 9.1 | First step | ⬜ |", "| 9.1 | First step | ✅ |"),
+      "utf8",
+    );
+    const result = docsValidate(dir);
+    expect(result.findings.map((f) => f.code)).toEqual(["PLAN_WITHOUT_WIP"]);
+    expect(result.findings[0]?.message).toContain("Phase 9");
+    expect(result.warnings.filter((w) => w.code === "PHASE_PLANNED")).toEqual([]);
+    expect(result.ok).toBe(false);
+  });
+});
