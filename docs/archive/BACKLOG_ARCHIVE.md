@@ -939,3 +939,12 @@
 - **Fix:** `repair`- und `sync`-Zeilen in den CLI-Block aufnehmen (additiv; Details verweisen auf die Tool-Tabelle bzw. den Workstream-Abschnitt).
 - **Acceptance:** README-CLI-Block enthält beide Commands; docs_validate clean.
 - **Erledigt:** fixed immediately (docs-only, §2 living document) — repair + sync lines in the CLI reference block, details delegated to the tool table / workstream section
+
+---
+
+### [x] M26 — Methoden-Retro fällig (PLAYBOOK §8): 7 Phasen seit Q2/Phase 23 — Review von PLAYBOOK/LESSONS + BRAINSTORM-Bewertern — 🟡
+- **Location:** `docs/PLAYBOOK.md` §8 (Methoden-Retro: alle N Phasen, empfohlen 5; drei Leitfragen je Regel: Bug verhindert? Overhead > Nutzen? konsolidierbar?; Outcomes stay/demote/drop), `docs/LESSONS.md`, AGENTS-Decisions. Fund: eigene Session 11/2026 — letzte Retro war Q2/Phase 23; seither 7 Phasen (24–30), die Abstandsempfehlung ist überschritten.
+- **Problem:** Die Retro-Pflicht ist methodisch fällig und hat hochaktuelles Futter: die Scherben-Items (H11–L26) ändern die Methoden-Oberfläche (Datei-Menge), M18/M23 justieren Validate-Semantik, die ADR-Idee und die PR-Satelliten-Idee in BRAINSTORM sind Bewerter-Kandidaten, und Decision 13 (Konsum-Freeze) hat sich in der Session bewährt (Frozen-Server-Ausrutscher als Lesson-Kandidat).
+- **Fix:** Retro als eigener Step im nächsten Paket: PLAYBOOK/LESSONS-Regeln gegen die drei Leitfragen prüfen, BRAINSTORM-Bewerter (ADR-Idee, PR-Satellit, Obsidian V1/V2 als Quick-Win-Kandidaten) einbeziehen, Outcomes dokumentieren (stay/demote/drop), Rule-Changes ggf. synchron in alle Kopien (SHA256). Lesson-Kandidaten aus der Session einbringen: „Frozen-Server-Konsum im Dev-Repo“ (fba546b), „execFileSync stderr-Leak“ (M19/29.2, bereits als Lesson-Umsetzung gefallen?).
+- **Acceptance:** Retro dokumentiert (Notiz am Phasen-Meilenstein oder eigener Step); je geprüfter Regel genau ein Outcome; Rule-Changes textgleich in allen Kopien; `docs_validate` clean.
+- **Erledigt:** phase 31/31.1-31.2 (protocol 6d677ab + lessons sync 2e5520f) — retro of phases 24-30 per PLAYBOOK §8: all rules stay, nothing dropped/demoted; rule changes: LESSONS section scope tags (A web/API, C frontend — user-initiated, section-level over a scope matrix) + new Lesson 32 (sync child-process stderr leak, M19 evidence); textually identical in both copies, sha256 2cdde3db48e7a20315fcb56c6adb0dab5594fd256fc305bb29748c27dc5c78eb; topology limitation documented (sync = same-machine agent ritual, accepted cost); BRAINSTORM evaluator verdicts in docs/retro-2026-11.md
