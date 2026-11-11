@@ -385,3 +385,33 @@ describe("runCli — defaultRoot (L15/27.8)", () => {
     expect(out).toContain("Warnings: 0");
   });
 });
+
+describe("runCli — repair (H9/30.2)", () => {
+  it("defaults to a dry-run preview without writing", async () => {
+    const dir = tempProject("project-b-drift");
+    const io = makeIo();
+    const code = await runCli(["repair", "--root", dir], io.io);
+    expect(code).toBe(0);
+    expect(io.stdout).toContain("Dry-run");
+    expect(io.stdout).toContain("NOT_ARCHIVED");
+  });
+
+  it("applies with --apply and exits 1 while non-repairable findings remain", async () => {
+    const dir = tempProject("project-b-drift");
+    const io = makeIo();
+    const code = await runCli(["repair", "--root", dir, "--apply"], io.io);
+    expect(code).toBe(1);
+    expect(io.stdout).toContain("NOT_ARCHIVED");
+    expect(io.stdout).toContain("ID_DUPLICATE");
+  });
+
+  it("stamps schema on the --json payload", async () => {
+    const dir = tempProject("project-b-drift");
+    const io = makeIo();
+    const code = await runCli(["repair", "--root", dir, "--json"], io.io);
+    expect(code).toBe(0);
+    const parsed = JSON.parse(io.stdout) as { schema: number; dryRun: boolean };
+    expect(parsed.schema).toBe(2);
+    expect(parsed.dryRun).toBe(true);
+  });
+});

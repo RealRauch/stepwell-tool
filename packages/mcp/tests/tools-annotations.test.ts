@@ -12,7 +12,7 @@ const READ_ONLY_TOOLS = [
   "progress_show",
 ] as const;
 
-const DESTRUCTIVE_TOOLS = ["archive_item", "backlog_remove"] as const;
+const DESTRUCTIVE_TOOLS = ["archive_item", "backlog_remove", "docs_repair"] as const;
 
 const MUTATING_TOOLS = [
   "progress_update",

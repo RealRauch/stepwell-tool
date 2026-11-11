@@ -62,6 +62,10 @@ const CONTRACT: Record<string, { required: string[]; params: Record<string, unkn
     required: ["root"],
     params: { root: str, structured: boolWithDefault(false) },
   },
+  docs_repair: {
+    required: ["root"],
+    params: { root: str, structured: boolWithDefault(false), dryRun: boolWithDefault(true) },
+  },
   archive_item: {
     required: ["root", "id"],
     params: {
