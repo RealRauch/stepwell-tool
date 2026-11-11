@@ -9,6 +9,15 @@
 > are moved to `docs/archive/PROGRESS_ARCHIVE.md` unchanged after completion.
 
 ## Active Phases
+### Phase 29 — Findings batch: phase matching, suite stability, rename guard
+
+**Umfang (Steps):**
+
+- **29.1 progress_update: bare phase number matches "Phase <N>" + refuse phantom skeleton when the step already has a table row [H8]**
+- **29.2 suite stability: diagnose Windows worker-load flakes (git subprocess + coverage gate), fix at the cause, no suppressed warnings, no leaked temp dirs [M19]**
+- **29.3 progress_update --title: duplicate "Phase <N> —" prefix guard [L16]**
+- **29.4 Verification: typecheck + full suite + docs_validate clean; doc-sync (CHANGELOG/README/SKILL); archive H8/M19/L16; phase completion**
+
 
 
 
@@ -160,3 +169,7 @@
 | 27.8 | CLI: --root defaults to CWD + sync status single-tree setup hint [L15] | ✅ |
 | 27.9 | PLAN_WITHOUT_WIP sharpening: purely planned phase = PHASE_PLANNED warning (ok stays true), orphaned block stays finding [M18] | ✅ |
 | 28.1 | Relocate internal docs, anonymize references, history purge (files + name scrub incl. messages), force-push, resync frozen dir [K2] | ✅ |
+| 29.1 | progress_update: bare phase number matches "Phase <N>" + refuse phantom skeleton when the step already has a table row [H8] | ⬜ |
+| 29.2 | suite stability: diagnose Windows worker-load flakes (git subprocess + coverage gate), fix at the cause, no suppressed warnings, no leaked temp dirs [M19] | ⬜ |
+| 29.3 | progress_update --title: duplicate "Phase <N> —" prefix guard [L16] | ⬜ |
+| 29.4 | Verification: typecheck + full suite + docs_validate clean; doc-sync (CHANGELOG/README/SKILL); archive H8/M19/L16; phase completion | ⬜ |
