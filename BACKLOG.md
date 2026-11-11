@@ -34,12 +34,6 @@
 
 ## 🟢 LOW
 
-### [ ] L14 — .gitattributes: Doku-Dateien auf text eol=lf pinnen (eigenes Repo + Adoption-Hinweis) — 🟢
-- **Location:** `.gitattributes` (neu, Repo-Root), README-Workstream-Abschnitt (Empfehlung für adoptierende Projekte).
-- **Problem:** Checkout-Verhalten variiert je Maschine (`autocrlf`-Einstellungen) — für Cross-Machine-Workstreams ist das Drift-/Flacker-Futter (pwa-CRLF-Warning beim Sync als Vorgeschmack). Core verträgt zwar beides (K1/R3), deterministisch ist trotzdem besser.
-- **Fix:** `.gitattributes` mit `text eol=lf` für die vier Doku-Dateien + Methoden-Kopien (PLAYBOOK/LESSONS/QUICKSTART/README); README-Hinweis mit dem Snippet für adoptierende Projekte. Dateiklasse Low.
-- **Acceptance:** Datei vorhanden + Inhalt gepinnt (kleiner Test); `git check-attr` liefert lf für die vier Dateien; Suite grün.
-
 ### [ ] L15 — CLI-Ergonomie: --root-Default = CWD; sync status mit Workstream-Setup-Hinweis — 🟢
 - **Location:** `packages/mcp/src/cli.ts` (`requireRoot` wirft aktuell), `syncStatusText` (Single-Tree-Fall endet still).
 - **Problem:** Jeder CLI-Aufruf braucht `--root`, obwohl CWD-Default das natürliche Erwartungsverhalten ist; `sync status` ohne Workstreams gibt keinen Aufhänger, wie man einen anlegt.
@@ -143,5 +137,6 @@
 - H7 — Pull-Auto-Resolution: deterministische Doku-Konflikte (Archiv-Appends) mechanisch auflösen, Rest bleibt Abort+Report — erledigt (phase 27/27.6 (RED commit + feat 6fd7b40) — acceptance refined during implementation: mechanical resolution covers BOTH deterministic cases - parallel appends (base slice empty; archives AND section items) and disjoint deletions (side lines subset of base slice, e.g. two workstreams archiving different items of one section; emptied section restores the H6 marker); ordering timestamps-else-HEAD-first, per file; table-row edits/real content conflicts abort+report unchanged; docs_validate gate retained)
 - H6 — Stale „No open items."-Platzhalter: backlog_add entfernt ihn nicht (Invariante „Platzhalter ⟺ Sektion leer" fehlt) — internal-consumer lebt den Drift — erledigt (phase 27/27.4 (RED fa5e915 + feat 5be45cd) — add drops the stale placeholder, last-removal restores it, EMPTY_MARKER_STALE surfaces pre-tool drift; datacraft/internal-consumer stock becomes visible after promotion, repaired there per natural edit)
 - M18 — PLAN_WITHOUT_WIP-Schärfung: rein geplante Phase = Warning (PHASE_PLANNED), verwaister Block bleibt Finding — erledigt (phase 27/27.9 (RED 3c88f8d + feat 1e9d648) — purely planned = PHASE_PLANNED warning (ok stays true), mixed orphaned state + scope-less blocks stay PLAN_WITHOUT_WIP finding; new warning code additive (MINOR, Decision 10); SKILL lists no warning codes (checked))
+- L14 — .gitattributes: Doku-Dateien auf text eol=lf pinnen (eigenes Repo + Adoption-Hinweis) — erledigt (phase 27/27.7 (test e0d1a08 + docs de34bd6) — acceptance refined during implementation: the glob '* text=auto eol=lf' predates the step (repo founding) and already pins all text files incl. the four docs + method copies; contract test locks the effective attribute (check-attr eol=lf); per-file lines skipped as redundant; README adoption snippet added)
 
 ---

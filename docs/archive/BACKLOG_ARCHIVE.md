@@ -804,3 +804,12 @@
 - **Fix:** Reiner Plan-Zustand (Block existiert, alle seine Tabellen-Steps ⬜) → neues **Warning** `PHASE_PLANNED` (berichtet, kippt kein ok); gemischter Zustand ohne 🔄 → bleibt **Finding** `PLAN_WITHOUT_WIP` (Code bleibt im Kontrakt, Decision 10; semantisch MINOR, Release-Note). L13-Acknowledgement unverändert.
 - **Acceptance:** Fixtures: rein geplante Phase → nur Warning, ok:true; verwaister Block → Finding, ok:false; SKILL/README-Semantik-Tabellen nachgezogen; Suite grün.
 - **Erledigt:** phase 27/27.9 (RED 3c88f8d + feat 1e9d648) — purely planned = PHASE_PLANNED warning (ok stays true), mixed orphaned state + scope-less blocks stay PLAN_WITHOUT_WIP finding; new warning code additive (MINOR, Decision 10); SKILL lists no warning codes (checked)
+
+---
+
+### [x] L14 — .gitattributes: Doku-Dateien auf text eol=lf pinnen (eigenes Repo + Adoption-Hinweis) — 🟢
+- **Location:** `.gitattributes` (neu, Repo-Root), README-Workstream-Abschnitt (Empfehlung für adoptierende Projekte).
+- **Problem:** Checkout-Verhalten variiert je Maschine (`autocrlf`-Einstellungen) — für Cross-Machine-Workstreams ist das Drift-/Flacker-Futter (pwa-CRLF-Warning beim Sync als Vorgeschmack). Core verträgt zwar beides (K1/R3), deterministisch ist trotzdem besser.
+- **Fix:** `.gitattributes` mit `text eol=lf` für die vier Doku-Dateien + Methoden-Kopien (PLAYBOOK/LESSONS/QUICKSTART/README); README-Hinweis mit dem Snippet für adoptierende Projekte. Dateiklasse Low.
+- **Acceptance:** Datei vorhanden + Inhalt gepinnt (kleiner Test); `git check-attr` liefert lf für die vier Dateien; Suite grün.
+- **Erledigt:** phase 27/27.7 (test e0d1a08 + docs de34bd6) — acceptance refined during implementation: the glob '* text=auto eol=lf' predates the step (repo founding) and already pins all text files incl. the four docs + method copies; contract test locks the effective attribute (check-attr eol=lf); per-file lines skipped as redundant; README adoption snippet added
