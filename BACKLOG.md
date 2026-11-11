@@ -46,12 +46,6 @@
 
 ## 🟢 LOW
 
-### [ ] L16 — progress_update --title verdoppelt das "Phase <N> —"-Präfix im Block-Heading (Rename konkateniert blind) — 🟢
-- **Location:** `packages/core/src/mutations.ts` (`planProgressUpdate` Titel-Rename: `### ${block.name} — ${newTitle}`; Archiv-Variante im Phasen-Abschluss). Fund: eigene Session 11/2026 — live Heading "### Phase 27 — Phase 27 — Sammel-Batch: …" seit `d47102c`.
-- **Problem:** Wird der vollständige Heading-Text als `--title` übergeben ("Phase 27 — Sammel-Batch: …"), entsteht "Phase 27 — Phase 27 — …" — der Rename konkateniert blind. Kosmetisch, aber der verdoppelte Heading wandert beim Phasen-Abschluss verbatim ins Archiv und macht Block-Namen inkonsistent.
-- **Fix:** Rename setzt das Präfix nur, wenn `newTitle` es nicht bereits trägt (Duplicate-Präfix-Guard), oder Konvention dokumentieren (newTitle ohne "Phase <N> —"-Präfix) + Warnung bei Dopplung.
-- **Acceptance:** RED→GRÜN: Rename mit bereits präfixiertem Titel erzeugt keine Dopplung; Suite grün; der bestehende Dopplungs-Heading wird beim natürlichen Edit repariert (open files, kein Archiv-Edit).
-
 ### [ ] L17 — backlog_update: position-Parameter (top/bottom/Index) macht die Blockreihenfolge steuerbar (Ordinal-Analogon) — 🟢
 - **Location:** `packages/core/src/mutations.ts` (`planBacklogUpdate` — Sektionswechsel- und Span-Mechanik vorhanden), `packages/mcp/src/tools.ts` + `packages/mcp/src/cli.ts`. Vorlage: Backlog.md `ordinal` / `--sort ordinal`.
 - **Problem:** Innerhalb einer Prioritätssektion **ist** die Blockreihenfolge die implizite Bearbeitungsreihenfolge (Agenten lesen von oben). Änderbar ist sie heute nur durch Entfernen + Neuanlegen — das kostet ID-Kontinuität und den `raw`-Block. Backlog.md löst genau das mit Ordinals; stepwell hat die Mechanik (Zeilen-Span-Verschiebung) bereits im Haus.
@@ -168,5 +162,6 @@
 - L21 — Review-Befunde als Items: pr ingest (dry-run, keine Webhooks) — Issues-Bridge-Pattern 2 mit Review-Threads als Quelle — entfernt (parked 11/2026 — design bleibt in BRAINSTORM.md (Abschnitt „GitHub Pull Requests"); kein offener Arbeitsbedarf)
 - H8 — progress_update mit reiner Phasennummer (--phase 27) matcht den Detail-Block nicht (phaseMatches = exakte Gleichheit) und legt still ein Phantom-Skeleton an — erledigt (phase 29/29.1 (RED c278050 + feat 13748a7) — phaseMatches consolidated into progress.ts (was duplicated in mutations+context) and tolerates bare phase numbers; phantom-skeleton refusal: a 🔄-flip targeting a table step without a matching block now throws instead of silently inserting '### <phase>' + scope; README/zod phase docs updated)
 - M19 — Suite flaky unter Windows-Worker-Load: git-Subprocess-Tests + nested coverage-gate brechen intermittierend, Subprocess-stderr-Pumpen als §5-Verstoß — erledigt (phase 29/29.2 (e48171d, §6 exception documented in commit) — root cause micro-probe: execFileSync leaks child stderr to console (worktree progress, autocrlf warnings, HEAD notes); fixes at the cause: core.autocrlf=false in all 12 test repos, rmSync maxRetries (leak fix), explicit stdio piping in all 9 test git wrappers (stderr still surfaces in errors), 20s testTimeout for git-heavy files; acceptance 10/10 consecutive full runs exit=0, stderr-free, 0 %TEMP% litter)
+- L16 — progress_update --title verdoppelt das "Phase <N> —"-Präfix im Block-Heading (Rename konkateniert blind) — erledigt (phase 29/29.3 (RED 7ae9fb1 + feat 8f25345) — renamedHeading() prefix guard on both rename sites (PROGRESS + archive heading at completion); phase-27 archive heading keeps the doubled prefix as the incident's residue (append-only); zod description updated; dogfooded by this phase's own completion title)
 
 ---

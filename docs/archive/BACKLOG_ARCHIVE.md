@@ -867,3 +867,12 @@
 - **Fix:** Ursachen klären (eingeschränkte Repro-Serie), dann Abhilfe an der Ursache: Temp-Repos außerhalb indexer-/AV-Pfade oder git-nähe Suiten mit reduzierter Worker-Parallelität (per-file pool/isolate), Coverage-Gate-Zeitkontingent klären; Subprocess-stderr aufsaugen bzw. auf Fehlerfälle beschränken (keine globalen Suppressionen, kein blanket-retry); Leck-Dirs bei Failure-Cleanup sicher entfernen.
 - **Acceptance:** 10 Full-Runs in Serie ohne Fehlalarm (Lokal-Repro dokumentiert); Ursachen-Befund im Item/Archiv; CI (ubuntu) bleibt die bindende Verifikationssicht (Lesson 28); Suite-Stderr ohne Subprocess-Noise; 0 stepwell-*-Dirs in %TEMP% nach jedem Suite-Run.
 - **Erledigt:** phase 29/29.2 (e48171d, §6 exception documented in commit) — root cause micro-probe: execFileSync leaks child stderr to console (worktree progress, autocrlf warnings, HEAD notes); fixes at the cause: core.autocrlf=false in all 12 test repos, rmSync maxRetries (leak fix), explicit stdio piping in all 9 test git wrappers (stderr still surfaces in errors), 20s testTimeout for git-heavy files; acceptance 10/10 consecutive full runs exit=0, stderr-free, 0 %TEMP% litter
+
+---
+
+### [x] L16 — progress_update --title verdoppelt das "Phase <N> —"-Präfix im Block-Heading (Rename konkateniert blind) — 🟢
+- **Location:** `packages/core/src/mutations.ts` (`planProgressUpdate` Titel-Rename: `### ${block.name} — ${newTitle}`; Archiv-Variante im Phasen-Abschluss). Fund: eigene Session 11/2026 — live Heading "### Phase 27 — Phase 27 — Sammel-Batch: …" seit `d47102c`.
+- **Problem:** Wird der vollständige Heading-Text als `--title` übergeben ("Phase 27 — Sammel-Batch: …"), entsteht "Phase 27 — Phase 27 — …" — der Rename konkateniert blind. Kosmetisch, aber der verdoppelte Heading wandert beim Phasen-Abschluss verbatim ins Archiv und macht Block-Namen inkonsistent.
+- **Fix:** Rename setzt das Präfix nur, wenn `newTitle` es nicht bereits trägt (Duplicate-Präfix-Guard), oder Konvention dokumentieren (newTitle ohne "Phase <N> —"-Präfix) + Warnung bei Dopplung.
+- **Acceptance:** RED→GRÜN: Rename mit bereits präfixiertem Titel erzeugt keine Dopplung; Suite grün; der bestehende Dopplungs-Heading wird beim natürlichen Edit repariert (open files, kein Archiv-Edit).
+- **Erledigt:** phase 29/29.3 (RED 7ae9fb1 + feat 8f25345) — renamedHeading() prefix guard on both rename sites (PROGRESS + archive heading at completion); phase-27 archive heading keeps the doubled prefix as the incident's residue (append-only); zod description updated; dogfooded by this phase's own completion title
