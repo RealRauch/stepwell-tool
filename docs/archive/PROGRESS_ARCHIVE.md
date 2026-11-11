@@ -531,3 +531,23 @@ nachholen oder einen anderen Pfad wählen.
 
 - **28.1 Relocate internal docs, anonymize references, history purge (files + name scrub incl. messages), force-push, resync frozen dir [K2]**
 **Verifikation:** K2 executed: internal docs relocated to stepwell-internal/ (+ pre-purge backup bundle), AGENTS references privatized, history purge via git-filter-repo in two passes (file removal: docs/CONSUMERS.md + docs/feldtest-stadtpfad-pwa.md; text scrub stadtpfad-pwa->internal-pwa, datacraft->internal-consumer, session-recorder->internal-recorder, finnland-reiseapp->internal-app-1, Finnland 2026->internal-app-2, jpeg-tunnel->internal-app-3 across blobs AND commit messages). Verified: file history empty, pickaxe zero, messages zero; generic Stadtpfad lineage kept. Force-pushed dev (8eae5a2) + main (d20ff2d), frozen dir resynced to rewritten main. Known cost documented: all pre-rewrite SHA references resolve only via the backup bundle. Verification: npm run typecheck && npm run test + docs_validate green; git log --all checks clean
+
+---
+
+### Phase 27 — Phase 27 — Sammel-Batch: Hygiene & Workstream-Härtung
+
+**Goal:** Automatische Hygiene aus dem Dogfood-Fund (11/2026): kein stiller Plattenmüll mehr — Test-Fixtures räumen ihre Worktree-Paare vollständig auf (T7), `workstreamReport` erkennt Husk-Dirs automatisch und das Ritual verifiziert das Aufräumen (M16).
+
+**Acceptance (je Step test-first):** `npm run typecheck` + `npm run test` grün; 27.3 belegt Sweep vorher/nachher = 0 neue `%TEMP%/stepwell-*`-Dirs; `docs_validate` clean; T7+M16 archiviert.
+
+**Scope (Steps):**
+
+- **27.1 Central temp-dir hygiene in test fixtures — registered pair cleanup, no-op afterEach removed, sweep evidence [T7]**
+- **27.2 Husk detection in workstreamReport (husks[] for deregistered dirs) + ritual verify/prune note in SKILL/README [M16]**
+- **27.3 Verification: sweep before/after full suite = 0 new dirs, suite green; archive T7+M16 [T7/M16]**
+- **27.4 Empty-marker invariant: backlog_add removes placeholder, last-removal restores it, validate EMPTY_MARKER_STALE + fixture [H6]**
+- **27.5 SCOPE_ROW_MISSING validate finding: table row without detail-block scope entry [M17]**
+- **27.6 Pull auto-resolution for deterministic doc conflicts (archive appends, timestamp order, docs_validate gate) [H7]**
+- **27.7 .gitattributes text eol=lf for doc files + adoption hint in README [L14]**
+- **27.8 CLI: --root defaults to CWD + sync status single-tree setup hint [L15]**
+- **27.9 PLAN_WITHOUT_WIP sharpening: purely planned phase = PHASE_PLANNED warning (ok stays true), orphaned block stays finding [M18]**
