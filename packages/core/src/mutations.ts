@@ -756,7 +756,7 @@ function sectionInsertAt(lines: string[], headingIdx: number): number {
 
 /** H6/27.4: the templates' per-section placeholder, EN canonical, DE legacy tolerated on read. */
 const EMPTY_MARKER = /^>\s*(?:No open items\.|Keine offenen Punkte\.?)\s*$/u;
-const EMPTY_MARKER_CANONICAL = "> No open items.";
+export const EMPTY_MARKER_CANONICAL = "> No open items.";
 
 /**
  * H6/27.4 invariant: "placeholder ⟺ section empty". dropEmptyMarker runs when a

@@ -46,6 +46,8 @@ export interface PullOk {
   fastForward: boolean;
   /** Number of files the merge changed (0 when already up to date). */
   mergedFiles: number;
+  /** H7/27.6: doc files whose append conflicts were resolved mechanically (both sides kept, timestamp/HEAD-first order). */
+  resolved?: string[];
   /** docs_validate summary of the merged doc state (the mechanical post-merge net). */
   validation: { ok: boolean; findings: number; warnings: number };
 }

@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -36,6 +36,7 @@ function makeDir(): string {
 /** Main repo with two open items + two diverged workstream worktrees (A=ws-a, B=ws-b). */
 function makeCollision(): { main: string; a: string; b: string } {
   const main = makeDir();
+  mkdirSync(join(main, "docs", "archive"), { recursive: true });
   for (const rel of REQUIRED_FILES) {
     const abs = join(main, rel);
     writeFileSync(abs, projectTemplates[TEMPLATE_BY_FILE[rel.replace(/\\/gu, "/")]!]);

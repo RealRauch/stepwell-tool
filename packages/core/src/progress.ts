@@ -222,3 +222,29 @@ export function scopeSteps(block: PhaseBlock): string[] {
   }
   return steps;
 }
+
+/** Sortable timeline key of the LATEST ISO-8601 (`YYYY-MM-DDTHH:mm`) or legacy (`YYMMDD/HHMM`) stamp in a chunk (H7/27.6). */
+export function latestStampKey(chunk: string): string | undefined {
+  let best: string | undefined;
+  for (const m of chunk.matchAll(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/gu)) {
+    const key = `${m[1]}${m[2]}${m[3]}${m[4]}${m[5]}`;
+    if (best === undefined || key > best) best = key;
+  }
+  for (const m of chunk.matchAll(/(\d{2})(\d{2})(\d{2})\/(\d{2})(\d{2})/gu)) {
+    const key = `20${m[1]}${m[2]}${m[3]}${m[4]}${m[5]}`;
+    if (best === undefined || key > best) best = key;
+  }
+  return best;
+}
+
+/**
+ * H7/27.6: chronological order of two appended chunks (-1: a first, 1: b first,
+ * 0: equal). undefined when either side carries no parseable stamp — the caller
+ * falls back to a deterministic order (HEAD-first).
+ */
+export function appendChunkOrder(a: string, b: string): number | undefined {
+  const ka = latestStampKey(a);
+  const kb = latestStampKey(b);
+  if (ka === undefined || kb === undefined) return undefined;
+  return ka === kb ? 0 : ka < kb ? -1 : 1;
+}

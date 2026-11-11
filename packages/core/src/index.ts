@@ -1,5 +1,11 @@
 export { parseBacklog, readBacklog } from "./backlog.ts";
-export { parseProgress, readProgress, scopeSteps } from "./progress.ts";
+export {
+  parseProgress,
+  readProgress,
+  scopeSteps,
+  appendChunkOrder,
+  latestStampKey,
+} from "./progress.ts";
 export { parseBacklogArchive, parseProgressArchive } from "./archive.ts";
 export { backlogShow, loadProject } from "./project.ts";
 export type { ProjectDocs } from "./project.ts";
@@ -14,6 +20,7 @@ export {
   applyProgressPlan,
   applyBacklogAddPlan,
   applyBacklogRemovePlan,
+  EMPTY_MARKER_CANONICAL,
   applyBacklogUpdatePlan,
   applyPhasePlan,
   planArchiveItem,
