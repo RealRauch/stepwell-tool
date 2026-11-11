@@ -25,7 +25,7 @@ const PRIORITY_WRITE = ["🔴", "🟠", "🟡", "🟢", "🔵"];
 const STATUS_FILTER = ["⬜", "🔄", "✅", "⛔", "unknown"];
 const STATUS_SET = ["⬜", "🔄", "✅", "⛔"];
 const LOCALE = ["de", "en"];
-const PROJECTABLE = ["id", "title", "priority", "section", "open", "location", "text", "span"];
+const PROJECTABLE = ["id", "title", "priority", "section", "open", "location", "files", "text", "span"];
 
 const CONTRACT: Record<string, { required: string[]; params: Record<string, unknown> }> = {
   echo: {

@@ -184,3 +184,51 @@ describe("workstreamReport", () => {
     expect(result.error.code).toBe("NOT_A_GIT_REPO");
   });
 });
+
+describe("workstreamReport predictedOverlap (H10/30.4)", () => {
+  const backlogWith = (id: string, file: string): string =>
+    [
+      "# BACKLOG.md — Open items (As of: 2026-11-11T10:00",
+      "",
+      "## 🟠 HIGH",
+      "",
+      `### [ ] ${id} — Shared file worker — 🟠`,
+      `- **Location:** \`${file}\``,
+      "- **Problem:** overlap prognosis fixture",
+      "",
+      "## 🔵 TEST GAPS",
+      "",
+      "> No open items.",
+      "",
+      "## ✅ DONE INDEX",
+      "",
+      "> (One line per completed item, with commit hash; details in archive.)",
+    ].join("\n");
+
+  it("predicts the file both sides' open items touch, before anyone edits it", () => {
+    const { main, work } = makeWorkstream();
+    commitFile(work, "BACKLOG.md", backlogWith("H1", "src/shared.ts"), "branch item on shared file");
+    commitFile(main, "BACKLOG.md", backlogWith("H2", "src/shared.ts"), "trunk item on the same file");
+
+    const result = workstreamReport(work);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const ws = result.worktrees.find((w) => w.branch === "feature");
+    expect(ws?.predictedOverlap).toEqual([{ path: "src/shared.ts", openItems: ["H1", "H2"] }]);
+  });
+
+  it("stays silent for disjoint paths and keeps overlap[] byte-identical (empty here)", () => {
+    const { main, work } = makeWorkstream();
+    commitFile(work, "BACKLOG.md", backlogWith("H1", "src/branch-only.ts"), "branch item");
+    commitFile(main, "BACKLOG.md", backlogWith("H2", "src/trunk-only.ts"), "trunk item");
+
+    const result = workstreamReport(work);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const ws = result.worktrees.find((w) => w.branch === "feature");
+    expect(ws?.predictedOverlap).toEqual([]);
+    expect(ws?.overlap).toEqual([]);
+  });
+});
