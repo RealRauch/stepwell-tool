@@ -14,12 +14,6 @@
 
 ## 🟠 HIGH
 
-### [ ] H8 — progress_update mit reiner Phasennummer (--phase 27) matcht den Detail-Block nicht (phaseMatches = exakte Gleichheit) und legt still ein Phantom-Skeleton an — 🟠
-- **Location:** `packages/core/src/mutations.ts` (`phaseMatches`, exakte Gleichheit; 🔄-Skeleton-Fallback in `planProgressUpdate`, Prefix-Guard setzt "Phase"-Form voraus). Fund: eigene Session 11/2026, Sandbox-Repro am Stand `c319d79` (nicht durch 27.4/27.6 regressiert — 27.1-Flip lief mit `--phase "Phase 27"` sauber).
-- **Problem:** `phaseMatches` vergleicht exakt (`name === phase || title === phase || name — title === phase`). Der natürliche CLI-Aufruf `progress-update --phase 27` missmatcht den Block (Name = "Phase 27") → `block === undefined`; der Status 🔄 triggert keinen Fehler-Wurf, der Code fällt in den Skeleton-Pfad und INSERTIERT still `### 27` + `**Umfang (Steps):**` + Bullet — stille Doku-Korruption statt Fehler, während die Tabellen-Zeile parallel korrekt geflippt wird (Schaden bleibt unauffällig). Bestehende Prefix-Guards (`/Phase\s+(\d+)/`) greifen bei reiner Nummer nicht.
-- **Fix:** (a) Matching-Toleranz: reine Nummer `27` matcht `Phase 27` (Normalisierung in `phaseMatches`). (b) Scharfstellung: `block === undefined && row !== undefined` (Step steht bereits in der Tabelle) darf kein Skeleton anlegen — Fehler statt stiller Insert; Skeleton bleibt dem echten Neu-Anlegen vorbehalten (Step noch nicht in der Tabelle).
-- **Acceptance:** RED→GRÜN: `--phase 27` matcht "Phase 27" (Flip nur Row, kein Insert); Step in Tabelle + kein Block-Match → strukturierter Fehler; Suite grün; README/SKILL-Phase-Parameter-Doku nachgezogen.
-
 ### [ ] H9 — Validator-Reparaturpfad: docs_validate repariert mechanische Funde statt nur zu melden (fix-Parameter, dry-run-first) — 🟠
 - **Location:** `packages/core/src/validate.ts` (erzeugt nur Funde, kein Reparaturpfad), `packages/core/src/mutations.ts` (zuständige Planner: `planArchiveItem`, `planProgressUpdate`, `insertIntoSection`/`removeItemLines`), `packages/mcp/src/tools.ts` (`docs_validate`-Schema + `READ_ONLY_ANNOTATIONS`). Vorlage: Backlog.md `doctor --fix` (Diagnose + Reparatur nur der eindeutigen Fälle). Fund: Vergleich mit MrLesk/Backlog.md 11/2026; eigener Bestand zeigt den Bedarf (H6-Drift in internal-consumer war nur sichtbar, nicht reparierbar).
 - **Problem:** `docs_validate` erkennt Drift, repariert aber nichts — der Agent muss jeden Fund selbst dem richtigen Mutation-Tool zuordnen. Genau dort entsteht der zweite Fehler (Hand-Edit am Struktur-Marker). Backlog.md belegt das Muster: eindeutige, mechanische Fälle bekommen einen Reparaturpfad; alles Semantische bleibt Fund.
@@ -178,5 +172,6 @@
 - M22 — stepwell-github als Satellit: read-only PR-Status im Workstream-Loop (stille Kopplung, kein Surface-Zuwachs am Haupt-Server) — entfernt (parked 11/2026 — design bleibt in BRAINSTORM.md (Abschnitt „GitHub Pull Requests"); kein offener Arbeitsbedarf)
 - L20 — PR-Body aus der Doku ableiten (Marker-Block, strikt einseitig) + Merge-Commit-vs-Squash gegen die ff-only-Precondition dokumentieren — entfernt (parked 11/2026 — design bleibt in BRAINSTORM.md (Abschnitt „GitHub Pull Requests"); kein offener Arbeitsbedarf)
 - L21 — Review-Befunde als Items: pr ingest (dry-run, keine Webhooks) — Issues-Bridge-Pattern 2 mit Review-Threads als Quelle — entfernt (parked 11/2026 — design bleibt in BRAINSTORM.md (Abschnitt „GitHub Pull Requests"); kein offener Arbeitsbedarf)
+- H8 — progress_update mit reiner Phasennummer (--phase 27) matcht den Detail-Block nicht (phaseMatches = exakte Gleichheit) und legt still ein Phantom-Skeleton an — erledigt (phase 29/29.1 (RED c278050 + feat 13748a7) — phaseMatches consolidated into progress.ts (was duplicated in mutations+context) and tolerates bare phase numbers; phantom-skeleton refusal: a 🔄-flip targeting a table step without a matching block now throws instead of silently inserting '### <phase>' + scope; README/zod phase docs updated)
 
 ---
