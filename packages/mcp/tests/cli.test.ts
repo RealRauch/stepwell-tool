@@ -353,3 +353,27 @@ describe("runCli — status next-action lines (L7, 9.12)", () => {
     expect(io.stdout).toContain("Next priority: 🟠 (3 open)");
   });
 });
+
+describe("runCli — defaultRoot (L15/27.8)", () => {
+  it("falls back to the injectable defaultRoot when --root is omitted", async () => {
+    const io = makeIo();
+    const code = await runCli(["status"], io.io, projectA);
+    expect(code).toBe(0);
+    expect(io.stdout).toContain("Open items: 7");
+    expect(io.stdout).toContain("Warnings: 0");
+  });
+
+  it("explicit --root wins over the defaultRoot", async () => {
+    const io = makeIo();
+    const code = await runCli(["status", "--root", projectDrift], io.io, projectA);
+    expect(code).toBe(0);
+    expect(io.stdout).toContain("Warnings: 19");
+  });
+
+  it("still reports a usage error without --root and without a defaultRoot", async () => {
+    const io = makeIo();
+    const code = await runCli(["status"], io.io, undefined);
+    expect(code).toBe(2);
+    expect(io.stderr).toContain("missing required option: --root");
+  });
+});

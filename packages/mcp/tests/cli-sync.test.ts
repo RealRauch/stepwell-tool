@@ -128,4 +128,24 @@ describe("runCli — sync (H5/26.5)", () => {
     expect(code).toBe(2);
     expect(io.stderr).toContain("usage");
   });
+
+  it("single-tree sync status hints how to set up a workstream (L15/27.8)", async () => {
+    const main = mkdtempSync(join(tmpdir(), "stepwell-clisync-single-"));
+    dirs.push(main);
+    mkdirSync(join(main, "docs", "archive"), { recursive: true });
+    for (const rel of DOC_FILES) writeFileSync(join(main, rel), projectTemplates.progress);
+    gitc(main, ["init", "-b", "main"]);
+    gitc(main, ["config", "user.email", "test@example.com"]);
+    gitc(main, ["config", "user.name", "Test"]);
+    gitc(main, ["add", "-A"]);
+    gitc(main, ["commit", "-m", "init"]);
+    const io = makeIo();
+
+    const code = await runCli(["sync", "status", "--root", main], io.io);
+
+    expect(code).toBe(0);
+    expect(io.stdout).toContain("Workstreams: none (single-tree mode)");
+    expect(io.stdout).toContain("git worktree add");
+    expect(io.stdout).toContain("-b");
+  });
 });
