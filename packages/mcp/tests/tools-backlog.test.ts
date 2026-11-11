@@ -218,3 +218,36 @@ describe("backlog_add considerWorktrees (M20/30.5)", () => {
     }
   });
 });
+
+describe("backlog_list ready filter + dependency fields (M21/30.6)", () => {
+  const projectLdeps = join(import.meta.dirname, "..", "..", "core", "tests", "fixtures", "project-l-deps");
+
+  it("ready: true yields exactly the open items without open ancestors", async () => {
+    const c = await connect();
+    try {
+      const result = await callTool(c, "backlog_list", { root: projectLdeps, ready: true });
+      expect(result.isError).toBeFalsy();
+      const data = payload(result) as { items: Array<{ id: string; ready: boolean }> };
+      expect(data.items.map((i) => i.id)).toEqual(["X3"]);
+      expect(data.items[0]?.ready).toBe(true);
+    } finally {
+      await c.close();
+    }
+  });
+
+  it("projects the derived dependency fields", async () => {
+    const c = await connect();
+    try {
+      const result = await callTool(c, "backlog_list", {
+        root: projectLdeps,
+        fields: ["id", "dependsOn", "blockedBy", "ready"],
+      });
+      expect(result.isError).toBeFalsy();
+      const data = payload(result) as { items: Array<Record<string, unknown>> };
+      const x1 = data.items.find((i) => i["id"] === "X1");
+      expect(x1).toEqual({ id: "X1", dependsOn: ["X2"], blockedBy: ["X2", "X3"], ready: false });
+    } finally {
+      await c.close();
+    }
+  });
+});
