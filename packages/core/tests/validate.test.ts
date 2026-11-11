@@ -253,10 +253,7 @@ describe("docsValidate — SCOPE_ROW_MISSING (M17/27.5)", () => {
     writeFileSync(
       progressPath,
       readFileSync(progressPath, "utf8").replace(
-        "- **2.3 U22 Ladezustände",
-        "- **2.3 REMOVED-BY-INCIDENT",
-      ).replace(
-        "- **2.3 REMOVED-BY-INCIDENT",
+        "- **2.3 U22 Lade-/Leerzustände**",
         "",
       ),
       "utf8",

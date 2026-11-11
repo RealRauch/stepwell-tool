@@ -269,6 +269,31 @@ export function docsValidate(root: string): {
     }
   }
 
+  // M17/27.5: a table row whose ACTIVE phase carries a detail block but whose step
+  // is not in that block's scope is lost structure (the 27.2/27.3 incident shape).
+  // Deliberately active-only: archives are never policed (W2) and legacy archived
+  // blocks often carry incomplete scopes (project-c-en as proof); rows of phases
+  // without any active block (adoption/legacy, e.g. the 0.1 baseline row) stay exempt.
+  const phaseScopes = new Map<string, Set<string>>();
+  for (const block of progress.value.phases) {
+    const m = /Phase\s+(\d+)/u.exec(block.name);
+    if (m === null) continue;
+    const set = phaseScopes.get(m[1]!) ?? new Set<string>();
+    for (const step of scopeSteps(block)) set.add(step);
+    phaseScopes.set(m[1]!, set);
+  }
+  for (const row of progress.value.rows) {
+    const phase = row.step.split(".")[0] ?? "";
+    const scopes = phaseScopes.get(phase);
+    if (scopes === undefined || scopes.has(row.step)) continue;
+    findings.push({
+      code: "SCOPE_ROW_MISSING",
+      file: progressPath,
+      ...(stepLines.get(row.step)?.[0] !== undefined ? { line: stepLines.get(row.step)![0] } : {}),
+      message: `Step ${row.step} has a progress-table row but no scope bullet in the active detail block of phase ${phase} — lost structure (M17/27.5).`,
+    });
+  }
+
   scanLegacyDates(backlogPath, backlogPath, findings);
   scanLegacyDates(progressPath, progressPath, findings);
 
