@@ -13,6 +13,30 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
 
 ## [Unreleased]
 
+### Phase 29 — Findings batch: phase matching, suite stability, rename guard (2026-11-11T17:30)
+
+#### Fixed
+- **Bare phase numbers + phantom-skeleton refusal (H8/29.1):** `progress_update` accepts
+  the natural CLI form `--phase 29` (matches `Phase 29`; phase matching is consolidated
+  into a single `phaseMatches` in core). A 🔄-flip whose step already has a table row but
+  no matching detail block now fails with a structured error instead of silently
+  inserting a phantom skeleton (`### 27` + scope) — the row flip still succeeded before,
+  which made the corruption easy to miss. Skeletons stay reserved for genuinely new
+  phases. New refusal replaces undocumented silent corruption (MINOR).
+- **`--title` prefix guard (L16/29.3):** a full heading text passed as the new title
+  (`"Phase 2 — UI Polish"`) no longer doubles the prefix in the renamed heading or in
+  the archive block heading at phase completion (the phase-27 archive heading carries
+  the doubled prefix as the incident's residue — append-only, left as is).
+- **Suite hardening for Windows load (M19/29.2):** root causes established empirically —
+  `execFileSync` leaks child-process stderr to the console (worktree progress,
+  `autocrlf` warnings, HEAD notes); temp repos inherited the machine's
+  `core.autocrlf` (LF/CRLF warning noise); failed git-heavy tests under AV/indexer load
+  leaked their `%TEMP%` directories and hit the 5 s default timeout. Fixes at the
+  cause: `core.autocrlf=false` in every test repo, leak-proof `rmSync` (maxRetries),
+  explicit `stdio` piping in every test git wrapper (stderr still surfaces in thrown
+  errors — no suppression), `testTimeout` 20 s for git-heavy files. Acceptance:
+  consecutive full runs green, stderr-free, zero temp litter.
+
 ### Phase 27 — Sammel-Batch: Hygiene & Workstream-Härtung (2026-11-11T16:30)
 
 #### Fixed
