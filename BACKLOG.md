@@ -40,12 +40,6 @@
 - **Fix (Entscheidungs-Item, Muster L5/docs_review):** Alternativprüfung dokumentieren, Ergebnis entweder (a) **kein Tool** — Begründung: grep + `backlog_show` decken den Fall, jeder Suchindex wäre eine zweite Wahrheit; Reaktivierungs-Kriterium: Feldproben zeigen wiederholtes Fehlgreifen (z. B. archivierte Treffer übersehen, falsche ID-Rekonstruktion), dann (b) minimaler Kandidat: Parameter `query` an `backlog_list` (Titel/ID/Text, optional `includeArchived: true`), Treffer als `{ id, status, file, line, snippet }` — kein Fuzzy-Ranking, keine Fremddateien, kein neues Tool.
 - **Acceptance:** dokumentierter Entscheid in README/AGENTS inkl. Reaktivierungs-Kriterium (wie L5); falls (b) gebaut wird: RED→GRÜN für offen/archiviert/entfernt und `status` im Treffer; keine neue Abhängigkeit; Suite + typecheck grün.
 
-### [ ] F1 — H6-Marker-Toleranz-Lücke: „Keine offenen Items." wurde nicht erfasst (drop/restore/EMPTY_MARKER_STALE) — inline gefixt in 30.7 — 🟢
-- **Location:** `packages/core/src/mutations.ts` (`EMPTY_MARKER`, drop/restore), `packages/core/src/validate.ts` (`EMPTY_MARKER_STALE`-Scan). Fund: 30.7 (L17-Position-Test) — Insert in eine Marker-Sektion des Real-Fixtures project-a ließ den Marker stehen.
-- **Problem:** Die H6-Marker-Toleranz erfasste nur `No open items.` und `Keine offenen Punkte.` — die reale Varante `Keine offenen Items.` (project-a, internal-pwa-Erbe) wurde weder gedroppt noch restored noch als EMPTY_MARKER_STALE erkannt.
-- **Fix:** Inline-Fix-Lane (Decision 8): Union um `Keine offenen Items\.?` erweitert, beide Regexes (mutations + validate) im selben Zug.
-- **Acceptance:** erledigt — L17-Position-Test grün, empty-marker-Suite unverändert grün; Fix im Commit dieses Steps.
-
 ## 🔵 TEST GAPS
 
 ---
@@ -150,5 +144,6 @@
 - M20 — Parallele Workstreams vergeben dieselbe nächste ID: Cross-Worktree-Kollisionen im sync-Report + optionales considerWorktrees — erledigt (phase 30/30.5 (RED 3d2b05c + feat this commit) — acceptance refined: collision set = ids+steps newly added on both sides since merge-base (sorted localeCompare); considerWorktrees collects via foreignDocState (satellite), core exclusion options excludeIds/excludePhases/excludeSteps keep the core signature git-free; explicit ids never filtered; fixture ids matched to project-a's real M-series (archives count))
 - M21 — Abhängigkeiten als Daten: optionaler Depends-on-Bullet + ready/blockedBy-Filter (Startbarkeit ist heute nur Prosa) — erledigt (phase 30/30.6 (RED 851954c + feat this commit) — acceptance refined: refs must match ^[A-Z][0-9]+$ to parse at all (ZZ9-shaped tokens are prose), unknown refs (Z9) warn via DEP_UNKNOWN and do NOT flip ready (item semantics 'ohne ready-Flip' — a blocked-by-nothing item is startable), cycle members block themselves, fixture renamed to project-l-deps (k taken))
 - L17 — backlog_update: position-Parameter (top/bottom/Index) macht die Blockreihenfolge steuerbar (Ordinal-Analogon) — erledigt (phase 30/30.7 (RED 55fbc9f + feat this commit) — out-of-range decision documented: structured error, never clamped; backlog_add deliberately NOT extended (item marked it optional — KISS, note in close); MCP-only (CLI has no backlog_update command))
+- F1 — H6-Marker-Toleranz-Lücke: „Keine offenen Items." wurde nicht erfasst (drop/restore/EMPTY_MARKER_STALE) — inline gefixt in 30.7 — erledigt (inline-fix lane (Decision 8) — found+fixed in phase 30/30.7 (feat commit above): 'Keine offenen Items.' tolerance in both marker regexes; retro item per lane rule)
 
 ---

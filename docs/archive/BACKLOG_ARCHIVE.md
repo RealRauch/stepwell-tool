@@ -921,3 +921,12 @@
 - **Fix:** `position?: "top" | "bottom" | number` an `backlog_update` (optional auch `backlog_add`): der Block wird innerhalb seiner Sektion an die Zielposition versetzt; `raw`, Checkbox, `*(accepted: …)*`-Suffix und Bullets bleiben byte-identisch, nur die Lage der Zeilen ändert sich. Kombination `section` + `position` = erst Sektionswechsel, dann Position (definiert und in der Tool-Beschreibung dokumentiert). Ohne `position` unverändertes Verhalten (Default-Pfad byte-gleich).
 - **Acceptance:** RED→GRÜN: `top`/`bottom`/Index verschieben den Block exakt, Rest der Sektion byte-identisch; out-of-range definiert behandelt (Fehler oder Klemme — im Item-Close dokumentiert); Kombination `section` + `position` belegt; `As of:`-Stamp aktualisiert; Suite + typecheck grün; README-Tool-Zeile nachgezogen.
 - **Erledigt:** phase 30/30.7 (RED 55fbc9f + feat this commit) — out-of-range decision documented: structured error, never clamped; backlog_add deliberately NOT extended (item marked it optional — KISS, note in close); MCP-only (CLI has no backlog_update command)
+
+---
+
+### [x] F1 — H6-Marker-Toleranz-Lücke: „Keine offenen Items." wurde nicht erfasst (drop/restore/EMPTY_MARKER_STALE) — inline gefixt in 30.7 — 🟢
+- **Location:** `packages/core/src/mutations.ts` (`EMPTY_MARKER`, drop/restore), `packages/core/src/validate.ts` (`EMPTY_MARKER_STALE`-Scan). Fund: 30.7 (L17-Position-Test) — Insert in eine Marker-Sektion des Real-Fixtures project-a ließ den Marker stehen.
+- **Problem:** Die H6-Marker-Toleranz erfasste nur `No open items.` und `Keine offenen Punkte.` — die reale Varante `Keine offenen Items.` (project-a, internal-pwa-Erbe) wurde weder gedroppt noch restored noch als EMPTY_MARKER_STALE erkannt.
+- **Fix:** Inline-Fix-Lane (Decision 8): Union um `Keine offenen Items\.?` erweitert, beide Regexes (mutations + validate) im selben Zug.
+- **Acceptance:** erledigt — L17-Position-Test grün, empty-marker-Suite unverändert grün; Fix im Commit dieses Steps.
+- **Erledigt:** inline-fix lane (Decision 8) — found+fixed in phase 30/30.7 (feat commit above): 'Keine offenen Items.' tolerance in both marker regexes; retro item per lane rule
