@@ -1,4 +1,4 @@
-# BACKLOG.md — Open items (As of: 2026-11-12T00:08
+# BACKLOG.md — Open items (As of: 2026-11-12T00:11
 
 > **This file contains only OPEN items.** Completed items are moved to `docs/archive/BACKLOG_ARCHIVE.md` unchanged after completion; this file keeps only a one-liner per item in the Done Index (below). Findings/fix-ideas/decisions are not deleted — moved to the archive.
 > Legend: 🔴 critical · 🟠 high · 🟡 medium · 🟢 low · 🔵 test gap
@@ -50,6 +50,12 @@
 - **Problem:** Die Vier-Datei-Listen und die Resource-Surface kennen genau vier Dateien — Scherben würden vom `--commit`-Staging, der H7-Auto-Resolution und dem Hash-Fast-Pfad **stillschweigend ausgeschlossen** (der Fast-Pfad sähe Scherben-Änderungen nie → veraltete Hashes → Konsumenten lesen stale Stände).
 - **Fix:** (1) Die Vier-Datei-Listen werden zu Doc-File-Sets: Kern-Konstante (project-files) als Quelle, `hashes.ts`/`commit.ts` leiten ab; der gitattributes-Test behält seine feste Methoden-Kopien-Liste und ergänzt die kanonischen Archive. (2) sync docSet: Scherben zählen als Doku-Dateien (H7-Auto-Resolution pro Datei unverändert). (3) hashes-Resource: Key-Set = kanonische vier + vorhandene Scherben (dynamisch); Resource-/Contract-Tests additiv. (4) `archivePath()`: kind bleibt `backlog|progress` (Kanonik); Scherben-Lesezugriff über die Bestands-Reader statt neuer URI-Kinds (M4: kein Surface-Zuwachs).
 - **Acceptance:** RED→GRÜN: `--commit` staged kanonische vier + Scherben; H7-Auto-Resolution löst einen Scherben-Append-Konflikt mechanisch; Hash-Fast-Pfad sieht Scherben-Änderungen; Suite grün.
+
+### [ ] M26 — Methoden-Retro fällig (PLAYBOOK §8): 7 Phasen seit Q2/Phase 23 — Review von PLAYBOOK/LESSONS + BRAINSTORM-Bewertern — 🟡
+- **Location:** `docs/PLAYBOOK.md` §8 (Methoden-Retro: alle N Phasen, empfohlen 5; drei Leitfragen je Regel: Bug verhindert? Overhead > Nutzen? konsolidierbar?; Outcomes stay/demote/drop), `docs/LESSONS.md`, AGENTS-Decisions. Fund: eigene Session 11/2026 — letzte Retro war Q2/Phase 23; seither 7 Phasen (24–30), die Abstandsempfehlung ist überschritten.
+- **Problem:** Die Retro-Pflicht ist methodisch fällig und hat hochaktuelles Futter: die Scherben-Items (H11–L26) ändern die Methoden-Oberfläche (Datei-Menge), M18/M23 justieren Validate-Semantik, die ADR-Idee und die PR-Satelliten-Idee in BRAINSTORM sind Bewerter-Kandidaten, und Decision 13 (Konsum-Freeze) hat sich in der Session bewährt (Frozen-Server-Ausrutscher als Lesson-Kandidat).
+- **Fix:** Retro als eigener Step im nächsten Paket: PLAYBOOK/LESSONS-Regeln gegen die drei Leitfragen prüfen, BRAINSTORM-Bewerter (ADR-Idee, PR-Satellit, Obsidian V1/V2 als Quick-Win-Kandidaten) einbeziehen, Outcomes dokumentieren (stay/demote/drop), Rule-Changes ggf. synchron in alle Kopien (SHA256). Lesson-Kandidaten aus der Session einbringen: „Frozen-Server-Konsum im Dev-Repo“ (fba546b), „execFileSync stderr-Leak“ (M19/29.2, bereits als Lesson-Umsetzung gefallen?).
+- **Acceptance:** Retro dokumentiert (Notiz am Phasen-Meilenstein oder eigener Step); je geprüfter Regel genau ein Outcome; Rule-Changes textgleich in allen Kopien; `docs_validate` clean.
 
 
 ---

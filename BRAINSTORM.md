@@ -273,8 +273,9 @@ established verbatim PLAYBOOK/LESSONS syncs (SHA256-evidenced cross-repo
 contract) and the read-only field probes (Decision 13). Adopting workstream
 mode in internal-pwa is a separate, explicit decision.
 
-As of 11/2026: decision documented, implementation not started (Phase 26
-packaging follows; PLAYBOOK sync on the M15-synced basis first).
+As of 11/2026: **implemented** (Phase 26, steps 26.1–26.7 incl. the M12/M13
+dogfood workstreams; archive entry H5). Kept as the decision record — status
+lines below may be stale relative to shipped reality.
 
 ---
 
