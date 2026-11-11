@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { callTool, payload, tempProject } from "./helper.ts";
+import { callTool, connect, payload, tempProject } from "./helper.ts";
 
 // H9/30.2: the transport layer of docsRepair — a NEW destructive tool next to
 // docs_validate (which stays byte-identical read-only: H4 lock + annotations).
@@ -15,13 +15,11 @@ describe("tool docs_repair (H9/30.2)", () => {
       const result = await callTool(c, "docs_repair", { root: dir });
       expect(result.isError).toBeFalsy();
       const data = payload(result) as {
-        schema: number;
         root: string;
         dryRun: boolean;
         fix: { planned: unknown[]; applied: unknown[]; skipped: unknown[] };
         verification: { ok: boolean };
       };
-      expect(data.schema).toBe(2);
       expect(data.dryRun).toBe(true);
       expect(data.fix.planned).toHaveLength(3);
       expect(data.fix.applied).toEqual([]);

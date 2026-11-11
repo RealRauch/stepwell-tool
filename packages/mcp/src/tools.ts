@@ -9,6 +9,7 @@ import {
   applyPhasePlan,
   applyProgressPlan,
   backlogShow,
+  docsRepair,
   docsStatus,
   docsValidate,
   loadProject,
@@ -336,6 +337,31 @@ export function registerDocsTools(server: McpServer): void {
       inputSchema: { root: ROOT_FIELD, structured: STRUCTURED_FIELD },
     },
     ({ root, structured }) => asStructuredResult(() => docsValidate(root), structured),
+  );
+
+  server.registerTool(
+    "docs_repair",
+    {
+      annotations: { ...DESTRUCTIVE_ANNOTATIONS },
+      title: "Docs repair (dry-run)",
+      description:
+        "Mechanical repair path for validate findings, over the responsible planners — never " +
+        "text manipulation: EMPTY_MARKER_STALE (placeholder removal), DATE_LEGACY YYMMDD/HHMM " +
+        "(→ ISO 8601; MM/YYYY stays a finding — the day is not reconstructible), NOT_ARCHIVED " +
+        "(delegates to archive_item), ARCHIVE_WITHOUT_INDEX (Done-Index line from the archive " +
+        "block title), WIP_WITHOUT_PLAN (skeleton, only when the phase has no other table rows). " +
+        "Everything else stays a finding (human judgment). Applies sequentially with " +
+        "re-validation between repairs; refusals are reported, never retried. Deliberately a " +
+        "SEPARATE tool from docs_validate: a tool cannot be read-only AND mutating — the " +
+        "static readOnly annotation of docs_validate protects consumer auto-approval flows (M4).",
+      inputSchema: {
+        root: ROOT_FIELD,
+        structured: STRUCTURED_FIELD,
+        dryRun: z.boolean().default(true)
+          .describe("true (default): report planned/skipped without writing; false: apply the mechanical repairs."),
+      },
+    },
+    ({ root, structured, dryRun }) => asStructuredResult(() => docsRepair(root, { dryRun }), structured),
   );
 
   server.registerTool(

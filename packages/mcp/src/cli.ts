@@ -2,6 +2,7 @@
 import {
   applyArchivePlan,
   applyProgressPlan,
+  docsRepair,
   docsStatus,
   docsValidate,
   planArchiveItem,
@@ -14,6 +15,7 @@ import {
   statusAliasHelp,
   type ArchiveItemPlan,
   type ApplyResult,
+  type DocsRepairPlan,
   type DocsStatus,
   type PlanChange,
   type ProgressUpdatePlan,
@@ -135,6 +137,8 @@ commands:
   backlog          List items of BACKLOG.md
   progress         List progress table rows
   validate         Check consistency (exit 1 on findings)
+  repair           Mechanically repair validate findings over the responsible
+                   planners (dry-run; --apply to write; exit 1 while findings remain)
   archive          Move completed item into archive (dry-run; --apply to write)
   progress-update  Update step status incl. phase completion (dry-run; --apply to write)
   sync <direction> Git workstream sync (H5): status (read-only report) | pull | push.
@@ -379,6 +383,32 @@ function planText(plan: { dryRun: boolean; changes: PlanChange[] }): string {
   return lines.join("\n");
 }
 
+function repairText(result: DocsRepairPlan): string {
+  const lines: string[] = [
+    result.dryRun ? "Dry-run — nothing was written (--apply to apply)." : "Apply — repairs executed:",
+    "",
+  ];
+  const list = (label: string, actions: Array<{ code: string; target: string }>): void => {
+    lines.push(`${label}: ${actions.length}`);
+    for (const a of actions) lines.push(`  ${a.code}${a.target !== "" ? ` — ${a.target}` : ""}`);
+  };
+  list(result.dryRun ? "Planned" : "Applied", result.dryRun ? result.fix.planned : result.fix.applied);
+  list("Skipped", result.fix.skipped);
+  for (const s of result.fix.skipped) lines.push(`    reason: ${s.reason}`);
+  lines.push("");
+  lines.push(result.verification.ok ? "OK — no findings remain." : `Findings remaining: ${result.verification.messages.length}`);
+  for (const m of result.verification.messages) lines.push(`  ${m}`);
+  lines.push("");
+  if (!result.dryRun) {
+    for (const change of result.changes) {
+      lines.push(`## ${basename(change.file)} — ${change.description}`);
+      lines.push(change.diff);
+      lines.push("");
+    }
+  }
+  return lines.join("\n");
+}
+
 function applyResultText(result: ApplyResult): string {
   const lines = [
     result.verification.ok ? "OK — archival verified." : "ERROR — verification failed:",
@@ -403,7 +433,7 @@ export async function runCli(argv: string[], io: CliIo, defaultRoot?: string): P
     throw err;
   }
 
-  if (command === undefined || !["status", "backlog", "progress", "validate", "archive", "progress-update", "sync"].includes(command)) {
+  if (command === undefined || !["status", "backlog", "progress", "validate", "repair", "archive", "progress-update", "sync"].includes(command)) {
     io.stderr.write(USAGE);
     return 2;
   }
@@ -452,6 +482,11 @@ export async function runCli(argv: string[], io: CliIo, defaultRoot?: string): P
         const result = docsValidate(requireRoot(options, defaultRoot));
         io.stdout.write(options.json ? jsonOut(result) : validateText(result));
         return result.ok ? 0 : 1;
+      }
+      case "repair": {
+        const result = docsRepair(requireRoot(options, defaultRoot), { dryRun: !options.apply });
+        io.stdout.write(options.json ? jsonOut(result as unknown as Record<string, unknown>) : repairText(result));
+        return result.dryRun ? 0 : result.verification.ok ? 0 : 1;
       }
       case "archive": {
         const root = requireRoot(options, defaultRoot);
