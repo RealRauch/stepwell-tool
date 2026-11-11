@@ -440,6 +440,16 @@ directory when untracked content (e.g. `node_modules`) survived — verify the d
 is gone afterwards; `stepwell sync status` reports leftovers mechanically (`husks[]`
 = stale `.git` pointer into this repo's admin area, `prunable[]` = registrations git
 wants pruned) — resolve with `git worktree prune` + `rm -rf <dir>`.
+**Adoption (L14):** projects adopting workstreams pin their doc files to deterministic
+line endings — one glob line in the project-root `.gitattributes` is enough:
+
+```gitattributes
+* text=auto eol=lf
+```
+
+Without it, `autocrlf` differences between machines show up as sync noise (CRLF drift
+warnings on every cross-machine pull — the four doc files and the method copies are the
+files every workstream merge touches).
 Field-test ladder (Decision 14): fixtures → this repo → only an explicitly chosen
 non-critical project; internal-pwa receives verbatim doc syncs and read-only probes
 only.
