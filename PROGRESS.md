@@ -182,7 +182,7 @@
 | 29.2 | suite stability: diagnose Windows worker-load flakes (git subprocess + coverage gate), fix at the cause, no suppressed warnings, no leaked temp dirs [M19] | ✅ |
 | 29.3 | progress_update --title: duplicate "Phase <N> —" prefix guard [L16] | ✅ |
 | 29.4 | Verification: typecheck + full suite + docs_validate clean; doc-sync (CHANGELOG/README/SKILL); archive H8/M19/L16; phase completion | ✅ |
-| 30.1 | core: docsRepair orchestration over existing planners + new extraction planners (H6 marker removal, DATE_LEGACY YYMMDD/HHMM → ISO only, ARCHIVE_WITHOUT_INDEX index line after counting) — RED→GRÜN with project-b-drift + new fixtures [H9] | 🔄 |
+| 30.1 | core: docsRepair orchestration over existing planners + new extraction planners (H6 marker removal, DATE_LEGACY YYMMDD/HHMM → ISO only, ARCHIVE_WITHOUT_INDEX index line after counting) — RED→GRÜN with project-b-drift + new fixtures [H9] | ✅ |
 | 30.2 | transport: docs_repair MCP tool (DESTRUCTIVE_ANNOTATIONS, dryRun default true) + CLI repair command + contract-tools test extended ONLY with the docs_repair entry — docs_validate H4 lock + annotations test byte-identical green (compatibility proof) [H9] | ⬜ |
 | 30.3 | Verification: typecheck + suite + docs_validate clean; doc-sync (README tool table + M4 justification, CHANGELOG); archive H9; phase completion | ⬜ |
 | 30.4 | H10: files[] from Location bullets (tolerant path extraction, no globs) + backlog_list fields extension + workstreamReport predictedOverlap (branch/trunk open-item file intersection, read-only) — overlap[] byte-identical [H10] | ⬜ |
