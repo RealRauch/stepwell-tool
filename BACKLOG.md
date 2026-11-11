@@ -21,8 +21,6 @@
 
 ## 🟡 MEDIUM
 
-> No open items.
-
 ### [ ] M23 — PLAN_WITHOUT_WIP feuert transient bei JEDEM Step-Übergang (✅ geflippt, nächster ⬜ noch nicht 🔄) — sequentieller Zwischenzustand ist legitimer Fortschritt — 🟡
 - **Location:** `packages/core/src/validate.ts` (M18-Semantik: gemischt ohne 🔄 = PLAN_WITHOUT_WIP-Finding). Fund: eigene Session 11/2026, Phase 30 — bei JEDEM Step-Übergang (Step N ✅ geflippt, Step N+1 noch ⬜) feuert das Finding transient; ein `docs_validate` in diesem Fenster bricht `&&`-Ketten (exit 1), wie beim 30.3-Flip geschehen.
 - **Problem:** M18 unterscheidet rein geplant (Warning) und verwaist (Finding) — aber den dritten legitimen Zustand „Phase läuft, zwischen zwei Steps" (✅…✅ gefolgt von ⬜…⬜, kein 🔄) behandelt sie als Verwaist-Finding. Bei aktiver Arbeit ist das kein Inkonsistenz-Fund, sondern ein Timing-Artefakt der Step-Flips; CI-Validates zwischen Flips würden fälschlich rot.
