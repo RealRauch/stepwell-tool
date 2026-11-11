@@ -13,6 +13,51 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
 
 ## [Unreleased]
 
+### Phase 30 — Validator repair path + workstream foresight (2026-11-11T22:00)
+
+#### Added
+- **`docs_repair` tool + CLI `repair` (H9/30.1–30.3):** mechanical repair path for
+  validate findings over the responsible planners, never text manipulation —
+  `EMPTY_MARKER_STALE` placeholder removal, `DATE_LEGACY` `YYMMDD/HHMM` → ISO (MM/YYYY
+  stays a finding — the day is not reconstructible), `NOT_ARCHIVED` (delegates to
+  `archive_item`), `ARCHIVE_WITHOUT_INDEX` (Done-Index line from the archive block
+  title), `WIP_WITHOUT_PLAN` (skeleton only when the phase has no other table rows —
+  sibling scope is never invented). Applies sequentially with re-validation between
+  repairs; refusals are reported, never retried; dry-run default. Deliberately a
+  **separate** tool from `docs_validate`, which stays byte-identical read-only (H4
+  schema lock + annotations untouched — a tool cannot be read-only AND mutating; the
+  static readOnly annotation protects consumer auto-approval flows; M4 justification
+  documented). New tool = additive (MINOR).
+- **`files[]` + `predictedOverlap` (H10/30.4):** every item carries `files[]` —
+  path-like tokens extracted tolerantly from the Location bullet (backticks,
+  `file.ts:12` refs, lists; prose, dates and globs skipped; no invention, no glob
+  expansion). `workstreamReport` gains per-worktree `predictedOverlap[]`: files that
+  OPEN items on BOTH sides name (branch vs trunk doc states, read-only derivation in
+  the satellite — core stays git-blind), visible before anyone edits the file. The
+  factual `overlap[]` is unchanged.
+- **`idCollisions` + `considerWorktrees` (M20/30.5):** the report names item ids and
+  table steps that BOTH sides newly added since the merge base — the parallel
+  same-next-id collision surfaces before the merge. `considerWorktrees` (default
+  `false`) on `backlog_add`/`progress_plan_phase` skips/refuses what foreign worktree
+  doc states already occupy (the transport collects via the new `foreignDocState`
+  satellite helper and passes core exclusion options; per-branch read failures become
+  additive `worktreeWarnings[]`; explicit ids are never filtered).
+- **Dependencies as data (M21/30.6):** optional `Depends on:` bullet (DE variant read
+  silently, union matching), derived `blockedBy[]` (transitive open ancestors) and
+  `ready` per item; `DEP_CYCLE` finding, `DEP_UNKNOWN` warning (never blocks);
+  `backlog_list` gains the `ready` filter and the three projectable fields.
+  Section/priority semantics untouched — readiness is a filter, not an order.
+- **`position` on `backlog_update` (L17/30.7):** places the block within its (target)
+  section — `top`/`bottom`/1-based slot, byte-identical content; with `section` the
+  order is first switch, then place; out-of-range slots are a structured error (never
+  clamped).
+
+#### Fixed
+- **Marker tolerance (F1/30.7):** the H6 placeholder invariant missed the real-world
+  DE wording „Keine offenen Items." (project-a / internal-pwa heritage) — drop,
+  restore and `EMPTY_MARKER_STALE` now cover it; found by the position test inserting
+  into a marker section of a real fixture.
+
 ### Phase 29 — Findings batch: phase matching, suite stability, rename guard (2026-11-11T17:30)
 
 #### Fixed

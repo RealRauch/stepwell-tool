@@ -44,6 +44,14 @@ progress-archive), then run `docs_validate` — must be clean.
 - `backlog_add` / `backlog_update` / `backlog_remove` — add/change/remove items in a
   format-safe way (instead of hand-editing).
 - `progress_plan_phase` — plan a new phase ahead (table rows ⬜ + scope skeleton).
+- `docs_repair` — mechanical repair of validate findings (H9/30.2): placeholder stamps,
+  legacy `YYMMDD/HHMM` dates, un-archived checked-off items, missing index lines,
+  single-row WIP skeletons. Dry-run first; everything needing judgment stays a finding.
+  `docs_validate` stays the read-only diagnostic — repair is a separate tool by design.
+- In parallel workstreams: `workstream_sync status` names file collisions before they
+  happen (`predictedOverlap`, H10/30.4) and id/step collisions across worktrees
+  (`idCollisions`, M20/30.5); `considerWorktrees: true` on `backlog_add`/`progress_plan_phase`
+  keeps the next free id/phase/step collision-free across trees (M20/30.5).
 - `dryRun` defaults to `true` everywhere: preview/diff first, then write with
   `dryRun: false`.
 
