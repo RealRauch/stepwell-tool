@@ -295,6 +295,40 @@ describe("planProgressUpdate — dry-run planning (3.3)", () => {
   });
 });
 
+describe("phase matching + phantom skeleton guard (H8, 29.1)", () => {
+  const planned = [
+    { step: "7.1", name: "Erster Step" },
+    { step: "7.2", name: "Zweiter Step" },
+  ];
+
+  it("matches a bare phase number to 'Phase <N>' and flips only the table row", () => {
+    const dir = tempCopy("project-a");
+    planPhase(dir, "Phase 7 — Rundung", planned, { dryRun: false });
+
+    const plan = planProgressUpdate(dir, "7", "7.1", "🔄", { dryRun: true });
+    expect(plan.changes).toHaveLength(1);
+    const change = plan.changes[0]!;
+    expect(change.file.endsWith("PROGRESS.md")).toBe(true);
+    expect(change.after).toContain("| 7.1 | Erster Step | 🔄 |");
+    expect(change.after).not.toMatch(/### 7\b/u);
+  });
+
+  it("refuses to create a phantom skeleton when the step has a table row but no block matches (H8)", () => {
+    const dir = tempCopy("project-a");
+    planPhase(dir, "Phase 7 — Rundung", planned, { dryRun: false });
+
+    // non-"Phase <N>" name that matches nothing: previously inserted a silent
+    // "### Neue Phase" skeleton while flipping the row — a corruption, H8
+    expect(() =>
+      planProgressUpdate(dir, "Neue Phase", "7.1", "🔄", { dryRun: true }),
+    ).toThrow(/7\.1/);
+    // bare number without a matching phase: same refusal
+    expect(() =>
+      planProgressUpdate(dir, "99", "7.1", "🔄", { dryRun: true }),
+    ).toThrow(/7\.1/u);
+  });
+});
+
 describe("locale generation (4.2)", () => {
   it("auto-detects English and generates done/Done markers", () => {
     const dir = tempCopy("project-c-en");
