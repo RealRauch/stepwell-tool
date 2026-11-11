@@ -3,10 +3,10 @@
 > Every rule originated from a **real, found bug** — the reference in brackets
 > points to the backlog archive of the origin project (evidence, not prerequisite).
 >
-> **Usage:** before every review, before every phase completion and when creating new
+> **Scope tags:** sections tagged `*(scope: …)*` are project-class-specific — apply the
 > routes/endpoints/caches, work through this checklist. Goal: never make the same mistake twice.
 
-## A. Security & tenant separation
+## A. Security & tenant separation *(scope: web/API)*
 
 1. **Parameterized values do not protect the keys.** Dynamic SQL (SET/ORDER-BY over object keys) needs a **column whitelist**. *(Evidence: K1)*
    - Check: every repo update that interpolates body keys into SQL → whitelist or 400.
@@ -27,7 +27,7 @@
 8. **In-memory clients (inject/mocks) hide host and environment logic.** IP/host-based resolution looks correct in the integration test and breaks in real HTTP — always test host logic with real requests. *(Phase-4 finding: 127.0.0.1 as "subdomain")*
 9. **Silent catches are diagnostic poison.** `catch(() => {})` without logging turns errors into "mysteriously does not work". Minimum: a warn log with context. *(SW registration finding)*
 
-## C. Frontend & browser reality
+## C. Frontend & browser reality *(scope: frontend)*
 
 10. **URL-keyed caches must not store personalized responses.** If a response contains user-specific data, a service worker must not cache it under the bare URL — extend the key with the session or split the response. *(H1)*
 11. **The router does not remount on param change.** `useRef(searchParams.get(…))` freezes the first value — keep refs in sync or set remount component boundaries. *(M2)*
@@ -51,3 +51,4 @@
    - Check: before archiving a phase, its commits are pushed and the CI run for them is green; never let unpushed work accumulate past one phase. *(Evidence: F7 — the M95 empty-tour lock hole survived two days and several local green runs, then failed on the first Ubuntu CI run; the verify:dist `docker run` step got its first CI execution eight phases after introduction because 104 commits sat unpushed.)*
 30. **Identifiers a human types are compared in exactly one normalized form.** If the login trims/lowercases an e-mail but the create path stores the raw input, the account becomes unreachable (401 forever), resets silently find nothing, and a case-sensitive `UNIQUE` admits duplicate identities that differ only in spelling. Normalize **on write** and compare on the **same canonical form**; where the database is the last line (uniqueness), index the normalized expression, not the raw column. *(Evidence: code review 26.10.2026 — `POST /api/admin/users` stored `Max@Example.de`, login compared `max@example.de`; tenant/region creation and `setup:admin` normalized correctly, so the drift sat in exactly one new path.)*
 31. **A test owns its artifacts and its end state — never the shared source tree.** A file a test writes only for a subprocess (probe for a lint/config guard) belongs **outside** every directory other tests scan: parallel workers list a directory and read it afterwards, so a probe that appears and vanishes inside `src/` becomes `ENOENT` in an unrelated guard under load. And a test must **await the state it caused** (fetch flush, `act`) instead of ending on an in-flight update — React then reports `not wrapped in act` on stderr. Both defects pass single-file runs and only surface in the full lane, so a clean isolated run is no evidence. *(Evidence: M197 — probe file in `src/frontend/shared/` raced `contentHeaderFieldsGuard` in the coverage lane; T48 — the skeleton test released its fetch and ended, 4 act warnings per run.)*
+32. **Sync child-process calls leak stderr to the console and lose it on failure.** `execFileSync`/`spawnSync` without explicit `stdio` push child stderr straight to the parent console (git worktree progress, autocrlf warnings, HEAD notes — noise that masks real failures and violates the zero-warnings suite rule), and on failure the thrown error carries only "Command failed: …" — the actual cause stays invisible unless stderr is attached by hand. Pipe explicitly (`stdio: ["ignore", "pipe", "pipe"]`) and rethrow with the captured stderr; never rely on the defaults. *(Evidence: M19 — two flaky suite runs masked by git subprocess noise; the mcp test helper `git()` hid the actual git failure until it rethrew stderr.)*
