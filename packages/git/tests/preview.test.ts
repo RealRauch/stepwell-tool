@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import {afterEach, describe, expect, it, vi } from "vitest";
 import { DOC_FILES, projectTemplates } from "stepwell-core";
 import { syncPreview } from "../src/preview.ts";
 
@@ -15,7 +15,7 @@ function makeDir(): string {
 }
 
 function git(root: string, args: string[]): string {
-  return execFileSync("git", ["-C", root, ...args], { encoding: "utf8" });
+  return execFileSync("git", ["-C", root, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }); // M19/29.2: execFileSync leaks stderr to the console — pipe it (still surfaces in errors)
 }
 
 function commitFile(root: string, rel: string, content: string, message: string): void {
@@ -33,6 +33,7 @@ function makeWorkstream(): { main: string; work: string } {
   git(main, ["init", "-b", "main"]);
   git(main, ["config", "user.email", "test@example.com"]);
   git(main, ["config", "user.name", "Test"]);
+  git(main, ["config", "core.autocrlf", "false"]); // M19/29.2: deterministic test repos
   git(main, ["add", "-A"]);
   git(main, ["commit", "-m", "init stepwell docs"]);
   const work = `${main}-workstream`;
@@ -42,8 +43,11 @@ function makeWorkstream(): { main: string; work: string } {
 }
 
 afterEach(() => {
-  for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true });
+  for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
 });
+
+// M19/29.2: git subprocesses under Windows AV/indexer load need more headroom than the 5 s default
+vi.setConfig({ testTimeout: 20000 });
 
 describe("syncPreview", () => {
   it("pull preview lists what would merge and mutates nothing", () => {

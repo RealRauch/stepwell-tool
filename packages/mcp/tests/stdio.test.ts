@@ -1,8 +1,11 @@
 import { spawn } from "node:child_process";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import {describe, expect, it, vi } from "vitest";
 
 const servePath = join(import.meta.dirname, "..", "src", "serve.ts");
+
+// M19/29.2: git subprocesses under Windows AV/indexer load need more headroom than the 5 s default
+vi.setConfig({ testTimeout: 20000 });
 
 describe("serve.ts — stdio transport (real process)", () => {
   it("answers the initialize handshake over stdio", async () => {

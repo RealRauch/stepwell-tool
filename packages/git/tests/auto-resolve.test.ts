@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import {afterEach, describe, expect, it, vi } from "vitest";
 import {
   applyArchivePlan,
   applyBacklogAddPlan,
@@ -24,7 +24,7 @@ const TEMPLATE_BY_FILE: Record<string, keyof typeof projectTemplates> = {
 const dirs: string[] = [];
 
 function git(root: string, args: string[]): string {
-  return execFileSync("git", ["-C", root, ...args], { encoding: "utf8" });
+  return execFileSync("git", ["-C", root, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }); // M19/29.2: execFileSync leaks stderr to the console — pipe it (still surfaces in errors)
 }
 
 function makeDir(): string {
@@ -44,6 +44,7 @@ function makeCollision(): { main: string; a: string; b: string } {
   git(main, ["init", "-b", "main"]);
   git(main, ["config", "user.email", "test@example.com"]);
   git(main, ["config", "user.name", "Test"]);
+  git(main, ["config", "core.autocrlf", "false"]); // M19/29.2: deterministic test repos
   applyBacklogAddPlan(planBacklogAdd(main, { section: "HIGH", title: "Item one", priority: "🟠", dryRun: false }));
   applyBacklogAddPlan(planBacklogAdd(main, { section: "HIGH", title: "Item two", priority: "🟠", dryRun: false }));
   git(main, ["add", "-A"]);
@@ -64,8 +65,11 @@ function archiveIn(root: string, id: string, note?: string): void {
 }
 
 afterEach(() => {
-  for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true });
+  for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
 });
+
+// M19/29.2: git subprocesses under Windows AV/indexer load need more headroom than the 5 s default
+vi.setConfig({ testTimeout: 20000 });
 
 describe("pull auto-resolution for archive appends (H7/27.6)", () => {
   it("resolves the append collision mechanically and orders by completion timestamps", () => {

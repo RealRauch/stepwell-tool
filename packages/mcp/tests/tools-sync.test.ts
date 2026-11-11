@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import {describe, expect, it, vi } from "vitest";
 import { callTool, connect, git, payload, tempGitProject } from "./helper.ts";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -7,7 +7,7 @@ import { execFileSync } from "node:child_process";
 import { DOC_FILES, projectTemplates } from "stepwell-core";
 
 function gitc(root: string, args: string[]): string {
-  return execFileSync("git", ["-C", root, ...args], { encoding: "utf8" });
+  return execFileSync("git", ["-C", root, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }); // M19/29.2: execFileSync leaks stderr to the console — pipe it (still surfaces in errors)
 }
 
 /** Workstream fixture: main worktree (trunk) + linked worktree on `feature`. */
@@ -18,12 +18,16 @@ function makeWorktreePair(): { main: string; work: string } {
   gitc(main, ["init", "-b", "main"]);
   gitc(main, ["config", "user.email", "test@example.com"]);
   gitc(main, ["config", "user.name", "Test"]);
+  gitc(main, ["config", "core.autocrlf", "false"]); // M19/29.2: deterministic test repos
   gitc(main, ["add", "-A"]);
   gitc(main, ["commit", "-m", "init"]);
   const work = `${main}-workstream`;
   gitc(main, ["worktree", "add", "-b", "feature", work]);
   return { main, work };
 }
+
+// M19/29.2: git subprocesses under Windows AV/indexer load need more headroom than the 5 s default
+vi.setConfig({ testTimeout: 20000 });
 
 describe("tool workstream_sync (H5/26.5)", () => {
   it("status returns the read-only workstream report", async () => {
@@ -40,8 +44,8 @@ describe("tool workstream_sync (H5/26.5)", () => {
       expect(data.worktrees[0].branch).toBe("feature");
     } finally {
       await c.close();
-      rmSync(main, { recursive: true, force: true });
-      rmSync(`${main}-workstream`, { recursive: true, force: true }); // T7
+      rmSync(main, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+      rmSync(`${main}-workstream`, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }); // T7
     }
   });
 
@@ -61,8 +65,8 @@ describe("tool workstream_sync (H5/26.5)", () => {
       expect(git(work, ["rev-parse", "HEAD"]).trim()).toBe(headBefore);
     } finally {
       await c.close();
-      rmSync(main, { recursive: true, force: true });
-      rmSync(`${main}-workstream`, { recursive: true, force: true }); // T7
+      rmSync(main, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+      rmSync(`${main}-workstream`, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }); // T7
     }
   });
 
@@ -80,8 +84,8 @@ describe("tool workstream_sync (H5/26.5)", () => {
       expect(git(work, ["rev-parse", "HEAD"]).trim()).toBe(trunkHead);
     } finally {
       await c.close();
-      rmSync(main, { recursive: true, force: true });
-      rmSync(`${main}-workstream`, { recursive: true, force: true }); // T7
+      rmSync(main, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+      rmSync(`${main}-workstream`, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }); // T7
     }
   });
 
@@ -97,8 +101,8 @@ describe("tool workstream_sync (H5/26.5)", () => {
       expect(git(main, ["rev-parse", "HEAD"]).trim()).toBe(workHead);
     } finally {
       await c.close();
-      rmSync(main, { recursive: true, force: true });
-      rmSync(`${main}-workstream`, { recursive: true, force: true }); // T7
+      rmSync(main, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+      rmSync(`${main}-workstream`, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }); // T7
     }
   });
 
@@ -117,8 +121,8 @@ describe("tool workstream_sync (H5/26.5)", () => {
       expect(data.error.message).toContain("re-pull");
     } finally {
       await c.close();
-      rmSync(main, { recursive: true, force: true });
-      rmSync(`${main}-workstream`, { recursive: true, force: true }); // T7
+      rmSync(main, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+      rmSync(`${main}-workstream`, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }); // T7
     }
   });
 
@@ -130,8 +134,8 @@ describe("tool workstream_sync (H5/26.5)", () => {
       expect(result.isError).toBe(true);
     } finally {
       await c.close();
-      rmSync(main, { recursive: true, force: true });
-      rmSync(`${main}-workstream`, { recursive: true, force: true }); // T7
+      rmSync(main, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+      rmSync(`${main}-workstream`, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }); // T7
     }
   });
 });

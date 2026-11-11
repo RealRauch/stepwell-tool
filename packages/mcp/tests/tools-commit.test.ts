@@ -1,5 +1,8 @@
-import { describe, expect, it } from "vitest";
+import {describe, expect, it, vi } from "vitest";
 import { callTool, connect, git, payload, tempGitProject } from "./helper.ts";
+
+// M19/29.2: git subprocesses under Windows AV/indexer load need more headroom than the 5 s default
+vi.setConfig({ testTimeout: 20000 });
 
 describe("tool commit automation (H5/26.3)", () => {
   it("archive_item apply + commit:true commits exactly the four docs", async () => {

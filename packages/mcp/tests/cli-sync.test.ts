@@ -3,12 +3,12 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Writable } from "node:stream";
-import { afterEach, describe, expect, it } from "vitest";
+import {afterEach, describe, expect, it, vi } from "vitest";
 import { DOC_FILES, projectTemplates } from "stepwell-core";
 import { runCli } from "../src/cli.ts";
 
 function gitc(root: string, args: string[]): string {
-  return execFileSync("git", ["-C", root, ...args], { encoding: "utf8" });
+  return execFileSync("git", ["-C", root, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }); // M19/29.2: execFileSync leaks stderr to the console — pipe it (still surfaces in errors)
 }
 
 function makeWorktreePair(): { main: string; work: string } {
@@ -18,6 +18,7 @@ function makeWorktreePair(): { main: string; work: string } {
   gitc(main, ["init", "-b", "main"]);
   gitc(main, ["config", "user.email", "test@example.com"]);
   gitc(main, ["config", "user.name", "Test"]);
+  gitc(main, ["config", "core.autocrlf", "false"]); // M19/29.2: deterministic test repos
   gitc(main, ["add", "-A"]);
   gitc(main, ["commit", "-m", "init"]);
   const work = `${main}-workstream`;
@@ -48,8 +49,11 @@ const dirs: string[] = [];
 
 afterEach(() => {
   // T7: register both sides of every worktree pair — no silent %TEMP% litter
-  for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true });
+  for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
 });
+
+// M19/29.2: git subprocesses under Windows AV/indexer load need more headroom than the 5 s default
+vi.setConfig({ testTimeout: 20000 });
 
 describe("runCli — sync (H5/26.5)", () => {
   it("sync status prints the report as JSON with schema", async () => {
@@ -137,6 +141,7 @@ describe("runCli — sync (H5/26.5)", () => {
     gitc(main, ["init", "-b", "main"]);
     gitc(main, ["config", "user.email", "test@example.com"]);
     gitc(main, ["config", "user.name", "Test"]);
+    gitc(main, ["config", "core.autocrlf", "false"]); // M19/29.2: deterministic test repos
     gitc(main, ["add", "-A"]);
     gitc(main, ["commit", "-m", "init"]);
     const io = makeIo();

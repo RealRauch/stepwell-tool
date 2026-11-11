@@ -1,5 +1,5 @@
 import { Writable } from "node:stream";
-import { describe, expect, it } from "vitest";
+import {describe, expect, it, vi } from "vitest";
 import { runCli } from "../src/cli.ts";
 import { git, tempGitProject } from "./helper.ts";
 
@@ -20,6 +20,9 @@ function makeIo(): { stdout: string; stderr: string; io: { stdout: Writable; std
   });
   return { get stdout() { return out; }, get stderr() { return err; }, io: { stdout, stderr } };
 }
+
+// M19/29.2: git subprocesses under Windows AV/indexer load need more headroom than the 5 s default
+vi.setConfig({ testTimeout: 20000 });
 
 describe("runCli — --commit automation (H5/26.3)", () => {
   it("progress-update --apply --commit commits the docs and reports the section in JSON", async () => {

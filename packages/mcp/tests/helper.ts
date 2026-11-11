@@ -27,18 +27,19 @@ export function tempGitProject(project: string): string {
   git(dir, ["init", "-b", "main"]);
   git(dir, ["config", "user.email", "test@example.com"]);
   git(dir, ["config", "user.name", "Test"]);
+  git(dir, ["config", "core.autocrlf", "false"]); // M19/29.2: deterministic test repos
   git(dir, ["add", "-A"]);
   git(dir, ["commit", "-m", "init"]);
   return dir;
 }
 
 export function git(root: string, args: string[]): string {
-  return execFileSync("git", ["-C", root, ...args], { encoding: "utf8" });
+  return execFileSync("git", ["-C", root, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }); // M19/29.2: execFileSync leaks stderr to the console — pipe it (still surfaces in errors)
 }
 
 afterEach(() => {
   for (const dir of tempDirs.splice(0)) {
-    rmSync(dir, { recursive: true, force: true });
+    rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
   }
 });
 

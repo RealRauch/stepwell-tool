@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import {afterEach, describe, expect, it, vi } from "vitest";
 import { DOC_FILES } from "stepwell-core";
 import { commitDocs } from "../src/commit.ts";
 
@@ -15,7 +15,7 @@ function makeDir(): string {
 }
 
 function git(root: string, args: string[]): string {
-  return execFileSync("git", ["-C", root, ...args], { encoding: "utf8" });
+  return execFileSync("git", ["-C", root, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }); // M19/29.2: execFileSync leaks stderr to the console — pipe it (still surfaces in errors)
 }
 
 /** Plain repo (no worktree needed — commitDocs never touches trunk logic). */
@@ -26,14 +26,18 @@ function makeRepo(): string {
   git(root, ["init", "-b", "main"]);
   git(root, ["config", "user.email", "test@example.com"]);
   git(root, ["config", "user.name", "Test"]);
+  git(root, ["config", "core.autocrlf", "false"]); // M19/29.2: deterministic test repos
   git(root, ["add", "-A"]);
   git(root, ["commit", "-m", "init"]);
   return root;
 }
 
 afterEach(() => {
-  for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true });
+  for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
 });
+
+// M19/29.2: git subprocesses under Windows AV/indexer load need more headroom than the 5 s default
+vi.setConfig({ testTimeout: 20000 });
 
 describe("commitDocs", () => {
   it("commits exactly the four doc paths and reports the sha", () => {
