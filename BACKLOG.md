@@ -52,12 +52,6 @@
 - **Fix:** `parseBacklog` einmal je Branch (items + doneIndex aus einem Parse); base-State in `idCollisions` einmal berechnen und an beide Seiten reichen. Reine Refaktorung, byte-gleiches Verhalten, bestehende Tests als Absicherung.
 - **Acceptance:** Suite grün ohne Verhaltensänderung; Refaktor-Note im Item-Close.
 
-### [ ] L23 — README-CLI-Block unvollständig: repair (30.2) und sync (26.x) fehlen in der Command-Referenzliste — 🟢
-- **Location:** `README.md` CLI-Referenzblock (Bash-Beispielblock im CLI-Abschnitt). Fund: eigene Session 11/2026, Selbst-Review nach Phase 30.
-- **Problem:** Der CLI-Block listet `status`/`backlog`/`progress`/`validate`/`archive`/`progress-update` — aber NICHT `repair` (seit 30.2/H9) und nicht `sync` (seit 26.x; nur im Workstream-Abschnitt dokumentiert). Die Referenzliste ist unvollständig — Konsumenten suchen Commands dort und verfehlen die neuen.
-- **Fix:** `repair`- und `sync`-Zeilen in den CLI-Block aufnehmen (additiv; Details verweisen auf die Tool-Tabelle bzw. den Workstream-Abschnitt).
-- **Acceptance:** README-CLI-Block enthält beide Commands; docs_validate clean.
-
 ## 🔵 TEST GAPS
 
 ---
@@ -163,5 +157,6 @@
 - M21 — Abhängigkeiten als Daten: optionaler Depends-on-Bullet + ready/blockedBy-Filter (Startbarkeit ist heute nur Prosa) — erledigt (phase 30/30.6 (RED 851954c + feat this commit) — acceptance refined: refs must match ^[A-Z][0-9]+$ to parse at all (ZZ9-shaped tokens are prose), unknown refs (Z9) warn via DEP_UNKNOWN and do NOT flip ready (item semantics 'ohne ready-Flip' — a blocked-by-nothing item is startable), cycle members block themselves, fixture renamed to project-l-deps (k taken))
 - L17 — backlog_update: position-Parameter (top/bottom/Index) macht die Blockreihenfolge steuerbar (Ordinal-Analogon) — erledigt (phase 30/30.7 (RED 55fbc9f + feat this commit) — out-of-range decision documented: structured error, never clamped; backlog_add deliberately NOT extended (item marked it optional — KISS, note in close); MCP-only (CLI has no backlog_update command))
 - F1 — H6-Marker-Toleranz-Lücke: „Keine offenen Items." wurde nicht erfasst (drop/restore/EMPTY_MARKER_STALE) — inline gefixt in 30.7 — erledigt (inline-fix lane (Decision 8) — found+fixed in phase 30/30.7 (feat commit above): 'Keine offenen Items.' tolerance in both marker regexes; retro item per lane rule)
+- L23 — README-CLI-Block unvollständig: repair (30.2) und sync (26.x) fehlen in der Command-Referenzliste — erledigt (fixed immediately (docs-only, §2 living document) — repair + sync lines in the CLI reference block, details delegated to the tool table / workstream section)
 
 ---

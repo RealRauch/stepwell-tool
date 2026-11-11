@@ -930,3 +930,12 @@
 - **Fix:** Inline-Fix-Lane (Decision 8): Union um `Keine offenen Items\.?` erweitert, beide Regexes (mutations + validate) im selben Zug.
 - **Acceptance:** erledigt — L17-Position-Test grün, empty-marker-Suite unverändert grün; Fix im Commit dieses Steps.
 - **Erledigt:** inline-fix lane (Decision 8) — found+fixed in phase 30/30.7 (feat commit above): 'Keine offenen Items.' tolerance in both marker regexes; retro item per lane rule
+
+---
+
+### [x] L23 — README-CLI-Block unvollständig: repair (30.2) und sync (26.x) fehlen in der Command-Referenzliste — 🟢
+- **Location:** `README.md` CLI-Referenzblock (Bash-Beispielblock im CLI-Abschnitt). Fund: eigene Session 11/2026, Selbst-Review nach Phase 30.
+- **Problem:** Der CLI-Block listet `status`/`backlog`/`progress`/`validate`/`archive`/`progress-update` — aber NICHT `repair` (seit 30.2/H9) und nicht `sync` (seit 26.x; nur im Workstream-Abschnitt dokumentiert). Die Referenzliste ist unvollständig — Konsumenten suchen Commands dort und verfehlen die neuen.
+- **Fix:** `repair`- und `sync`-Zeilen in den CLI-Block aufnehmen (additiv; Details verweisen auf die Tool-Tabelle bzw. den Workstream-Abschnitt).
+- **Acceptance:** README-CLI-Block enthält beide Commands; docs_validate clean.
+- **Erledigt:** fixed immediately (docs-only, §2 living document) — repair + sync lines in the CLI reference block, details delegated to the tool table / workstream section
