@@ -9,18 +9,6 @@
 > are moved to `docs/archive/PROGRESS_ARCHIVE.md` unchanged after completion.
 
 ## Active Phases
-### Phase 29 — Findings batch: phase matching, suite stability, rename guard
-
-**Goal:** Die drei Funde aus Phase 27 umsetzen, bevor die Promotion startet (keine technischen Schulden): `phaseMatches` toleriert reine Phasennummern und der Skeleton-Fallback wird scharfgestellt (H8), die Windows-Suite-Flakes werden an der Ursache behoben (M19), der Title-Rename bekommt den Präfix-Guard (L16).
-
-**Acceptance (je Step test-first):** `npm run typecheck` + `npm run test` grün; M19-Abnahme: wiederholte Full-Runs ohne Fehlalarm, 0 geleakte `%TEMP%`-Dirs, keine Subprocess-Noise; `docs_validate` clean; H8/M19/L16 archiviert; Doc-Sync (CHANGELOG/README/SKILL) vor dem Abschluss-Flip.
-
-**Umfang (Steps):**
-
-- **29.1 progress_update: bare phase number matches "Phase <N>" + refuse phantom skeleton when the step already has a table row [H8]**
-- **29.2 suite stability: diagnose Windows worker-load flakes (git subprocess + coverage gate), fix at the cause, no suppressed warnings, no leaked temp dirs [M19]**
-- **29.3 progress_update --title: duplicate "Phase <N> —" prefix guard [L16]**
-- **29.4 Verification: typecheck + full suite + docs_validate clean; doc-sync (CHANGELOG/README/SKILL); archive H8/M19/L16; phase completion**
 
 
 
@@ -176,4 +164,4 @@
 | 29.1 | progress_update: bare phase number matches "Phase <N>" + refuse phantom skeleton when the step already has a table row [H8] | ✅ |
 | 29.2 | suite stability: diagnose Windows worker-load flakes (git subprocess + coverage gate), fix at the cause, no suppressed warnings, no leaked temp dirs [M19] | ✅ |
 | 29.3 | progress_update --title: duplicate "Phase <N> —" prefix guard [L16] | ✅ |
-| 29.4 | Verification: typecheck + full suite + docs_validate clean; doc-sync (CHANGELOG/README/SKILL); archive H8/M19/L16; phase completion | 🔄 |
+| 29.4 | Verification: typecheck + full suite + docs_validate clean; doc-sync (CHANGELOG/README/SKILL); archive H8/M19/L16; phase completion | ✅ |

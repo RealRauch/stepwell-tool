@@ -551,3 +551,19 @@ nachholen oder einen anderen Pfad wählen.
 - **27.7 .gitattributes text eol=lf for doc files + adoption hint in README [L14]**
 - **27.8 CLI: --root defaults to CWD + sync status single-tree setup hint [L15]**
 - **27.9 PLAN_WITHOUT_WIP sharpening: purely planned phase = PHASE_PLANNED warning (ok stays true), orphaned block stays finding [M18]**
+
+---
+
+### Phase 29 — Findings batch: phase matching, suite stability, rename guard
+
+**Goal:** Die drei Funde aus Phase 27 umsetzen, bevor die Promotion startet (keine technischen Schulden): `phaseMatches` toleriert reine Phasennummern und der Skeleton-Fallback wird scharfgestellt (H8), die Windows-Suite-Flakes werden an der Ursache behoben (M19), der Title-Rename bekommt den Präfix-Guard (L16).
+
+**Acceptance (je Step test-first):** `npm run typecheck` + `npm run test` grün; M19-Abnahme: wiederholte Full-Runs ohne Fehlalarm, 0 geleakte `%TEMP%`-Dirs, keine Subprocess-Noise; `docs_validate` clean; H8/M19/L16 archiviert; Doc-Sync (CHANGELOG/README/SKILL) vor dem Abschluss-Flip.
+
+**Umfang (Steps):**
+
+- **29.1 progress_update: bare phase number matches "Phase <N>" + refuse phantom skeleton when the step already has a table row [H8]**
+- **29.2 suite stability: diagnose Windows worker-load flakes (git subprocess + coverage gate), fix at the cause, no suppressed warnings, no leaked temp dirs [M19]**
+- **29.3 progress_update --title: duplicate "Phase <N> —" prefix guard [L16]**
+- **29.4 Verification: typecheck + full suite + docs_validate clean; doc-sync (CHANGELOG/README/SKILL); archive H8/M19/L16; phase completion**
+**Verifikation:** Verification: npm run typecheck (green) && npm run test (415/415, 42 files) x 10 consecutive full runs, all exit=0, stderr-free, 0 %TEMP% litter; docs_validate clean before completion; L16 dogfood: full heading as --title lands without prefix doubling (checkpoint: 8f25345)
