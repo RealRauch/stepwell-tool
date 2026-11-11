@@ -28,6 +28,38 @@ const LOCATION_BULLET = new RegExp(
   `^-\\s+\\*\\*(?:${union(allSynonyms("locationLabel"))}):\\*\\*\\s+(.+?)\\s*$`,
   "u",
 );
+
+/**
+ * H10/30.4: path-like tokens extracted from the location bullet — the cheap
+ * prediction surface for workstream overlaps. Tolerant for backticks, `file.ts:12`
+ * line refs, parenthetical comments and comma/semicolon lists. Only path-shaped
+ * tokens pass (a separator or a file extension, at least one letter): prose,
+ * dates (11/2026) and globs are skipped — no invention, no glob expansion.
+ */
+export function extractFiles(location: string | undefined): string[] {
+  if (location === undefined || location.trim() === "") return [];
+  const HAS_SEPARATOR = /[\\/]/u;
+  const HAS_EXT = /\.[A-Za-z0-9]{1,6}$/u;
+  const allNumericSegments = (token: string): boolean =>
+    token.split(/[\\/]/u).every((segment) => /^\d+$/u.test(segment));
+  const files: string[] = [];
+  const seen = new Set<string>();
+  const push = (token: string): void => {
+    const cleaned = token.trim().replace(/^[`'"]+|[`'",.;:]+$/gu, "").trim();
+    if (cleaned === "" || cleaned.includes("*")) return;
+    const path = /^(.*?\.[A-Za-z0-9]+)(?::\d+)?$/u.exec(cleaned)?.[1] ?? cleaned;
+    if (!HAS_SEPARATOR.test(path) && !HAS_EXT.test(path)) return;
+    if (!/[A-Za-z]/u.test(path) || allNumericSegments(path)) return;
+    if (!seen.has(path)) {
+      seen.add(path);
+      files.push(path);
+    }
+  };
+  for (const m of location.matchAll(/`([^`]+)`/gu)) push(m[1]!);
+  const rest = location.replace(/`[^`]*`/gu, " ");
+  for (const token of rest.split(/[,;()[\]]|\s+/u)) push(token);
+  return files;
+}
 const DONE_LINE = new RegExp(
   `^-\\s+(.+?)\\s+—\\s+(.+?)\\s+—\\s+(?:${union(allSynonyms("doneWord"))})(?:\\s+in\\s+\`([^\`]+)\`)?`,
   "u",
@@ -211,6 +243,7 @@ function buildItem(raw: RawItem, section: BacklogSection | null, file: string): 
     priority,
     section: section?.title ?? "",
     open: raw.open,
+    files: [],
     text: bodyLines.join("\n"),
     span: { start: raw.headingLine, end: bodyEnd },
     raw: [raw.heading, ...bodyLines].join("\n"),
@@ -219,6 +252,7 @@ function buildItem(raw: RawItem, section: BacklogSection | null, file: string): 
     const location = LOCATION_BULLET.exec(line);
     if (location) {
       item.location = location[1]!;
+      item.files = extractFiles(location[1]);
       break;
     }
   }

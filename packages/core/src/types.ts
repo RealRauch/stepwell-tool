@@ -26,6 +26,11 @@ export interface BacklogItem {
   section: string;
   open: boolean;
   location?: string;
+  /**
+   * H10/30.4: path-like tokens extracted from the location bullet — prediction
+   * surface for workstream overlaps; empty when the location names no paths.
+   */
+  files: string[];
   text: string;
   span: { start: number; end: number };
   raw: string;

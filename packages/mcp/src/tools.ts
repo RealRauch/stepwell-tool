@@ -172,6 +172,7 @@ const PROJECTABLE_FIELDS = [
   "section",
   "open",
   "location",
+  "files",
   "text",
   "span",
 ] as const;

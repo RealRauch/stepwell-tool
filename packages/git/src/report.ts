@@ -1,8 +1,21 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { isAbsolute, join, relative, resolve } from "node:path";
 import type { Stats } from "node:fs";
+import { parseBacklog } from "stepwell-core";
 import { runGit, splitLines } from "./git.ts";
 import type { SyncError } from "./types.ts";
+
+/**
+ * H10/30.4: one file that OPEN items on BOTH sides name in their Location
+ * bullets — the cheap "these workstreams will collide" prediction, visible
+ * before anyone actually edits the file. Read-only derivation in the satellite
+ * (core stays git-blind, Decision 14); `overlap[]` remains the factual
+ * touched-on-both-sides list.
+ */
+export interface PredictedOverlapEntry {
+  path: string;
+  openItems: string[];
+}
 
 /** One linked worktree (= one parallel workstream), analyzed from git only. */
 export interface WorkstreamInfo {
@@ -22,6 +35,8 @@ export interface WorkstreamInfo {
   lastCommitIso: string;
   /** Conflict candidates: files touched on BOTH sides since the merge base. */
   overlap: string[];
+  /** H10/30.4: file-based collision prognosis from open-item Location bullets. */
+  predictedOverlap: PredictedOverlapEntry[];
 }
 
 export interface WorkstreamReportOk {
@@ -144,6 +159,40 @@ export function overlapFiles(root: string, branch: string, trunk: string): strin
   return incoming.filter((file) => mine.has(file));
 }
 
+/**
+ * Open-item file map at a ref (`git show <ref>:BACKLOG.md` parsed with the core
+ * parser — the satellite may read, never write). A ref whose doc state is absent
+ * (unborn branch, pre-adoption commit) yields an empty map — prognosis skips
+ * silently, never throws.
+ */
+function openItemFilesAt(root: string, ref: string): Map<string, string[]> {
+  const map = new Map<string, string[]>();
+  const out = runGit(root, ["show", `${ref}:BACKLOG.md`]);
+  if (out.status !== 0) return map;
+  for (const item of parseBacklog(out.stdout).value.items) {
+    for (const file of item.files) {
+      const ids = map.get(file) ?? [];
+      ids.push(item.id);
+      map.set(file, ids);
+    }
+  }
+  return map;
+}
+
+/** Files that open items on BOTH sides name — sorted by path, ids deduped. */
+export function predictedOverlap(root: string, branch: string, trunk: string): PredictedOverlapEntry[] {
+  const branchFiles = openItemFilesAt(root, branch);
+  if (branchFiles.size === 0) return [];
+  const trunkFiles = openItemFilesAt(root, trunk);
+  const entries: PredictedOverlapEntry[] = [];
+  for (const [path, items] of branchFiles) {
+    const trunkItems = trunkFiles.get(path);
+    if (trunkItems === undefined) continue;
+    entries.push({ path, openItems: [...new Set([...items, ...trunkItems])].sort() });
+  }
+  return entries.sort((a, b) => a.path.localeCompare(b.path));
+}
+
 function lastCommit(root: string, ref: string): { subject: string; iso: string } {
   const out = runGit(root, ["log", "-1", "--format=%s%x1f%cI", ref]).stdout.trim();
   const [subject = "", iso = ""] = out.split("\x1f");
@@ -187,6 +236,7 @@ export function workstreamReport(root: string): WorkstreamReportResult {
       lastSubject: last.subject,
       lastCommitIso: last.iso,
       overlap: knownBranch ? overlapFiles(root, entry.branch, trunk) : [],
+      predictedOverlap: knownBranch ? predictedOverlap(root, entry.branch, trunk) : [],
     };
   });
 

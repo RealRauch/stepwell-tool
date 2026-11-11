@@ -82,6 +82,10 @@ function syncStatusText(report: WorkstreamReportOk | { ok: false; error: SyncErr
       const overlap = ws.overlap.length > 0 ? ` — overlap: ${ws.overlap.join(", ")}` : "";
       const dirty = ws.dirty ? " [dirty]" : "";
       lines.push(`  ${ws.path} (${ws.branch}) ${state}${dirty}${live}${overlap}`);
+      // H10/30.4: file-based collision prognosis from open-item Location bullets
+      for (const p of ws.predictedOverlap) {
+        lines.push(`    predicted overlap: ${p.path} (open items: ${p.openItems.join(", ")})`);
+      }
     }
   }
   return `${lines.join("\n")}\n`;
