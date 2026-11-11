@@ -109,6 +109,7 @@ const CONTRACT: Record<string, { required: string[]; params: Record<string, unkn
       text: str,
       detail: detailField,
       dryRun: boolWithDefault(true),
+      considerWorktrees: boolWithDefault(false), // M20/30.5, additive
     },
   },
   backlog_update: {
@@ -147,6 +148,7 @@ const CONTRACT: Record<string, { required: string[]; params: Record<string, unkn
       }),
       detail: detailField,
       dryRun: boolWithDefault(true),
+      considerWorktrees: boolWithDefault(false), // M20/30.5, additive
     },
   },
   workstream_sync: {
@@ -180,7 +182,7 @@ function norm(node: unknown): unknown {
 }
 
 describe("tool input-schema contract (H4/25.2, Decision 13)", () => {
-  it("tools/list exposes exactly the locked parameter surface for all 13 tools", async () => {
+  it("tools/list exposes exactly the locked parameter surface for all 14 tools", async () => {
     const c = await connect();
     try {
       const { tools } = await c.client.listTools();

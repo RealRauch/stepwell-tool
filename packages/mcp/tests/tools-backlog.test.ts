@@ -174,8 +174,8 @@ describe("backlog_add considerWorktrees (M20/30.5)", () => {
     writeFileSync(
       backlogPath,
       readFileSync(backlogPath, "utf8").replace(
-        "## 🟡 MEDIUM\n\n> Keine offenen Items.",
-        "## 🟡 MEDIUM\n\n### [ ] M20 — Fremder Worktree hat diese Nummer — 🟡\n- **Location:** `src/foreign.ts`\n- **Problem:** Kollisions-Fixture",
+        "## 🟡 MITTEL\n\n> Keine offenen Items.",
+        "## 🟡 MITTEL\n\n### [ ] M8 — Fremder Worktree hat diese Nummer — 🟡\n- **Location:** `src/foreign.ts`\n- **Problem:** Kollisions-Fixture",
       ),
       "utf8",
     );
@@ -184,16 +184,17 @@ describe("backlog_add considerWorktrees (M20/30.5)", () => {
     try {
       const result = await callTool(c, "backlog_add", {
         root: main,
-        section: "MEDIUM",
+        section: "HOCH",
         title: "Kollisions-Kandidat",
         priority: "🟡",
         considerWorktrees: true,
       });
       expect(result.isError).toBeFalsy();
       const data = payload(result) as { id: string };
-      expect(data.id).toBe("M21");
+      expect(data.id).toBe("M9"); // project-a M-series ends at M7; foreign worktree occupies M8
     } finally {
       await c.close();
+      rmSync(work, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }); // M19 hygiene
     }
   });
 
@@ -203,14 +204,14 @@ describe("backlog_add considerWorktrees (M20/30.5)", () => {
     try {
       const result = await callTool(c, "backlog_add", {
         root: dir,
-        section: "MEDIUM",
+        section: "HOCH",
         title: "Ohne git",
         priority: "🟡",
         considerWorktrees: true,
       });
       expect(result.isError).toBeFalsy();
       const data = payload(result) as { id: string; worktreeWarnings: string[] };
-      expect(data.id).toBe("M1");
+      expect(data.id).toBe("M8");
       expect(data.worktreeWarnings[0]).toMatch(/considerWorktrees/iu);
     } finally {
       await c.close();

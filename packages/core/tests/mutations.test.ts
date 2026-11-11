@@ -1049,3 +1049,37 @@ describe("K1: phase completion removes exactly the own block (adjacent blocks, m
     expect(archive).toContain("**Verifikation:** Suite grün");
   });
 });
+
+describe("considerWorktrees exclusions (M20/30.5)", () => {
+  it("backlog_add skips excluded ids when auto-assigning the series number", () => {
+    const dir = tempCopy("project-a");
+    const plan = planBacklogAdd(dir, {
+      section: "HOCH",
+      title: "Fremd kollidiert",
+      priority: "🟡",
+      excludeIds: ["M8", "M9"], // own M-series ends at M7 (archives) — force past the next two
+    });
+    expect(plan.id).toBe("M10");
+  });
+
+  it("explicit ids are never filtered (explicit is explicit)", () => {
+    const dir = tempCopy("project-a");
+    const plan = planBacklogAdd(dir, {
+      section: "HOCH",
+      title: "Explizit bleibt explizit",
+      priority: "🟡",
+      id: "M20",
+    });
+    expect(plan.id).toBe("M20");
+  });
+
+  it("planPhase refuses phases and steps occupied in foreign worktrees", () => {
+    const dir = tempCopy("project-a");
+    expect(() =>
+      planPhase(dir, "Phase 30 — Kollision", [{ step: "30.1", name: "A" }], { excludePhases: ["30"] }),
+    ).toThrow(/phase 30.*foreign worktree/u);
+    expect(() =>
+      planPhase(dir, "Phase 31 — Kollision", [{ step: "31.1", name: "A" }], { excludeSteps: ["31.1"] }),
+    ).toThrow(/31\.1.*foreign worktree/u);
+  });
+});

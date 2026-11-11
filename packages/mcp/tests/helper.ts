@@ -34,7 +34,14 @@ export function tempGitProject(project: string): string {
 }
 
 export function git(root: string, args: string[]): string {
-  return execFileSync("git", ["-C", root, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }); // M19/29.2: execFileSync leaks stderr to the console — pipe it (still surfaces in errors)
+  try {
+    return execFileSync("git", ["-C", root, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }); // M19/29.2: execFileSync leaks stderr to the console — pipe it
+  } catch (err) {
+    // keep git's stderr attached — a bare "Command failed" hides the cause (M19/29.2 spirit)
+    const e = err as { stderr?: Buffer | string };
+    const detail = typeof e.stderr === "string" ? e.stderr : e.stderr?.toString("utf8") ?? "";
+    throw new Error(`${(err as Error).message}${detail !== "" ? `\n${detail.trim()}` : ""}`);
+  }
 }
 
 afterEach(() => {

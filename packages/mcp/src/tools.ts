@@ -28,7 +28,7 @@ import {
   type Priority,
   type Status,
 } from "stepwell-core";
-import { commitDocs, docCommitMessage, pullTrunk, pushTrunk, syncPreview, workstreamReport } from "stepwell-git";
+import { commitDocs, docCommitMessage, foreignDocState, pullTrunk, pushTrunk, syncPreview, workstreamReport } from "stepwell-git";
 
 type ToolResult = CallToolResult;
 
@@ -530,10 +530,19 @@ export function registerDocsTools(server: McpServer): void {
         text: TEXT_FIELD,
         detail: DETAIL_FIELD,
         dryRun: DRYRUN_FIELD,
+        considerWorktrees: z.boolean().default(false)
+          .describe("M20/30.5: when true, the next free id also skips the ids occupied in ALL foreign worktree doc states (git satellite read); without git it falls back to the own tree with a worktreeWarnings entry. Explicit ids are never filtered."),
       },
     },
-    ({ root, section, title, priority, id, text, detail, dryRun }) =>
+    ({ root, section, title, priority, id, text, detail, dryRun, considerWorktrees }) =>
       asResult(() => {
+        const worktreeWarnings: string[] = [];
+        let excludeIds: string[] | undefined;
+        if (considerWorktrees) {
+          const foreign = foreignDocState(root);
+          excludeIds = foreign.ids;
+          worktreeWarnings.push(...foreign.warnings);
+        }
         const plan = planBacklogAdd(root, {
           dryRun,
           section,
@@ -541,9 +550,11 @@ export function registerDocsTools(server: McpServer): void {
           priority: priority as Exclude<Priority, "unknown">,
           ...(id !== undefined ? { id } : {}),
           ...(text !== undefined ? { text } : {}),
+          ...(excludeIds !== undefined ? { excludeIds } : {}),
         });
         const result = plan.dryRun ? plan : applyBacklogAddPlan(plan);
-        return detail === "summary" ? summarizePlan(result) : result;
+        const withWarnings = worktreeWarnings.length > 0 ? { ...result, worktreeWarnings } : result;
+        return detail === "summary" ? summarizePlan(withWarnings) : withWarnings;
       }),
   );
 
@@ -636,13 +647,29 @@ export function registerDocsTools(server: McpServer): void {
           .describe("Steps of the phase in order (e.g. [{ step: \"7.1\", name: \"Setup\" }])."),
         detail: DETAIL_FIELD,
         dryRun: DRYRUN_FIELD,
+        considerWorktrees: z.boolean().default(false)
+          .describe("M20/30.5: when true, the phase number and steps must also be free in ALL foreign worktree doc states (structured refusal otherwise); without git it falls back to the own tree with a worktreeWarnings entry."),
       },
     },
-    ({ root, phase, steps, detail, dryRun }) =>
+    ({ root, phase, steps, detail, dryRun, considerWorktrees }) =>
       asResult(() => {
-        const plan = planPhase(root, phase, steps, { dryRun });
+        const worktreeWarnings: string[] = [];
+        let excludePhases: string[] | undefined;
+        let excludeSteps: string[] | undefined;
+        if (considerWorktrees) {
+          const foreign = foreignDocState(root);
+          excludePhases = foreign.phases;
+          excludeSteps = foreign.steps;
+          worktreeWarnings.push(...foreign.warnings);
+        }
+        const plan = planPhase(root, phase, steps, {
+          dryRun,
+          ...(excludePhases !== undefined ? { excludePhases } : {}),
+          ...(excludeSteps !== undefined ? { excludeSteps } : {}),
+        });
         const result = plan.dryRun ? plan : applyPhasePlan(plan);
-        return detail === "summary" ? summarizePlan(result) : result;
+        const withWarnings = worktreeWarnings.length > 0 ? { ...result, worktreeWarnings } : result;
+        return detail === "summary" ? summarizePlan(withWarnings) : withWarnings;
       }),
   );
 

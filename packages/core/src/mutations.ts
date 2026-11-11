@@ -552,6 +552,12 @@ export interface PhaseStep {
 }
 
 export interface PhaseOptions {
+  /**
+   * M20/30.5: phase numbers / steps occupied in foreign worktree doc states —
+   * planPhase refuses to plan into them (structured error, same as own collisions).
+   */
+  excludePhases?: string[];
+  excludeSteps?: string[];
   dryRun?: boolean;
 }
 
@@ -571,6 +577,10 @@ export function planPhase(
   }
   const phaseNumber = prefixMatch[1]!;
   const phaseHeading = `### ${phase.trim()}`;
+  // M20/30.5: foreign worktree states — same structured refusals as own collisions
+  if ((options.excludePhases ?? []).includes(phaseNumber)) {
+    throw new Error(`phase ${phaseNumber} is already planned in a foreign worktree (considerWorktrees) — pick the next free number`);
+  }
 
   if (steps.length === 0) {
     throw new Error("missing steps: eine Phase braucht mindestens einen Step");
@@ -592,6 +602,9 @@ export function planPhase(
     }
     if (progress.rows.some((r) => r.step === step)) {
       throw new Error(`step "${step}" existiert bereits in der Fortschrittstabelle`);
+    }
+    if ((options.excludeSteps ?? []).includes(step)) {
+      throw new Error(`step "${step}" is already planned in a foreign worktree (considerWorktrees) — pick the next free number`);
     }
   }
   const running = progress.phases.find((p) => phaseMatches(p, phase.trim()));
@@ -707,6 +720,12 @@ export interface BacklogAddOptions {
   priority: Exclude<Priority, "unknown">;
   id?: string;
   text?: string;
+  /**
+   * M20/30.5: ids occupied in foreign worktree doc states (collected by the
+   * transport via the git satellite — core stays git-blind). Auto-assignment
+   * skips them; explicit ids are never filtered (explicit is explicit).
+   */
+  excludeIds?: string[];
 }
 
 export interface BacklogUpdateOptions {
@@ -846,13 +865,15 @@ function collectKnownIds(docs: ReturnType<typeof loadProject>): Set<string> {
   return ids;
 }
 
-function nextSeriesId(docs: ReturnType<typeof loadProject>, letter: string): string {
+function nextSeriesId(docs: ReturnType<typeof loadProject>, letter: string, excludeNumbers: ReadonlySet<number> = new Set()): string {
   let max = 0;
   for (const id of collectKnownIds(docs)) {
     const m = new RegExp(`^${escapeRegExp(letter)}(\\d+)$`, "u").exec(id);
     if (m) max = Math.max(max, Number(m[1]));
   }
-  return `${letter}${max + 1}`;
+  let n = max + 1;
+  while (excludeNumbers.has(n)) n += 1;
+  return `${letter}${n}`;
 }
 
 function requireOpenItem(docs: ReturnType<typeof loadProject>, id: string): BacklogItem {
@@ -907,7 +928,11 @@ export function planBacklogAdd(root: string, options: BacklogAddOptions): Backlo
         `priority ${options.priority} has no id series — provide an explicit id (Konvention ^[A-Z][0-9]+$)`,
       );
     }
-    id = nextSeriesId(docs, series);
+    id = nextSeriesId(
+      docs,
+      series,
+      new Set((options.excludeIds ?? []).flatMap((x) => { const m = new RegExp(`^${escapeRegExp(series)}(\\d+)$`, "u").exec(x); return m ? [Number(m[1])] : []; })),
+    );
   } else {
     if (!ID_PATTERN.test(id)) {
       throw new Error(`id "${id}" verletzt die Nomenklatur ^[A-Z][0-9]+$`);

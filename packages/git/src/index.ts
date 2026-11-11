@@ -5,6 +5,9 @@ export { pushGuards, pushTrunk, type PushOk, type PushResult } from "./push.ts";
 export { syncPreview, type PullPreviewOk, type PushPreviewOk, type SyncPreviewOk, type SyncPreviewResult } from "./preview.ts";
 export {
   workstreamReport,
+  foreignDocState,
+  idCollisions,
+  predictedOverlap,
   type PredictedOverlapEntry,
   type WorkstreamInfo,
   type WorkstreamReportOk,

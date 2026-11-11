@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { isAbsolute, join, relative, resolve } from "node:path";
 import type { Stats } from "node:fs";
-import { parseBacklog } from "stepwell-core";
+import { parseBacklog, parseProgress } from "stepwell-core";
 import { runGit, splitLines } from "./git.ts";
 import type { SyncError } from "./types.ts";
 
@@ -37,6 +37,11 @@ export interface WorkstreamInfo {
   overlap: string[];
   /** H10/30.4: file-based collision prognosis from open-item Location bullets. */
   predictedOverlap: PredictedOverlapEntry[];
+  /**
+   * M20/30.5: item ids and table steps that BOTH sides newly added since the
+   * merge base — the parallel "same next id" collision, visible before the merge.
+   */
+  idCollisions: string[];
 }
 
 export interface WorkstreamReportOk {
@@ -193,6 +198,92 @@ export function predictedOverlap(root: string, branch: string, trunk: string): P
   return entries.sort((a, b) => a.path.localeCompare(b.path));
 }
 
+interface IdStepState {
+  ids: Set<string>;
+  steps: Set<string>;
+}
+
+function docStateAt(root: string, ref: string): IdStepState {
+  const state: IdStepState = { ids: new Set(), steps: new Set() };
+  const backlog = runGit(root, ["show", `${ref}:BACKLOG.md`]);
+  if (backlog.status === 0) {
+    const parsed = parseBacklog(backlog.stdout).value;
+    for (const id of parsed.items.map((i) => i.id)) state.ids.add(id);
+    for (const id of parsed.doneIndex.map((d) => d.id)) state.ids.add(id);
+  }
+  const progress = runGit(root, ["show", `${ref}:PROGRESS.md`]);
+  if (progress.status === 0) {
+    for (const row of parseProgress(progress.stdout).value.rows) state.steps.add(row.step);
+  }
+  return state;
+}
+
+/**
+ * M20/30.5: ids and steps that BOTH sides newly added since the merge base —
+ * the intersection of the newly created candidates, read from the doc diffs
+ * (no registry). Refs without a readable doc state contribute nothing.
+ */
+export function idCollisions(root: string, branch: string, trunk: string): string[] {
+  const base = runGit(root, ["merge-base", branch, trunk]).stdout.trim();
+  if (base === "") return [];
+  const freshSince = (ref: string): Set<string> => {
+    const baseState = docStateAt(root, base);
+    const refState = docStateAt(root, ref);
+    const fresh = new Set<string>();
+    for (const id of refState.ids) if (!baseState.ids.has(id)) fresh.add(id);
+    for (const step of refState.steps) if (!baseState.steps.has(step)) fresh.add(step);
+    return fresh;
+  };
+  const mine = freshSince(branch);
+  const theirs = freshSince(trunk);
+  return [...mine].filter((x) => theirs.has(x)).sort();
+}
+
+/**
+ * M20/30.5: item ids, table steps and phase numbers across ALL foreign worktree
+ * doc states — the input for `considerWorktrees` on the write tools. The core
+ * stays git-blind: the transport collects this and passes it as exclusion
+ * options; per-branch failures become warnings, never throws.
+ */
+export function foreignDocState(root: string): {
+  ids: string[];
+  steps: string[];
+  phases: string[];
+  warnings: string[];
+} {
+  const inside = runGit(root, ["rev-parse", "--is-inside-work-tree"]);
+  if (inside.status !== 0 || inside.stdout.trim() !== "true") {
+    return { ids: [], steps: [], phases: [], warnings: [`considerWorktrees ignored: git state unavailable at "${root}"`] };
+  }
+  const { entries } = listWorktrees(root);
+  const trunk = entries[0]?.branch ?? "";
+  const ids = new Set<string>();
+  const steps = new Set<string>();
+  const phases = new Set<string>();
+  const warnings: string[] = [];
+  for (const entry of entries.slice(1)) {
+    if (entry.branch === "" || entry.branch === trunk) continue;
+    const backlog = runGit(root, ["show", `${entry.branch}:BACKLOG.md`]);
+    if (backlog.status !== 0) {
+      warnings.push(`considerWorktrees: skipped "${entry.branch}" (BACKLOG.md unreadable at the branch head)`);
+      continue;
+    }
+    for (const id of parseBacklog(backlog.stdout).value.items.map((i) => i.id)) ids.add(id);
+    for (const id of parseBacklog(backlog.stdout).value.doneIndex.map((d) => d.id)) ids.add(id);
+    const progress = runGit(root, ["show", `${entry.branch}:PROGRESS.md`]);
+    if (progress.status !== 0) {
+      warnings.push(`considerWorktrees: skipped "${entry.branch}" (PROGRESS.md unreadable at the branch head)`);
+      continue;
+    }
+    const parsedProgress = parseProgress(progress.stdout).value;
+    for (const row of parsedProgress.rows) {
+      steps.add(row.step);
+      phases.add(row.step.split(".")[0] ?? "");
+    }
+  }
+  return { ids: [...ids], steps: [...steps], phases: [...phases], warnings };
+}
+
 function lastCommit(root: string, ref: string): { subject: string; iso: string } {
   const out = runGit(root, ["log", "-1", "--format=%s%x1f%cI", ref]).stdout.trim();
   const [subject = "", iso = ""] = out.split("\x1f");
@@ -237,6 +328,7 @@ export function workstreamReport(root: string): WorkstreamReportResult {
       lastCommitIso: last.iso,
       overlap: knownBranch ? overlapFiles(root, entry.branch, trunk) : [],
       predictedOverlap: knownBranch ? predictedOverlap(root, entry.branch, trunk) : [],
+      idCollisions: knownBranch ? idCollisions(root, entry.branch, trunk) : [],
     };
   });
 

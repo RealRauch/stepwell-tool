@@ -274,7 +274,7 @@ describe("workstreamReport idCollisions (M20/30.5)", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     const ws = result.worktrees.find((w) => w.branch === "feature");
-    expect(ws?.idCollisions).toEqual(["M20", "30.1"]);
+    expect(ws?.idCollisions).toEqual(["30.1", "M20"]); // deterministic sort: localeCompare, digits first
   });
 
   it("stays empty for distinct additions", () => {
