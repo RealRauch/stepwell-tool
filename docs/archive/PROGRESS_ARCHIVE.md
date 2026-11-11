@@ -587,3 +587,17 @@ nachholen oder einen anderen Pfad wählen.
 - **30.7 L17: position parameter (top/bottom/index) on backlog_update — byte-identical block move within section, section+position combination, out-of-range = structured error (documented in item close) [L17]**
 - **30.8 Verification: typecheck + full suite + docs_validate clean; doc-sync (CHANGELOG/README/SKILL); phase completion with title/note/checkpoint**
 **Verifikation:** Verification: npm run typecheck (green) && npm run test (456/456, 46 files) green && docs_validate clean; doc-sync BEFORE the completion flip (CHANGELOG Phase-30 section, SKILL tool mentions, README tool table); YOLO batch released by user — H9/H10/M20/M21/L17 implemented test-first (RED->GRÜN each), all archived with refined acceptance notes, F1 fixed via the inline-fix lane; L18 (needs need-evidence) + L19 (not code) stay open by design (checkpoint: 544f21b)
+
+---
+
+### Phase 31 — Method retrospective (phases 24-30, PLAYBOOK §8)
+
+**Goal:** Die fällige Methoden-Retro (7 Phasen seit Q2/Phase 23): PLAYBOOK/LESSONS/AGENTS-Regeln gegen die drei Leitfragen (Bug verhindert? Overhead > Nutzen? konsolidierbar?) prüfen, BRAINSTORM-Bewerter abstimmen, zwei Session-Funde verarbeiten: Scope-Modell für LESSONS (Sektions-Tags mit geschlossenem Vokabular — Nutzer-Input: mehr Dimensionen existieren, aber eine Matrix wäre Over-Engineering) und die Topologie-Grenze (Back-Sync ist Same-Machine-Agent-Ritual — dokumentierte accepted cost). Session-Lesson #32 (execFileSync stderr, M19-Evidenz) textgleich in beide Kopien.
+
+**Acceptance:** Retro-Protokoll `docs/retro-2026-11.md` (je Regel genau ein Outcome); LESSONS-Änderungen textgleich in beide Kopien + SHA256-Evidenz; `docs_validate` beide Repos clean; M26 archiviert; Phase schließt mit --note/checkpoint.
+
+**Umfang (Steps):**
+
+- **31.1 Retro review + protocol: PLAYBOOK §§ / LESSONS sections / AGENTS decisions × 3 guiding questions → stay/demote/drop outcomes; BRAINSTORM evaluator verdicts (ADR, PR satellite, Obsidian V1/V2, ZooKeeper, HTTP, Jira); scope-model decision (section tags, closed vocabulary) + topology limitation documented — protocol docs/retro-2026-11.md [M26]**
+- **31.2 LESSONS changes sync: new Lesson #32 (sync child-process stderr leak, M19 evidence) + section scope tags — textually identical in both copies (stadtpfad-pwa), SHA256 evidence; verify; archive M26; phase completion [M26]**
+**Verifikation:** Verification: docs_validate clean in both repos (stepwell-tool-dev + stadtpfad-pwa); LESSONS copies sha256-identical (2cdde3db) after the sync; retro protocol docs/retro-2026-11.md with per-rule outcomes (stay/demote/drop), BRAINSTORM verdicts, scope-model decision and topology limitation (checkpoint: 2e5520f)
