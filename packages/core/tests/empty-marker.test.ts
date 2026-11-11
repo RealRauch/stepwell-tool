@@ -28,7 +28,7 @@ function makeTemplateProject(): string {
 const backlog = (dir: string): string => readFileSync(join(dir, "BACKLOG.md"), "utf8");
 
 afterEach(() => {
-  for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true });
+  for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
 });
 
 describe("empty-marker invariant (H6/27.4)", () => {

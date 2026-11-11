@@ -52,7 +52,7 @@ beforeAll(() => {
 });
 
 afterAll(() => {
-  rmSync(TMP_DIR, { recursive: true, force: true });
+  rmSync(TMP_DIR, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
 });
 
 describe("coverage gate enforcement (T6 Abnahme)", () => {
