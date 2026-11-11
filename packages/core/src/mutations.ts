@@ -734,6 +734,14 @@ export interface BacklogUpdateOptions {
   priority?: Exclude<Priority, "unknown">;
   section?: string;
   text?: string;
+  /**
+   * L17/30.7: controlled block position within the (target) section — "top" /
+   * "bottom" / 1-based slot among the section's item blocks. The block content
+   * stays byte-identical, only the line location changes. Out-of-range slots
+   * are a structured error (never clamped). With `section`: first switch, then
+   * place. Without `position` the behavior is unchanged.
+   */
+  position?: "top" | "bottom" | number;
 }
 
 export interface BacklogRemoveOptions {
@@ -784,7 +792,9 @@ function sectionInsertAt(lines: string[], headingIdx: number): number {
 }
 
 /** H6/27.4: the templates' per-section placeholder, EN canonical, DE legacy tolerated on read. */
-const EMPTY_MARKER = /^>\s*(?:No open items\.|Keine offenen Punkte\.?)\s*$/u;
+// F1/30.7: the DE tolerance covers BOTH real-world wordings — "Punkte" (canonical
+// DE template form) and "Items" (e.g. fixture project-a / internal-pwa heritage)
+const EMPTY_MARKER = /^>\s*(?:No open items\.|Keine offenen Punkte\.?|Keine offenen Items\.?)\s*$/u;
 export const EMPTY_MARKER_CANONICAL = "> No open items.";
 
 /**
@@ -833,6 +843,56 @@ function insertIntoSection(lines: string[], section: string, blockLines: string[
   dropEmptyMarker(lines, headingIdx);
   const insertAt = sectionInsertAt(lines, headingIdx);
   lines.splice(insertAt, 0, "", ...blockLines);
+}
+
+/**
+ * L17/30.7: insertion at a controlled position within a section. "bottom" is the
+ * insertIntoSection default; "top" inserts before the section's first item block;
+ * a number N inserts before the Nth block (1-based, N === count+1 == bottom).
+ * Out-of-range is a structured error, never a clamp (documented in the item close).
+ */
+function insertAtPosition(
+  lines: string[],
+  section: string,
+  blockLines: string[],
+  position: "top" | "bottom" | number,
+): void {
+  const headingIdx = sectionHeadingLineAt(lines, section);
+  if (headingIdx === -1) {
+    throw new Error(`unknown section: ${section} (Sektions-Titel ohne Emoji, z. B. "HOCH")`);
+  }
+  dropEmptyMarker(lines, headingIdx);
+  if (position === "bottom") {
+    lines.splice(sectionInsertAt(lines, headingIdx), 0, "", ...blockLines);
+    return;
+  }
+  const blockStarts: number[] = [];
+  for (let i = headingIdx + 1; i < lines.length; i++) {
+    const line = lines[i] ?? "";
+    if (SECTION_HEADING.test(line) || RULE_LINE.test(line)) break;
+    if (/^###\s+\[/u.test(line)) blockStarts.push(i);
+  }
+  if (position === "top") {
+    if (blockStarts.length === 0) {
+      lines.splice(sectionInsertAt(lines, headingIdx), 0, "", ...blockLines);
+      return;
+    }
+    lines.splice(blockStarts[0]!, 0, ...blockLines, "");
+    return;
+  }
+  if (typeof position !== "number" || !Number.isInteger(position) || position < 1) {
+    throw new Error(`invalid position: ${String(position)} — expected "top", "bottom" or an integer >= 1`);
+  }
+  if (position > blockStarts.length + 1) {
+    throw new Error(
+      `position ${position} out of range — section "${section}" has ${blockStarts.length} item block(s) (allowed: 1..${blockStarts.length + 1})`,
+    );
+  }
+  if (position === blockStarts.length + 1) {
+    lines.splice(sectionInsertAt(lines, headingIdx), 0, "", ...blockLines);
+    return;
+  }
+  lines.splice(blockStarts[position - 1]!, 0, ...blockLines, "");
 }
 
 function removeItemLines(lines: string[], span: { start: number; end: number }): void {
@@ -1029,7 +1089,10 @@ export function planBacklogUpdate(root: string, id: string, options: BacklogUpda
     if (sectionChanged || targetSection !== item.section) {
       removeItemLines(lines, item.span);
       restoreEmptyMarker(lines, sectionHeadingLineAt(lines, item.section)); // H6/27.4
-      insertIntoSection(lines, targetSection, blockLines);
+      insertAtPosition(lines, targetSection, blockLines, options.position ?? "bottom");
+    } else if (options.position !== undefined) {
+      removeItemLines(lines, item.span);
+      insertAtPosition(lines, targetSection, blockLines, options.position);
     } else {
       lines.splice(item.span.start - 1, item.span.end - item.span.start + 1, ...blockLines);
     }
@@ -1042,8 +1105,10 @@ export function planBacklogUpdate(root: string, id: string, options: BacklogUpda
       relPath: "BACKLOG.md",
       description:
         targetSection !== item.section
-          ? `Item "${item.id}" aktualisieren und in Sektion "${targetSection}" verschieben`
-          : `Item "${item.id}" aktualisieren (Titel/Priorität/Text in-place)`,
+          ? `Item "${item.id}" aktualisieren und in Sektion "${targetSection}" verschieben${options.position !== undefined ? ` (position: ${options.position})` : ""}`
+          : options.position !== undefined
+            ? `Item "${item.id}" aktualisieren und innerhalb der Sektion verschieben (position: ${options.position})`
+            : `Item "${item.id}" aktualisieren (Titel/Priorität/Text in-place)`,
       transform: edit,
     },
   ]);

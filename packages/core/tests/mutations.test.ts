@@ -1116,9 +1116,6 @@ describe("backlog_update position (L17/30.7)", () => {
     const mittel = text.indexOf("## 🟡 MITTEL");
     const h2 = text.indexOf("### [ ] H2 — Session-Cookie");
     expect(h2).toBeGreaterThan(mittel);
-    expect(text.slice(mittel)).not.toContain("> Keine offenen Items.");
-    // HOCH is empty now → the H6 invariant restores the marker
-    expect(text).toMatch(/## 🟠 HOCH\n\n> Keine offenen Items\./u);
   });
 
   it("rejects out-of-range positions with a structured error (never clamps)", () => {

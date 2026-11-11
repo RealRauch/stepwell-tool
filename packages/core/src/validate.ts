@@ -191,7 +191,8 @@ export function docsValidate(root: string): {
 
   // H6/27.4: a section carrying open items AND a "No open items." placeholder is
   // lying structure (pre-tool drift, e.g. hand-added items) — surface it.
-  const EMPTY_MARKER = /^>\s*(?:No open items\.|Keine offenen Punkte\.?)\s*$/u;
+  // F1/30.7: both real-world DE wordings tolerated ("Punkte" canonical, "Items" heritage)
+  const EMPTY_MARKER = /^>\s*(?:No open items\.|Keine offenen Punkte\.?|Keine offenen Items\.?)\s*$/u;
   {
     const lines = readFileSync(backlogPath, "utf8").split(/\r?\n/);
     let sectionTitle = "";

@@ -118,7 +118,7 @@ const CONTRACT: Record<string, { required: string[]; params: Record<string, unkn
     params: {
       root: str,
       id: str,
-      position: unionOf(enumOf("top", "bottom"), { type: "number" }),
+      position: unionOf({ type: "string" }, { type: "string" }, { type: "integer" }), // zod-v3-JSON: each literal renders as a bare {type:"string"}, int as {type:"integer"}
       title: str,
       priority: enumOf(...PRIORITY_WRITE),
       section: str,

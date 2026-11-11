@@ -575,7 +575,9 @@ export function registerDocsTools(server: McpServer): void {
       description:
         "Changes title, priority, text or section of an open item in the block format " +
         "(span re-computation, As of: timestamp). A priority change moves the block to the " +
-        "matching priority section. Returns the plan with a diff preview; nothing is " +
+        "matching priority section; `position` (L17/30.7) places the block within its " +
+        "(target) section — top/bottom/1-based slot, byte-identical content, structured " +
+        "out-of-range refusal. Returns the plan with a diff preview; nothing is " +
         "written unless dryRun is false.",
       inputSchema: {
         root: ROOT_FIELD,
@@ -584,18 +586,21 @@ export function registerDocsTools(server: McpServer): void {
         priority: z.enum(PRIORITY_WRITE_VALUES).optional().describe("New priority."),
         section: z.string().optional()
           .describe("New target section (title without emoji); default: matching priority section on priority change, otherwise the item stays in place."),
+        position: z.union([z.literal("top"), z.literal("bottom"), z.number().int().min(1)]).optional()
+          .describe("L17/30.7: block position within the (target) section — \"top\", \"bottom\" or a 1-based slot among the section's item blocks; with `section` the order is first switch, then place; out of range is a structured error."),
         text: TEXT_FIELD,
         detail: DETAIL_FIELD,
         dryRun: DRYRUN_FIELD,
       },
     },
-    ({ root, id, title, priority, section, text, detail, dryRun }) =>
+    ({ root, id, title, priority, section, position, text, detail, dryRun }) =>
       asResult(() => {
         const plan = planBacklogUpdate(root, id, {
           dryRun,
           ...(title !== undefined ? { title } : {}),
           ...(priority !== undefined ? { priority: priority as Exclude<Priority, "unknown"> } : {}),
           ...(section !== undefined ? { section } : {}),
+          ...(position !== undefined ? { position } : {}),
           ...(text !== undefined ? { text } : {}),
         });
         const result = plan.dryRun ? plan : applyBacklogUpdatePlan(plan);

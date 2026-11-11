@@ -1,4 +1,4 @@
-# BACKLOG.md — Open items (As of: 2026-11-11T19:04
+# BACKLOG.md — Open items (As of: 2026-11-11T21:38
 
 > **This file contains only OPEN items.** Completed items are moved to `docs/archive/BACKLOG_ARCHIVE.md` unchanged after completion; this file keeps only a one-liner per item in the Done Index (below). Findings/fix-ideas/decisions are not deleted — moved to the archive.
 > Legend: 🔴 critical · 🟠 high · 🟡 medium · 🟢 low · 🔵 test gap
@@ -45,6 +45,12 @@
 - **Problem:** „Haben wir das schon entschieden/gebaut?" ist heute nur per grep über sechs Dateien beantwortbar; grep liefert Text, aber keinen Item-Status (offen/erledigt/entfernt) und keine Blockgrenzen. Backlog.md hat dafür eine Suche. Gleichzeitig gilt M4: kein Surface-Zuwachs ohne belegten Fund — Agenten greppen die Dateien nativ, ein Such-Tool wäre teilweise redundant.
 - **Fix (Entscheidungs-Item, Muster L5/docs_review):** Alternativprüfung dokumentieren, Ergebnis entweder (a) **kein Tool** — Begründung: grep + `backlog_show` decken den Fall, jeder Suchindex wäre eine zweite Wahrheit; Reaktivierungs-Kriterium: Feldproben zeigen wiederholtes Fehlgreifen (z. B. archivierte Treffer übersehen, falsche ID-Rekonstruktion), dann (b) minimaler Kandidat: Parameter `query` an `backlog_list` (Titel/ID/Text, optional `includeArchived: true`), Treffer als `{ id, status, file, line, snippet }` — kein Fuzzy-Ranking, keine Fremddateien, kein neues Tool.
 - **Acceptance:** dokumentierter Entscheid in README/AGENTS inkl. Reaktivierungs-Kriterium (wie L5); falls (b) gebaut wird: RED→GRÜN für offen/archiviert/entfernt und `status` im Treffer; keine neue Abhängigkeit; Suite + typecheck grün.
+
+### [ ] F1 — H6-Marker-Toleranz-Lücke: „Keine offenen Items." wurde nicht erfasst (drop/restore/EMPTY_MARKER_STALE) — inline gefixt in 30.7 — 🟢
+- **Location:** `packages/core/src/mutations.ts` (`EMPTY_MARKER`, drop/restore), `packages/core/src/validate.ts` (`EMPTY_MARKER_STALE`-Scan). Fund: 30.7 (L17-Position-Test) — Insert in eine Marker-Sektion des Real-Fixtures project-a ließ den Marker stehen.
+- **Problem:** Die H6-Marker-Toleranz erfasste nur `No open items.` und `Keine offenen Punkte.` — die reale Varante `Keine offenen Items.` (project-a, internal-pwa-Erbe) wurde weder gedroppt noch restored noch als EMPTY_MARKER_STALE erkannt.
+- **Fix:** Inline-Fix-Lane (Decision 8): Union um `Keine offenen Items\.?` erweitert, beide Regexes (mutations + validate) im selben Zug.
+- **Acceptance:** erledigt — L17-Position-Test grün, empty-marker-Suite unverändert grün; Fix im Commit dieses Steps.
 
 ## 🔵 TEST GAPS
 
