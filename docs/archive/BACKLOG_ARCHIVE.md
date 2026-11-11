@@ -777,3 +777,12 @@
 - **Fix:** Neues Finding `SCOPE_ROW_MISSING`: jede Tabellenzeile, deren Step-Nummer in keinem Detail-Block- Scope auftaucht, wird gemeldet (Zeile + Step); offene Dateien nur, Archive ausgenommen (W2-Muster); `*(accepted: …)*`-Marker wirkt wie gehabt.
 - **Acceptance:** Fixture mit Tabellenzeile ohne Scope-Eintrag → Finding; konsistente Phasen bleiben clean; eigene Reparatur (27.2/27.3) dient als Realbeleg; Suite grün.
 - **Erledigt:** phase 27/27.5 (commit 9d0d5b3) — acceptance refined during implementation: finding is ACTIVE-block-only (legacy archived blocks carry incomplete scopes, project-c-en proved the false positive; archives never policed per W2); adoption/legacy rows without any active block stay exempt; incident shape (lost scope bullet, row kept) now surfaces with line number
+
+---
+
+### [x] H7 — Pull-Auto-Resolution: deterministische Doku-Konflikte (Archiv-Appends) mechanisch auflösen, Rest bleibt Abort+Report — 🟠
+- **Location:** `packages/git/src/sync.ts` (pullTrunk-Konfliktpfad), neue reine Block-Ordnungsfunktion in core; Fund: H5-Design (Leitregel „beide behalten, nach Abschluss-Zeitstempel" bisher nur manuell).
+- **Problem:** Der häufigste Doku-Konflikt (zwei Workstreams hängen Archive-Blöcke ans gleiche EOF) ist deterministisch, erfordert aber Handarbeit — Abort zwingt den Agenten zur Mechanik, die das Tool selbst kann.
+- **Fix:** Hunks beim Pull-Konflikt klassifizieren; Archiv-EOF-Appends (beide Seiten reine Additionen) → mechanisch auflösen: beide Blöcke, geordnet nach Abschluss-Zeitstempel (Core als Datenfunktion, Git bleibt im Satellit); danach docs_validate als Netz — Fehler ⇒ fallback auf Abort+Report wie gehabt. Alles andere (Tabellen-/Item-Konflikte, Code-Dateien, nicht parse-bare Appends) bleibt unverändert Abort+Report.
+- **Acceptance:** Kollisions-Fixtures → Pull läuft durch (resolved-Report, Reihenfolge nach Zeitstempel, validate clean); Tabellen-Konflikt-Fixture → Abort+Report unverändert; Suite grün.
+- **Erledigt:** phase 27/27.6 (RED commit + feat 6fd7b40) — acceptance refined during implementation: mechanical resolution covers BOTH deterministic cases - parallel appends (base slice empty; archives AND section items) and disjoint deletions (side lines subset of base slice, e.g. two workstreams archiving different items of one section; emptied section restores the H6 marker); ordering timestamps-else-HEAD-first, per file; table-row edits/real content conflicts abort+report unchanged; docs_validate gate retained
