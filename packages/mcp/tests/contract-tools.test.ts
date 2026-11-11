@@ -118,6 +118,7 @@ const CONTRACT: Record<string, { required: string[]; params: Record<string, unkn
     params: {
       root: str,
       id: str,
+      position: unionOf(enumOf("top", "bottom"), { type: "number" }),
       title: str,
       priority: enumOf(...PRIORITY_WRITE),
       section: str,

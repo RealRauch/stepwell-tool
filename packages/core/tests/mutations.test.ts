@@ -1083,3 +1083,47 @@ describe("considerWorktrees exclusions (M20/30.5)", () => {
     ).toThrow(/31\.1.*foreign worktree/u);
   });
 });
+
+describe("backlog_update position (L17/30.7)", () => {
+  it("moves a block to the top of its section, the rest byte-identical", () => {
+    const dir = tempCopy("project-a");
+    const result = applyBacklogUpdatePlan(planBacklogUpdate(dir, "H2", { position: "top", dryRun: false }));
+    expect(result.verification.ok).toBe(true);
+    const text = readFileSync(join(dir, "BACKLOG.md"), "utf8");
+    expect(text.indexOf("### [ ] H2 — Session-Cookie")).toBeLessThan(text.indexOf("### [ ] H1 — Upload-Endpunkt"));
+    expect(text).toContain("### [ ] H1 — Upload-Endpunkt ohne Größenlimit — 🟠");
+    expect(text).toContain("- **Ort:** `src/auth/session.ts:18` (Cookie-Serializer)");
+  });
+
+  it("moves to the bottom and honors numeric slots (1-based)", () => {
+    const dir = tempCopy("project-a");
+    applyBacklogUpdatePlan(planBacklogUpdate(dir, "H1", { position: "bottom", dryRun: false }));
+    let text = readFileSync(join(dir, "BACKLOG.md"), "utf8");
+    expect(text.indexOf("### [ ] H1 —")).toBeGreaterThan(text.indexOf("### [ ] H2 —"));
+
+    applyBacklogUpdatePlan(planBacklogUpdate(dir, "H1", { position: 1, dryRun: false }));
+    text = readFileSync(join(dir, "BACKLOG.md"), "utf8");
+    expect(text.indexOf("### [ ] H1 —")).toBeLessThan(text.indexOf("### [ ] H2 —"));
+  });
+
+  it("combines section + position (first switch, then place)", () => {
+    const dir = tempCopy("project-a");
+    const result = applyBacklogUpdatePlan(
+      planBacklogUpdate(dir, "H2", { section: "MITTEL", position: "top", dryRun: false }),
+    );
+    expect(result.verification.ok).toBe(true);
+    const text = readFileSync(join(dir, "BACKLOG.md"), "utf8");
+    const mittel = text.indexOf("## 🟡 MITTEL");
+    const h2 = text.indexOf("### [ ] H2 — Session-Cookie");
+    expect(h2).toBeGreaterThan(mittel);
+    expect(text.slice(mittel)).not.toContain("> Keine offenen Items.");
+    // HOCH is empty now → the H6 invariant restores the marker
+    expect(text).toMatch(/## 🟠 HOCH\n\n> Keine offenen Items\./u);
+  });
+
+  it("rejects out-of-range positions with a structured error (never clamps)", () => {
+    const dir = tempCopy("project-a");
+    expect(() => planBacklogUpdate(dir, "H1", { position: 99, dryRun: true })).toThrow(/out of range/u);
+    expect(() => planBacklogUpdate(dir, "H1", { position: 0, dryRun: true })).toThrow(/position/u);
+  });
+});
