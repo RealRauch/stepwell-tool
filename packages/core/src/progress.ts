@@ -223,6 +223,24 @@ export function scopeSteps(block: PhaseBlock): string[] {
   return steps;
 }
 
+/**
+ * Whether a phase selector addresses a detail block: exact name, title, the combined
+ * form, or — since H8/29.1 — a bare phase number (`"29"` matches `"Phase 29"`), the
+ * natural CLI form. Single source of truth (was duplicated in mutations + context).
+ */
+export function phaseMatches(block: PhaseBlock, phase: string): boolean {
+  const normalized = phase.trim();
+  if (
+    block.name === normalized ||
+    block.title === normalized ||
+    `${block.name} — ${block.title}` === normalized
+  ) {
+    return true;
+  }
+  const bare = /^(\d+)$/u.exec(normalized);
+  return bare !== null && block.name === `Phase ${bare[1]}`;
+}
+
 /** Sortable timeline key of the LATEST ISO-8601 (`YYYY-MM-DDTHH:mm`) or legacy (`YYMMDD/HHMM`) stamp in a chunk (H7/27.6). */
 export function latestStampKey(chunk: string): string | undefined {
   let best: string | undefined;

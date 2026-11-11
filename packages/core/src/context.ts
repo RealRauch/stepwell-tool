@@ -1,6 +1,6 @@
 import { canonical, detectLocale } from "./profile.ts";
 import { loadProject, type ProjectDocs } from "./project.ts";
-import { scopeSteps } from "./progress.ts";
+import { phaseMatches, scopeSteps } from "./progress.ts";
 import type { BacklogItem, PhaseBlock, ProgressRow } from "./types.ts";
 
 /**
@@ -19,14 +19,6 @@ export interface PhaseContext {
 
 const EXPLICIT_REF = /\(([A-Z]+[0-9]+)\/[0-9]+\)/gu;
 const ID_TOKEN = /\b([A-Z]{1,3}[0-9]{1,4})\b/gu;
-
-function phaseMatches(block: PhaseBlock, phase: string): boolean {
-  return (
-    block.name === phase ||
-    block.title === phase ||
-    `${block.name} — ${block.title}` === phase
-  );
-}
 
 function findBlock(docs: ProjectDocs, phase: string): PhaseBlock | undefined {
   return (

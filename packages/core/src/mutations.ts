@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { lineDiff } from "./diff.ts";
 import { allSynonyms, canonical, detectLocale, escapeRegExp, synonymPattern, type Locale } from "./profile.ts";
 import { docsValidate } from "./validate.ts";
-import { scopeEntryFor } from "./progress.ts";
+import { phaseMatches, scopeEntryFor } from "./progress.ts";
 import { loadProject } from "./project.ts";
 import type {
   ArchiveItemPlan,
@@ -265,10 +265,6 @@ function tableLineHasStep(line: string, step?: string): boolean {
   return step === undefined ? /^\d+(?:\.\d+)?$/u.test(cell) : cell === step;
 }
 
-function phaseMatches(block: PhaseBlock, phase: string): boolean {
-  return block.name === phase || block.title === phase || `${block.name} — ${block.title}` === phase;
-}
-
 const SECTION_RULE = /^-{3,}\s*$/u;
 
 function removeSpan(lines: string[], start: number, end: number): void {
@@ -380,6 +376,14 @@ export function planProgressUpdate(
   const scopeEntry = block === undefined ? undefined : scopeEntryFor(block, step);
   if (block !== undefined && row === undefined && scopeEntry === undefined) {
     throw new Error(`unknown step: ${step} (weder in der Tabelle noch im Scope der Phase)`);
+  }
+  // H8/29.1: a 🔄 flip whose step already sits in the table must NEVER fall into the
+  // skeleton path — that silently inserted a phantom block ("### 27" + scope) while the
+  // row flip still succeeded. Skeletons stay reserved for genuinely NEW phases (no row).
+  if (block === undefined && row !== undefined && status === "🔄" && !alreadyArchived) {
+    throw new Error(
+      `unknown phase: ${phase} — step ${step} has a progress-table row but no detail block matches it (refusing to create a phantom skeleton, H8/29.1)`,
+    );
   }
 
   const prefixMatch = block === undefined ? undefined : /^Phase\s+(\d+)/u.exec(block.name);

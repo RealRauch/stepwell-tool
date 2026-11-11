@@ -393,7 +393,7 @@ export function registerDocsTools(server: McpServer): void {
         "plan with a diff preview; nothing is written unless dryRun is false.",
       inputSchema: {
         root: ROOT_FIELD,
-        phase: z.string().describe("Phase name, title or both (e.g. \"Phase 2\" / \"Phase 2 — UI Polish\")."),
+        phase: z.string().describe("Phase name, title, both, or a bare phase number (e.g. \"Phase 2\" / \"Phase 2 — UI Polish\" / \"2\")."),
         step: z.union([z.string(), z.array(z.string())])
           .describe("Step number per table/scope (e.g. \"2.2\") or an array of step numbers for multi-step updates in one call (e.g. phase completion; only with dryRun: false)."),
         status: z.enum(["⬜", "🔄", "✅", "⛔"]).describe("New status icon."),

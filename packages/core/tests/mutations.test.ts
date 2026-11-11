@@ -303,7 +303,7 @@ describe("phase matching + phantom skeleton guard (H8, 29.1)", () => {
 
   it("matches a bare phase number to 'Phase <N>' and flips only the table row", () => {
     const dir = tempCopy("project-a");
-    planPhase(dir, "Phase 7 — Rundung", planned, { dryRun: false });
+    applyPhasePlan(planPhase(dir, "Phase 7 — Rundung", planned, { dryRun: false }));
 
     const plan = planProgressUpdate(dir, "7", "7.1", "🔄", { dryRun: true });
     expect(plan.changes).toHaveLength(1);
@@ -315,7 +315,7 @@ describe("phase matching + phantom skeleton guard (H8, 29.1)", () => {
 
   it("refuses to create a phantom skeleton when the step has a table row but no block matches (H8)", () => {
     const dir = tempCopy("project-a");
-    planPhase(dir, "Phase 7 — Rundung", planned, { dryRun: false });
+    applyPhasePlan(planPhase(dir, "Phase 7 — Rundung", planned, { dryRun: false }));
 
     // non-"Phase <N>" name that matches nothing: previously inserted a silent
     // "### Neue Phase" skeleton while flipping the row — a corruption, H8
