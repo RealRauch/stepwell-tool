@@ -267,6 +267,12 @@ function tableLineHasStep(line: string, step?: string): boolean {
 
 const SECTION_RULE = /^-{3,}\s*$/u;
 
+// L16/29.3: callers may pass the full heading text ("Phase 7 — Rundung") as the
+// new title — never concatenate a second "Phase <N> — " prefix onto that.
+function renamedHeading(block: PhaseBlock, newTitle: string): string {
+  return newTitle.startsWith(`${block.name} — `) ? `### ${newTitle}` : `### ${block.name} — ${newTitle}`;
+}
+
 function removeSpan(lines: string[], start: number, end: number): void {
   lines.splice(start - 1, end - start + 1);
   if (
@@ -411,7 +417,7 @@ export function planProgressUpdate(
       if (!/^###/u.test(lines[headingIdx] ?? "")) {
         throw new Error(`phase heading for "${block.name}" not found in PROGRESS.md`);
       }
-      lines[headingIdx] = `### ${block.name} — ${newTitle}`;
+      lines[headingIdx] = renamedHeading(block, newTitle);
     }
 
     if (completedPhase && block !== undefined) {
@@ -458,7 +464,7 @@ export function planProgressUpdate(
       transform: (content, eol) => {
         const blockLines = block.raw.split(/\r?\n/);
         if (newTitle !== undefined) {
-          blockLines[0] = `### ${block.name} — ${newTitle}`;
+          blockLines[0] = renamedHeading(block, newTitle);
         }
         if (note !== undefined || checkpoint !== undefined) {
           const parts = [

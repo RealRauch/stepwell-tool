@@ -398,7 +398,7 @@ export function registerDocsTools(server: McpServer): void {
           .describe("Step number per table/scope (e.g. \"2.2\") or an array of step numbers for multi-step updates in one call (e.g. phase completion; only with dryRun: false)."),
         status: z.enum(["⬜", "🔄", "✅", "⛔"]).describe("New status icon."),
         title: z.string().optional()
-          .describe("New phase title — renames the detail block heading consistently (table stays unchanged); on phase completion in the same call the block moves into the archive under the new title."),
+          .describe("New phase title — renames the detail block heading consistently (table stays unchanged); a full heading text is accepted as-is, no prefix doubling (L16/29.3); on phase completion in the same call the block moves into the archive under the new title."),
         note: z.string().optional()
           .describe("Optional note — on phase completion it becomes the **Verification:** line on the archive block."),
         checkpoint: z.string().optional()
