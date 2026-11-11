@@ -69,6 +69,10 @@ fixtures/
 │   ├── PROGRESS.md         #   warning without flipping ok (ok stays true). The mixed
 │   └── docs/archive/       #   state (✅ + ⬜, no 🔄) is derived in the test via tempCopy
 │       ├── BACKLOG_ARCHIVE.md  # + override → stays a PLAN_WITHOUT_WIP finding (ok false).
+├── project-l-deps/         # M21/30.6: Depends-on as data — chain X1→X2→X3 (transitive
+│   ├── BACKLOG.md          #   blockedBy, X3 ready), cycle X4↔X5 (DEP_CYCLE finding),
+│   ├── PROGRESS.md         #   unknown ref X6→Z9 (DEP_UNKNOWN warning, no ready-flip).
+│   └── docs/archive/
 
 project-empty/             # empty directory (.gitkeep only; M5/9.3) — root WITHOUT a
                            #   STEPWELL project: docs_validate/docs_status → exactly

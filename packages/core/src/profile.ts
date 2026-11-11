@@ -11,6 +11,7 @@ export const SYNONYMS = {
   progressHeading: { de: ["Fortschritt"], en: ["Progress"] },
   runningPhasesHeading: { de: ["Laufende Phasen"], en: ["Active Phases"] },
   locationLabel: { de: ["Ort"], en: ["Location"] },
+  dependsOnLabel: { de: ["Hängt ab von"], en: ["Depends on"] },
   doneLabel: { de: ["Erledigt"], en: ["Done"] },
   goalLabel: { de: ["Ziel"], en: ["Goal"] },
   acceptanceLabel: { de: ["Abnahme"], en: ["Acceptance"] },

@@ -228,7 +228,10 @@ describe("backlog_list ready filter + dependency fields (M21/30.6)", () => {
       const result = await callTool(c, "backlog_list", { root: projectLdeps, ready: true });
       expect(result.isError).toBeFalsy();
       const data = payload(result) as { items: Array<{ id: string; ready: boolean }> };
-      expect(data.items.map((i) => i.id)).toEqual(["X3"]);
+      // X3 has no deps; X6's only reference is unknown (Z9) — per item semantics
+      // unknown refs are ignored for readiness (no ready-flip), so X6 is ready
+      expect(data.items.map((i) => i.id)).toEqual(["X3", "X6"]);
+      expect(data.items.every((i) => i.ready)).toBe(true);
       expect(data.items[0]?.ready).toBe(true);
     } finally {
       await c.close();

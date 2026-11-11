@@ -28,6 +28,12 @@ const LOCATION_BULLET = new RegExp(
   `^-\\s+\\*\\*(?:${union(allSynonyms("locationLabel"))}):\\*\\*\\s+(.+?)\\s*$`,
   "u",
 );
+// M21/30.6: optional dependency bullet — DE variant read silently (union matching)
+const DEPENDS_BULLET = new RegExp(
+  `^-\\s+\\*\\*(?:${union(allSynonyms("dependsOnLabel"))}):\\*\\*\\s+(.+?)\\s*$`,
+  "u",
+);
+const DEP_ID = /^[A-Z][0-9]+$/u;
 
 /**
  * H10/30.4: path-like tokens extracted from the location bullet — the cheap
@@ -244,6 +250,9 @@ function buildItem(raw: RawItem, section: BacklogSection | null, file: string): 
     section: section?.title ?? "",
     open: raw.open,
     files: [],
+    dependsOn: [],
+    blockedBy: [],
+    ready: raw.open,
     text: bodyLines.join("\n"),
     span: { start: raw.headingLine, end: bodyEnd },
     raw: [raw.heading, ...bodyLines].join("\n"),
@@ -254,6 +263,14 @@ function buildItem(raw: RawItem, section: BacklogSection | null, file: string): 
       item.location = location[1]!;
       item.files = extractFiles(location[1]);
       break;
+    }
+  }
+  for (const line of bodyLines) {
+    const depends = DEPENDS_BULLET.exec(line);
+    if (depends === null) continue;
+    for (const token of depends[1]!.split(/[,;]/u)) {
+      const id = token.trim();
+      if (DEP_ID.test(id) && !item.dependsOn.includes(id)) item.dependsOn.push(id);
     }
   }
 
@@ -374,6 +391,28 @@ export function parseBacklog(rawContent: string, file = "BACKLOG.md"): ParseResu
 
   for (const [i, section] of sections.entries()) {
     section.headerRule = (headerRules[i] ?? []).join("\n");
+  }
+
+  // M21/30.6: derive blockedBy (transitive OPEN ancestors) + ready per item —
+  // a cross-item pass, so it runs after every item is built. Unknown refs are
+  // skipped here (DEP_UNKNOWN surfaces at validate); the visited set guards
+  // against cycles without an infinite loop (cycle members block themselves).
+  const byId = new Map(items.map((i) => [i.id, i]));
+  for (const item of items) {
+    const visited = new Set<string>();
+    const stack = [...item.dependsOn];
+    const blocked = new Set<string>();
+    while (stack.length > 0) {
+      const id = stack.pop()!;
+      if (visited.has(id)) continue;
+      visited.add(id);
+      const ref = byId.get(id);
+      if (ref === undefined) continue;
+      if (ref.open) blocked.add(id);
+      stack.push(...ref.dependsOn);
+    }
+    item.blockedBy = [...blocked].sort();
+    item.ready = item.open && item.blockedBy.length === 0;
   }
 
   return { value: { sections, items, doneIndex }, warnings };

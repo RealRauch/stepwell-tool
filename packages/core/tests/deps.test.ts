@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { parseBacklog } from "../src/backlog.ts";
+import { parseBacklog, readBacklog } from "../src/backlog.ts";
 import { docsValidate } from "../src/validate.ts";
 
 // M21/30.6: dependencies as data — tolerant optional `Depends on:` bullet,
@@ -59,7 +59,7 @@ describe("dependsOn parsing (M21/30.6)", () => {
 });
 
 describe("derived ready/blockedBy (M21/30.6) — fixture project-l-deps", () => {
-  const result = parseBacklog(join(fixtures, "project-l-deps", "BACKLOG.md"));
+  const result = readBacklog(join(fixtures, "project-l-deps"));
 
   it("resolves transitive blocking: X1 blockedBy [X2, X3], X3 ready", () => {
     const byId = new Map(result.value.items.map((i) => [i.id, i]));
@@ -84,7 +84,7 @@ describe("validate DEP_UNKNOWN / DEP_CYCLE (M21/30.6) — fixture project-l-deps
   it("reports the unknown reference as a warning (does not flip ok) and the cycle as a finding", () => {
     expect(result.warnings.map((w) => w.code)).toContain("DEP_UNKNOWN");
     const unknown = result.warnings.find((w) => w.code === "DEP_UNKNOWN");
-    expect(unknown?.message).toContain("ZZ9");
+    expect(unknown?.message).toContain("Z9");
     const cycles = result.findings.filter((f) => f.code === "DEP_CYCLE");
     expect(cycles).toHaveLength(1);
     expect(cycles[0]?.message).toContain("X4");

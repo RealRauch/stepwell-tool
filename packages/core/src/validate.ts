@@ -236,6 +236,66 @@ export function docsValidate(root: string): {
     }
   }
   const validateWarnings: Warning[] = [];
+
+  // M21/30.6: Depends-on as data — unknown references warn (ignored for
+  // readiness), dependency cycles among open items are findings.
+  {
+    const knownIds = new Set<string>([
+      ...backlog.value.items.map((i) => i.id),
+      ...backlogArchive.value.map((i) => i.id),
+      ...backlog.value.doneIndex.map((d) => d.id),
+    ]);
+    for (const item of backlog.value.items) {
+      for (const dep of item.dependsOn) {
+        if (!knownIds.has(dep)) {
+          validateWarnings.push({
+            code: "DEP_UNKNOWN",
+            file: backlogPath,
+            line: item.span.start,
+            message: `Item "${item.id}" depends on "${dep}", which is not a known id (open, archive or Done Index) — the reference is ignored for readiness.`,
+          });
+        }
+      }
+    }
+    // cycle detection over open items (DFS with colors; unknown/archived refs
+    // are not graph edges — archived work is done, it cannot block)
+    const openById = new Map(backlog.value.items.map((i) => [i.id, i]));
+    const WHITE = 0;
+    const GRAY = 1;
+    const BLACK = 2;
+    const color = new Map<string, number>(backlog.value.items.map((i) => [i.id, WHITE]));
+    const reported = new Set<string>();
+    const visit = (id: string, path: string[]): void => {
+      color.set(id, GRAY);
+      const item = openById.get(id);
+      if (item !== undefined) {
+        for (const dep of item.dependsOn) {
+          if (!openById.has(dep)) continue;
+          const c = color.get(dep) ?? WHITE;
+          if (c === GRAY) {
+            const start = path.indexOf(dep);
+            const cycle = [...path.slice(start === -1 ? 0 : start), id, dep];
+            const key = [...cycle].sort().join(">");
+            if (!reported.has(key)) {
+              reported.add(key);
+              findings.push({
+                code: "DEP_CYCLE",
+                file: backlogPath,
+                line: item.span.start,
+                message: `Dependency cycle: ${cycle.join(" → ")} — resolve the Depends-on chain (startability is undefined while the cycle stands).`,
+              });
+            }
+            continue;
+          }
+          if (c === WHITE) visit(dep, [...path, id]);
+        }
+      }
+      color.set(id, BLACK);
+    };
+    for (const item of backlog.value.items) {
+      if ((color.get(item.id) ?? WHITE) === WHITE) visit(item.id, []);
+    }
+  }
   for (const block of progress.value.phases) {
     const steps = new Set(scopeSteps(block));
     const isRunning = runningSteps.some((row) => steps.has(row.step));

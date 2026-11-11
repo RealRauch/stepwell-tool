@@ -34,8 +34,8 @@
 
 ### [ ] X6 — Unknown reference — 🟠
 - **Location:** `src/unknown/ref.ts`
-- **Depends on:** ZZ9
-- **Problem:** M21/30.6 fixture — unknown id ⇒ DEP_UNKNOWN warning, readiness unaffected.
+- **Depends on:** Z9
+- **Problem:** M21/30.6 fixture — id-shaped but unknown reference ⇒ DEP_UNKNOWN warning, readiness unaffected.
 
 ---
 

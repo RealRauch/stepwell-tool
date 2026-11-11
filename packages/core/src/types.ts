@@ -31,6 +31,14 @@ export interface BacklogItem {
    * surface for workstream overlaps; empty when the location names no paths.
    */
   files: string[];
+  /**
+   * M21/30.6: optional `Depends on:` bullet as data (union-matched DE/EN),
+   * derived transitive open ancestors (`blockedBy`) and startability (`ready`).
+   * Unknown references are ignored for readiness (DEP_UNKNOWN at validate).
+   */
+  dependsOn: string[];
+  blockedBy: string[];
+  ready: boolean;
   text: string;
   span: { start: number; end: number };
   raw: string;

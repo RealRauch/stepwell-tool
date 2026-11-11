@@ -173,6 +173,9 @@ const PROJECTABLE_FIELDS = [
   "open",
   "location",
   "files",
+  "dependsOn",
+  "blockedBy",
+  "ready",
   "text",
   "span",
 ] as const;
@@ -193,7 +196,8 @@ export function registerDocsTools(server: McpServer): void {
       title: "Backlog list",
       description:
         "Lists items of a STEPWELL project's BACKLOG.md (without raw, lean payload) " +
-        "including parse warnings; filter: priority, open, section; projection: fields " +
+        "including parse warnings; filter: priority, open, section, ready (M21/30.6: " +
+        "startable = open with no open Depends-on ancestors); projection: fields " +
         "(e.g. [\"id\",\"title\",\"priority\",\"open\",\"section\"] for overview calls).",
       inputSchema: {
         root: ROOT_FIELD,
@@ -201,12 +205,14 @@ export function registerDocsTools(server: McpServer): void {
           .describe("Filter on priorities."),
         open: z.boolean().optional().describe("Filter on open/completed checkbox."),
         section: z.string().optional().describe("Exact section title (without emoji)."),
+        ready: z.boolean().optional()
+          .describe("M21/30.6: filter on startability (open AND no open Depends-on ancestors); items without a Depends-on bullet are ready when open."),
         fields: z.array(z.enum(PROJECTABLE_FIELDS)).optional()
           .describe("Project each item to the listed fields (token economy, E1); " +
             "if the parameter is missing, all fields except raw are returned."),
       },
     },
-    ({ root, priority, open, section, fields }) =>
+    ({ root, priority, open, section, ready, fields }) =>
       asResult(() => {
         const parsed = readBacklog(root);
         let items = parsed.value.items;
@@ -219,6 +225,9 @@ export function registerDocsTools(server: McpServer): void {
         }
         if (section !== undefined) {
           items = items.filter((i) => i.section === section);
+        }
+        if (ready !== undefined) {
+          items = items.filter((i) => i.ready === ready);
         }
         return {
           count: items.length,
