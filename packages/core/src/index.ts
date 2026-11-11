@@ -38,6 +38,8 @@ export {
   type PhaseStep,
   type ProgressUpdateOptions,
 } from "./mutations.ts";
+export { docsRepair } from "./repair.ts";
+export type { DocsRepairAction, DocsRepairOptions, DocsRepairPlan } from "./types.ts";
 export {
   allSynonyms,
   canonical,

@@ -32,10 +32,11 @@ describe("docsRepair — dry-run default (H9/30.1)", () => {
     expect(plan.fix.applied).toEqual([]);
     expect(plan.changes).toEqual([]);
     // b-drift: H9 NOT_ARCHIVED, Z9 ARCHIVE_WITHOUT_INDEX, 1.4 WIP_WITHOUT_PLAN
+    // (planned order follows the validate finding order)
     expect(plan.fix.planned.map((a) => [a.code, a.target])).toEqual([
       ["NOT_ARCHIVED", "H9"],
-      ["WIP_WITHOUT_PLAN", "1.4"],
       ["ARCHIVE_WITHOUT_INDEX", "Z9"],
+      ["WIP_WITHOUT_PLAN", "1.4"],
     ]);
     // non-repairable codes + the MM/YYYY legacy date stay findings with a reason
     const skippedCodes = plan.fix.skipped.map((s) => s.code);
@@ -130,7 +131,8 @@ describe("docsRepair — per-code isolation (H9/30.1): the fix removes exactly t
     expect(result.verification.ok).toBe(true);
     const backlog = readFileSync(backlogPath, "utf8");
     expect(backlog).not.toContain("### [x] H1 —");
-    expect(backlog).toContain("- H1 — Upload-Endpunkt ohne Größenlimit — done (repaired by docs_repair)");
+    // project-a is German: the generated done word is the locale canonical
+    expect(backlog).toContain("- H1 — Upload-Endpunkt ohne Größenlimit — erledigt (repaired by docs_repair)");
     const archive = readFileSync(join(dir, "docs", "archive", "BACKLOG_ARCHIVE.md"), "utf8");
     expect(archive).toContain("### [x] H1 — Upload-Endpunkt ohne Größenlimit — 🟠");
     expect(docsValidate(dir).ok).toBe(true);
@@ -179,7 +181,7 @@ describe("docsRepair — per-code isolation (H9/30.1): the fix removes exactly t
     expect(result.fix.applied).toEqual([]);
     expect(result.fix.skipped).toHaveLength(1);
     expect(result.fix.skipped[0]?.code).toBe("WIP_WITHOUT_PLAN");
-    expect(result.fix.skipped[0]?.reason).toMatch(/other table rows/iu);
+    expect(result.fix.skipped[0]?.reason).toMatch(/other table row/iu);
     expect(readFileSync(progressPath, "utf8")).not.toContain("### Phase 1");
     expect(docsValidate(dir).ok).toBe(false);
   });
@@ -199,7 +201,7 @@ describe("docsRepair — per-code isolation (H9/30.1): the fix removes exactly t
     expect(result.fix.applied.map((a) => a.code)).toEqual(["ARCHIVE_WITHOUT_INDEX"]);
     expect(result.verification.ok).toBe(true);
     const backlog = readFileSync(join(dir, "BACKLOG.md"), "utf8");
-    expect(backlog).toContain("- Z8 — Rekonstruktions-Fall — done (index line reconstructed by docs_repair; commit unknown)");
+    expect(backlog).toContain("- Z8 — Rekonstruktions-Fall — erledigt (index line reconstructed by docs_repair; commit unknown)");
     expect(docsValidate(dir).ok).toBe(true);
   });
 });
@@ -210,8 +212,10 @@ describe("docsRepair — b-drift integration (H9/30.1)", () => {
 
     const result = docsRepair(dir, { dryRun: false });
 
+    // b-drift's orphan 1.4 row has sibling rows (1.1–1.3) → skeleton repair is
+    // refused (scope reconstruction needs a human), NOT silently applied.
     const appliedCodes = result.fix.applied.map((a) => a.code).sort();
-    expect(appliedCodes).toEqual(["ARCHIVE_WITHOUT_INDEX", "NOT_ARCHIVED", "WIP_WITHOUT_PLAN"]);
+    expect(appliedCodes).toEqual(["ARCHIVE_WITHOUT_INDEX", "NOT_ARCHIVED"]);
 
     const after = docsValidate(dir);
     const remaining = after.findings.map((f) => f.code);
@@ -220,10 +224,12 @@ describe("docsRepair — b-drift integration (H9/30.1)", () => {
     expect(remaining).toContain("INDEX_WITHOUT_ARCHIVE");
     expect(remaining).toContain("PLAN_WITHOUT_WIP");
     expect(remaining).toContain("DATE_LEGACY");
+    expect(remaining).toContain("WIP_WITHOUT_PLAN");
     expect(remaining).not.toContain("NOT_ARCHIVED");
-    expect(remaining).not.toContain("WIP_WITHOUT_PLAN");
     expect(remaining).not.toContain("ARCHIVE_WITHOUT_INDEX");
     expect(result.verification.ok).toBe(false);
-    expect(result.changes.length).toBeGreaterThanOrEqual(3);
+    expect(result.changes.length).toBeGreaterThanOrEqual(2);
+    const wipSkip = result.fix.skipped.find((s) => s.code === "WIP_WITHOUT_PLAN");
+    expect(wipSkip?.reason).toMatch(/other table row/iu);
   });
 });

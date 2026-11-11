@@ -60,7 +60,7 @@ function readText(path: string): { content: string; eol: string } {
  * file as part of one line and shift every later span. Re-joining with `eol`
  * normalises such stray endings on write.
  */
-function splitLines(content: string): string[] {
+export function splitLines(content: string): string[] {
   return content.split(/\r?\n/);
 }
 
@@ -284,7 +284,7 @@ function removeSpan(lines: string[], start: number, end: number): void {
   }
 }
 
-function insertRunningPhaseSkeleton(
+export function insertRunningPhaseSkeleton(
   lines: string[],
   heading: string,
   scopeHeading: string,

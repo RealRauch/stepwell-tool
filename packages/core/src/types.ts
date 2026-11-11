@@ -183,3 +183,31 @@ export interface ApplyResult {
   written: string[];
   verification: { ok: boolean; messages: string[] };
 }
+
+/** One mechanical repair docs_repair performs or plans (H9/30.1). */
+export interface DocsRepairAction {
+  code: string;
+  file: string;
+  target: string;
+}
+
+export interface DocsRepairOptions {
+  dryRun?: boolean;
+}
+
+/**
+ * H9/30.1: mechanical repair path over the responsible planners. Dry-run lists
+ * what WOULD be repaired without writing; apply runs the repairs sequentially
+ * (one per iteration, re-validating in between — spans stay fresh by design).
+ */
+export interface DocsRepairPlan {
+  root: string;
+  dryRun: boolean;
+  fix: {
+    planned: DocsRepairAction[];
+    applied: DocsRepairAction[];
+    skipped: Array<DocsRepairAction & { reason: string }>;
+  };
+  changes: PlanChange[];
+  verification: { ok: boolean; messages: string[] };
+}
