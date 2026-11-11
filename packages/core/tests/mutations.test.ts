@@ -34,7 +34,7 @@ function tempCopy(project: string): string {
 
 afterEach(() => {
   for (const dir of tempDirs.splice(0)) {
-    rmSync(dir, { recursive: true, force: true });
+    rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
   }
 });
 
@@ -326,6 +326,27 @@ describe("phase matching + phantom skeleton guard (H8, 29.1)", () => {
     expect(() =>
       planProgressUpdate(dir, "99", "7.1", "🔄", { dryRun: true }),
     ).toThrow(/7\.1/u);
+  });
+});
+
+describe("title rename prefix guard (L16, 29.3)", () => {
+  it("accepts a full heading as --title without doubling the 'Phase <N> —' prefix", () => {
+    const dir = tempCopy("project-a");
+    const plan = planProgressUpdate(dir, "Phase 2", "2.2", "🔄", { dryRun: true, title: "Phase 2 — UI Polish" });
+    const change = plan.changes[0]!;
+    expect(change.after).toContain("### Phase 2 — UI Polish");
+    expect(change.after).not.toContain("Phase 2 — Phase 2");
+  });
+
+  it("keeps the archive heading clean on phase completion with a full heading as title", () => {
+    const dir = tempCopy("project-h-completion-order");
+    const result = applyProgressPlan(
+      planProgressUpdate(dir, "Phase 2", "2.1", "✅", { dryRun: false, title: "Phase 2 — Batch done" }),
+    );
+    expect(result.verification.ok).toBe(true);
+    const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.md"), "utf8");
+    expect(archive).toContain("### Phase 2 — Batch done");
+    expect(archive).not.toContain("Phase 2 — Phase 2");
   });
 });
 
