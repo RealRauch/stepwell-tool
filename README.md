@@ -283,6 +283,12 @@ node packages/mcp/src/cli.ts progress-update --root <project> --phase "Phase 2" 
 Invalid values exit with code 2 and the list of allowed aliases (e.g.
 `🔴=red/kritisch/p1, …`, `⬜=open, 🔄=running/wip, ✅=done, ⛔=blocked`).
 
+**`--root` ergonomics (L15/27.8):** an explicit `--root <dir>` stays the precise form;
+omitting it falls back to the **current working directory** of the CLI process (so
+`stepwell status` just works inside a STEPWELL project). Without `--root` and without a
+resolvable project in the CWD, the loader reports `PROJECT_NOT_INITIALIZED` with setup
+guidance — exit codes unchanged.
+
 **Exit codes:** `0` success (or no validate findings) · `1` error or
 validate findings · `2` usage error (unknown command, missing required option).
 

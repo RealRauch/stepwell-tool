@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { readFileSync, rmSync } from "node:fs";
 import { Writable } from "node:stream";
 import { join } from "node:path";
@@ -375,5 +376,12 @@ describe("runCli — defaultRoot (L15/27.8)", () => {
     const code = await runCli(["status"], io.io, undefined);
     expect(code).toBe(2);
     expect(io.stderr).toContain("missing required option: --root");
+  });
+
+  it("direct CLI run falls back to process.cwd() as the project root", () => {
+    const cli = join(import.meta.dirname, "..", "src", "cli.ts");
+    const out = execFileSync("node", [cli, "status"], { cwd: projectA, encoding: "utf8" });
+    expect(out).toContain("Open items: 7");
+    expect(out).toContain("Warnings: 0");
   });
 });

@@ -71,6 +71,7 @@ function syncStatusText(report: WorkstreamReportOk | { ok: false; error: SyncErr
   const lines = [`Trunk: ${report.trunk}`, `Current branch: ${report.current}`];
   if (report.worktrees.length === 0) {
     lines.push("Workstreams: none (single-tree mode)");
+    lines.push("Set up a workstream: git worktree add ../<project>-<branch> -b <branch>");
   } else {
     lines.push("Workstreams:");
     for (const ws of report.worktrees) {
@@ -140,7 +141,7 @@ commands:
                    pull/push are pre-flight previews by default; --apply executes.
 
 options:
-  --root <dir>       Project root (required)
+  --root <dir>       Project root (defaults to the current directory)
   --priority <list>  Comma list, icons or aliases: 🔴=red/critical/p1, 🟠=orange/high/p2,
                      🟡=yellow/medium/p3, 🟢=green/low/p4, 🔵=blue/test/p5, unknown
   --open <bool>      Checkbox filter (true/false, backlog only)
@@ -253,11 +254,12 @@ function parseArgs(argv: string[]): { command: string | undefined; options: CliO
 
 export class UsageError extends Error {}
 
-function requireRoot(options: CliOptions): string {
-  if (options.root === undefined || options.root === "") {
-    throw new UsageError("missing required option: --root <dir>");
+function requireRoot(options: CliOptions, defaultRoot: string | undefined): string {
+  const root = options.root === undefined || options.root === "" ? defaultRoot : options.root;
+  if (root === undefined || root === "") {
+    throw new UsageError("missing required option: --root <dir> (or run inside a project directory)");
   }
-  return options.root;
+  return root;
 }
 
 function basename(path: string): string {
@@ -386,7 +388,7 @@ function applyResultText(result: ApplyResult): string {
   return lines.join("\n");
 }
 
-export async function runCli(argv: string[], io: CliIo): Promise<number> {
+export async function runCli(argv: string[], io: CliIo, defaultRoot?: string): Promise<number> {
   let command: string | undefined;
   let options: CliOptions;
   try {
@@ -409,12 +411,12 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
   try {
     switch (command) {
       case "status": {
-        const s = docsStatus(requireRoot(options));
+        const s = docsStatus(requireRoot(options, defaultRoot));
         io.stdout.write(options.json ? jsonOut(s as unknown as Record<string, unknown>) : statusText(s));
         return 0;
       }
       case "backlog": {
-        const root = requireRoot(options);
+        const root = requireRoot(options, defaultRoot);
         const parsed = readBacklog(root);
         let items = parsed.value.items;
         const priorities = requirePriorities(options);
@@ -436,7 +438,7 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
         return 0;
       }
       case "progress": {
-        const root = requireRoot(options);
+        const root = requireRoot(options, defaultRoot);
         const parsed = readProgress(root);
         let rows = parsed.value.rows;
         if (options.status !== undefined && options.status !== "") {
@@ -447,12 +449,12 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
         return 0;
       }
       case "validate": {
-        const result = docsValidate(requireRoot(options));
+        const result = docsValidate(requireRoot(options, defaultRoot));
         io.stdout.write(options.json ? jsonOut(result) : validateText(result));
         return result.ok ? 0 : 1;
       }
       case "archive": {
-        const root = requireRoot(options);
+        const root = requireRoot(options, defaultRoot);
         if (options.id === undefined || options.id === "") {
           throw new UsageError("missing required option: --id <itemId>");
         }
@@ -484,7 +486,7 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
         return result.verification.ok && (commitOutcome?.ok !== false) ? 0 : 1;
       }
       case "progress-update": {
-        const root = requireRoot(options);
+        const root = requireRoot(options, defaultRoot);
         if (options.phase === undefined || options.phase === "") {
           throw new UsageError("missing required option: --phase <phase>");
         }
@@ -527,7 +529,7 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
         return result.verification.ok && (commitOutcome?.ok !== false) ? 0 : 1;
       }
       case "sync": {
-        const root = requireRoot(options);
+        const root = requireRoot(options, defaultRoot);
         const direction = options.positionals[0];
         if (direction === undefined || options.positionals.length > 1) {
           throw new UsageError("usage: stepwell sync <status|pull|push> (exactly one direction)");
@@ -581,5 +583,9 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
 // die Heuristik muss beide Endungen erkennen, sonst startet das installierte Bin nicht.
 const isDirectRun = process.argv[1] !== undefined && /cli\.(ts|js)$/u.test(process.argv[1]);
 if (isDirectRun) {
-  process.exitCode = await runCli(process.argv.slice(2), { stdout: process.stdout, stderr: process.stderr });
+  process.exitCode = await runCli(
+    process.argv.slice(2),
+    { stdout: process.stdout, stderr: process.stderr },
+    process.cwd(),
+  );
 }
