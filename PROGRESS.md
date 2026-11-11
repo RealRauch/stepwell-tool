@@ -187,6 +187,6 @@
 | 30.3 | Verification: typecheck + suite + docs_validate clean; doc-sync (README tool table + M4 justification, CHANGELOG); archive H9; phase completion | ✅ |
 | 30.4 | H10: files[] from Location bullets (tolerant path extraction, no globs) + backlog_list fields extension + workstreamReport predictedOverlap (branch/trunk open-item file intersection, read-only) — overlap[] byte-identical [H10] | ✅ |
 | 30.5 | M20: workstreamReport idCollisions (newly added IDs/steps in merge-base..branch ∩ merge-base..trunk) + optional considerWorktrees on backlog_add/progress_plan_phase (transport resolves via satellite, core stays git-blind, fallback with warning) — default path byte-identical [M20] | ✅ |
-| 30.6 | M21: tolerant Depends-on bullet (union-matched synonyms) + derived dependsOn/blockedBy/ready + DEP_UNKNOWN warning + DEP_CYCLE finding + backlog_list ready filter + fields extension + fixture project-l-deps [M21] | ⬜ |
+| 30.6 | M21: tolerant Depends-on bullet (union-matched synonyms) + derived dependsOn/blockedBy/ready + DEP_UNKNOWN warning + DEP_CYCLE finding + backlog_list ready filter + fields extension + fixture project-l-deps [M21] | 🔄 |
 | 30.7 | L17: position parameter (top/bottom/index) on backlog_update — byte-identical block move within section, section+position combination, out-of-range = structured error (documented in item close) [L17] | ⬜ |
 | 30.8 | Verification: typecheck + full suite + docs_validate clean; doc-sync (CHANGELOG/README/SKILL); phase completion with title/note/checkpoint | ⬜ |
