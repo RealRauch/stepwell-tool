@@ -226,8 +226,8 @@ function docStateAt(root: string, ref: string): IdStepState {
 export function idCollisions(root: string, branch: string, trunk: string): string[] {
   const base = runGit(root, ["merge-base", branch, trunk]).stdout.trim();
   if (base === "") return [];
+  const baseState = docStateAt(root, base); // L22/32.6: computed once, not per comparison side
   const freshSince = (ref: string): Set<string> => {
-    const baseState = docStateAt(root, base);
     const refState = docStateAt(root, ref);
     const fresh = new Set<string>();
     for (const id of refState.ids) if (!baseState.ids.has(id)) fresh.add(id);
@@ -268,8 +268,9 @@ export function foreignDocState(root: string): {
       warnings.push(`considerWorktrees: skipped "${entry.branch}" (BACKLOG.md unreadable at the branch head)`);
       continue;
     }
-    for (const id of parseBacklog(backlog.stdout).value.items.map((i) => i.id)) ids.add(id);
-    for (const id of parseBacklog(backlog.stdout).value.doneIndex.map((d) => d.id)) ids.add(id);
+    const parsedBacklog = parseBacklog(backlog.stdout).value; // L22/32.6: parse once per branch
+    for (const id of parsedBacklog.items.map((i) => i.id)) ids.add(id);
+    for (const id of parsedBacklog.doneIndex.map((d) => d.id)) ids.add(id);
     const progress = runGit(root, ["show", `${entry.branch}:PROGRESS.md`]);
     if (progress.status !== 0) {
       warnings.push(`considerWorktrees: skipped "${entry.branch}" (PROGRESS.md unreadable at the branch head)`);
