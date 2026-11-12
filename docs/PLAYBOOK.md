@@ -40,7 +40,7 @@ project without git stays single-tree sequential (one running phase at a time).
 
 ```
 pull (trunk → branch) → implement → code commit (agent)
-→ doc commit (tool, four files only) → pull (trunk → branch)
+→ doc commit (tool, doc file set only) → pull (trunk → branch)
 → verify (typecheck + suite) → push (branch → trunk)
 ```
 
@@ -148,7 +148,7 @@ Introducing STEPWELL into a project **without** the four files (grey-/brownfield
 - Test-first chain auditable in the log: new tests first in their own `test(scope): …` commit (the suite is RED; the failure evidence is in the commit message or the step note), then `feat(scope): …` with the implementation.
 - If a commit fails (hooks): fix the error and create a new commit — do not amend.
 - **Doc commits by the tool (workstream mode, binding):** in workstream mode the tool commits
-  only the four method docs (deterministic staging — no secrets risk, nothing else is staged);
+  only the doc file set (canonical four + existing archive shards — deterministic staging, no secrets risk, nothing else is staged);
   code commits remain the agent's duty. A failed doc commit (e.g. hooks) leaves the edits
   applied with a structured message — never a rollback; the agent resolves and commits itself.
 

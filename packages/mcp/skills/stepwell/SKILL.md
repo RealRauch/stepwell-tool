@@ -19,6 +19,9 @@ distributed verbatim copy).
 `BACKLOG.md` (only open items, priority sections 🔴→🔵), `PROGRESS.md` (progress table +
 detail blocks of **active** phases), `docs/archive/BACKLOG_ARCHIVE.md` and
 `docs/archive/PROGRESS_ARCHIVE.md` (both **append-only** — never edited afterwards).
+Large projects may split the archives into shards per phase
+(`docs/archive/*_ARCHIVE.p<n>.md`) — the tools rotate them automatically while a phase
+runs; every reader (validate/status/show/hashes) sees the concatenated view.
 
 If all four are missing in `root`: no STEPWELL project here — **no action required**
 (read access is harmless and triggers nothing) unless the user explicitly asks to
@@ -36,11 +39,13 @@ progress-archive), then run `docs_validate` — must be clean.
 ## Status maintenance — always via the tools, never by hand (LESSONS 17)
 
 - `progress_update` — step status in the table + detail block (🔄 before starting, ✅
-  after verified completion; a complete phase is moved to the archive automatically).
+  after verified completion; a complete phase moves to its own archive shard
+  `PROGRESS_ARCHIVE.p<n>.md` automatically).
   Optional parameters: `title` (rename phase title), `note` (verification line in
   the archive block), `checkpoint` (commit SHA of the phase, 7–40 hex).
-- `archive_item` — completed backlog item verbatim into the archive + one-liner in the
-  Done Index (`note` = commit hash).
+- `archive_item` — completed backlog item verbatim into the archive + one-liner where
+  the block lives (BACKLOG Done Index, or the shard's own index section while a phase
+  runs; `note` = commit hash).
 - `backlog_add` / `backlog_update` / `backlog_remove` — add/change/remove items in a
   format-safe way (instead of hand-editing).
 - `progress_plan_phase` — plan a new phase ahead (table rows ⬜ + scope skeleton).

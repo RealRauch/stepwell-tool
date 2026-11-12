@@ -13,7 +13,7 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
 
 ## [Unreleased]
 
-### Phase 32 — Archive sharding (2026-11-12, in progress)
+### Phase 32 — Archive sharding (completed 2026-11-12)
 
 #### Added
 - **Archive sharding (H11/H12/32.1–32.2):** `docs/archive/*_ARCHIVE*.md` shards are read
@@ -36,6 +36,13 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
   `Doc files:` line — archive growth stays measurable (additive JSON, schema 2).
 - **Workstream report refactor (L22/32.6):** `foreignDocState` parses BACKLOG once per
   branch, `idCollisions` computes the base state once — byte-identical behavior.
+- **Method/doc sync (L25/32.9):** PLAYBOOK §3 gained the "Archive sharding" section
+  (p<n> naming by phase number, tool-op rotation with write-once headers, coupled
+  Done Index, strict locality, legacy rule) — word-identical in both copies with
+  SHA256 evidence; QUICKSTART/README/AGENTS lines updated.
+- **Search alternative check documented (L19/32.8):** no search tool (M4) — grep +
+  `backlog_show` cover the case; reactivation criterion and the minimal candidate
+  (`query` on `backlog_list`) documented in README/AGENTS.
 
 
 
