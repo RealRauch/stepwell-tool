@@ -1,0 +1,31 @@
+{
+  "generatedFrom": "DESIGN.md",
+  "world": "logo-pinned (website/assets/stepwell-logo.jpg)",
+  "shadows": {
+    "button-primary-hover": "0 8px 18px -6px rgba(22,52,78,0.35)",
+    "rule": "one elevation per element; never border + wide shadow together"
+  },
+  "motion": {
+    "reveal": "rise 0.7s cubic-bezier(0.16,1,0.3,1) both; stagger 0.12s (hero only)",
+    "reducedMotion": "all reveal/button motion disabled"
+  },
+  "breakpoints": {
+    "mobile": "560px",
+    "tablet": "960px"
+  },
+  "crop": {
+    "asset": "website/assets/stepwell-logo.jpg",
+    "box": "L16.5 T13.5 R83.5 B70.5 (measured px scan)",
+    "impl": ".mark-crop width 149.25% + translate(-16.5%, -13.5%)"
+  },
+  "donts": [
+    "glass/blur",
+    "gradient text",
+    "glow blobs",
+    "grid overlays",
+    "emoji icons",
+    "border+wide-shadow pairs",
+    "amber body text on paper",
+    "kickers above headings"
+  ]
+}

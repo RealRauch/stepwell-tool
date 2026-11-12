@@ -1,4 +1,4 @@
-# BACKLOG.md — Open items (As of: 2026-11-12T21:21
+# BACKLOG.md — Open items (As of: 2026-11-12T22:09
 
 > **This file contains only OPEN items.** Completed items are moved to `docs/archive/BACKLOG_ARCHIVE.md` unchanged after completion; this file keeps only a one-liner per item in the Done Index (below). Findings/fix-ideas/decisions are not deleted — moved to the archive.
 > Legend: 🔴 critical · 🟠 high · 🟡 medium · 🟢 low · 🔵 test gap
@@ -23,6 +23,12 @@
 ## 🟡 MEDIUM
 
 > No open items.
+
+### [ ] M27 — Website-Redesign auf Logo-Welt (Papier/Navy/Teal/Amber, AI-Tells raus, Logo eingebunden) — 🟡
+- **Location:** `website/index.html`, `website/style.css`, `website/app.js`, neu `website/assets/stepwell-logo.jpg`.
+- **Problem:** Nutzer-Fund (11/2026): Die Landing-Page sieht „hart nach KI" aus — Dark-Neon-Cluster (#0a0e17 + Glow-Blobs + Grid-Overlay), Glassmorphism-Karten, Gradient-Text, Emoji-Icon-Kacheln, Pill-Badges, Inter/JetBrains-Mono-Default. Der Look trägt keine Produkt-Identität. Gleichzeitig liefert der Nutzer ein Logo (Isometrische Stufenbrunnen, Navy/Teal/Amber auf Hell), dessen Palette und Motiv ungenutzt bleiben.
+- **Fix:** Visuelle Welt auf das Logo stellen: helles Papier-Ground, Navy-Tinte (#1d3a5f-Familie), Teal-Struktur, Amber ausschließlich als Pfad-/Next-Step-Akzent (semantisch: der leuchtende Zielpunkt im Brunnen = nextStep). Terminal-Blöcke als „Brunnen-Innenraum" (dunkles Navy, Teal/Amber-Ausgabe). AI-Tells entfernen gem. Craft-Floor: keine Kicker über Headings, kein Gradient-Text, kein Glass, kein Grid-Overlay, keine Emoji-Icons (gezogene SVG-Icons stattdessen), kein Pill-Badging, Karten-Raster durch asymmetrische, regelbasierte Komposition ersetzen. Logo im Header (CSS-Crop des Marks) + Favicon. Montserrat als Display-Face (wortmarkenverwandt). Tailwind-CDN entfernen, handgeschriebenes CSS.
+- **Acceptance:** Seite rendert auf Desktop (1440) + Mobile (390) ohne Defekte; Logo-Crop sauber (Mark ohne Wordmark-Doppelung); Kontraste ≥ 4.5:1 Body / 3:1 Large; alle Inhalte des L27-Stands bleiben erhalten (keine Copy-Verluste); `impeccable detect` mechanisch clean; Screenshots in `.impeccable/review/`; Commit + Archivierung mit Hash.
 
 
 

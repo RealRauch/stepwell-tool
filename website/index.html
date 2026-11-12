@@ -1,222 +1,159 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="smooth-scroll">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Stepwell — The Operating System for Autonomous Coding Agents</title>
+  <title>Stepwell — Deterministic governance for coding agents</title>
   <meta name="description" content="Deterministic, local-first project governance for Claude Code, Cursor, OpenCode, and ZCode. Stop agent drift with Git-versioned Markdown, dry-run-first MCP tools, and a git workstream satellite.">
-  
-  <!-- Fonts -->
+  <link rel="icon" type="image/jpeg" href="assets/stepwell-logo.jpg">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              50: '#eff6ff',
-              100: '#dbeafe',
-              400: '#60a5fa',
-              500: '#3b82f6',
-              600: '#2563eb',
-              900: '#1e3a8a',
-            }
-          }
-        }
-      }
-    }
-  </script>
-  
-  <!-- Custom Styles -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-[#0a0e17] text-slate-100 antialiased selection:bg-blue-600 selection:text-white relative min-h-screen flex flex-col">
-  
-  <!-- Background Glow & Grid -->
-  <div class="ambient-glow glow-blue"></div>
-  <div class="ambient-glow glow-cyan"></div>
-  <div class="fixed inset-0 bg-grid-pattern opacity-60 pointer-events-none z-0"></div>
+<body>
 
-  <!-- Header / Navigation -->
-  <header class="sticky top-0 z-50 border-b border-white/10 bg-[#0a0e17]/80 backdrop-blur-md">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 p-0.5 shadow-lg shadow-blue-500/20">
-          <div class="w-full h-full bg-[#0a0e17] rounded-[7px] flex items-center justify-center font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300 code-font">
-            S_
-          </div>
-        </div>
-        <span class="text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
-          stepwell
-          <span class="pill-badge text-xs font-mono text-cyan-400 border-cyan-500/30 bg-cyan-950/40">v0.1.0</span>
-        </span>
-      </div>
+  <a class="skip-link" href="#main">Skip to content</a>
 
-      <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
-        <a href="#problem" class="hover:text-cyan-400 transition-colors">The Problem</a>
-        <a href="#playground" class="hover:text-cyan-400 transition-colors">Interactive Demo</a>
-        <a href="#pillars" class="hover:text-cyan-400 transition-colors">Core Pillars</a>
-        <a href="#architecture" class="hover:text-cyan-400 transition-colors">Architecture</a>
-        <a href="#workstreams" class="hover:text-cyan-400 transition-colors">Workstreams</a>
-        <a href="#quickstart" class="hover:text-cyan-400 transition-colors">Quickstart</a>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="shell header-row">
+      <a class="brand" href="#main">
+        <span class="brand-mark" aria-hidden="true"><span class="mark-crop"><img src="assets/stepwell-logo.jpg" alt=""></span></span>
+        <span class="brand-name">stepwell</span>
+        <span class="brand-version">v0.1.0</span>
+      </a>
+      <nav class="site-nav" aria-label="Sections">
+        <a href="#problem">The Problem</a>
+        <a href="#playground">Demo</a>
+        <a href="#pillars">Principles</a>
+        <a href="#architecture">Files</a>
+        <a href="#workstreams">Workstreams</a>
+        <a href="#quickstart">Setup</a>
       </nav>
-
-      <div class="flex items-center gap-4">
-        <a href="https://github.com/RealRauch/stepwell-tool" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-semibold text-slate-200 transition-all shadow-sm">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"></path>
-          </svg>
-          GitHub
-        </a>
-      </div>
+      <a class="gh-link" href="https://github.com/RealRauch/stepwell-tool" target="_blank" rel="noopener noreferrer">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+        GitHub
+      </a>
     </div>
   </header>
 
-  <!-- Hero Section -->
-  <main class="flex-grow z-10">
-    <section class="pt-24 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center relative">
-      
-      <!-- Badges row -->
-      <div class="inline-flex items-center gap-2 mb-8 flex-wrap justify-center">
-        <span class="pill-badge border-blue-500/30 bg-blue-950/40 text-blue-300">
-          <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span>
-          MCP Server · CLI · Git Satellite
-        </span>
-        <span class="pill-badge border-emerald-500/30 bg-emerald-950/40 text-emerald-300">
-          ✔ 483 Tests (100% Passing)
-        </span>
-        <span class="pill-badge border-slate-700 bg-slate-900/60 text-slate-300">
-          14 Tools · JSON Schema v2
-        </span>
-        <span class="pill-badge border-purple-500/30 bg-purple-950/40 text-purple-300">
-          Node.js ≥ 22.18
-        </span>
-      </div>
+  <main id="main">
 
-      <!-- Main Heading -->
-      <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white max-w-5xl mx-auto leading-none sm:leading-tight">
-        The Missing Operating System for <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-300">Autonomous Coding Agents</span>
-      </h1>
-
-      <!-- Subtitle -->
-      <p class="mt-6 text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed">
-        Stop agent drift, destroyed markdown tables, and lost context. <strong>Stepwell</strong> equips Claude Code, Cursor, OpenCode, and ZCode with deterministic, Git-versioned project discipline via MCP — plus a CLI-first git satellite for parallel workstreams.
-      </p>
-
-      <!-- CTA & Quick Install -->
-      <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 max-w-xl mx-auto">
-        <div class="w-full sm:w-auto flex items-center justify-between bg-[#111726] border border-white/10 rounded-xl px-4 py-3 code-font text-sm text-slate-200 shadow-xl">
-          <div class="flex items-center gap-3">
-            <span class="text-slate-500">$</span>
-            <span id="hero-cmd">npx stepwell</span>
+    <!-- Hero -->
+    <section class="hero">
+      <div class="shell hero-grid">
+        <div class="hero-copy reveal">
+          <h1>Deterministic governance for <em>coding agents</em></h1>
+          <p class="hero-sub">
+            Stop agent drift, destroyed markdown tables, and lost context. <strong>Stepwell</strong> equips
+            Claude Code, Cursor, OpenCode, and ZCode with Git-versioned project discipline via MCP,
+            plus a CLI-first git satellite for parallel workstreams.
+          </p>
+          <p class="spec-line" aria-label="Facts">
+            <span>483 tests passing</span>
+            <span>14 tools</span>
+            <span>JSON schema v2</span>
+            <span>0-dep core</span>
+            <span>Node ≥ 22.18</span>
+          </p>
+          <div class="hero-actions">
+            <a class="btn-primary" href="#quickstart">
+              Get started in 30s
+              <svg class="icon arrow" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7-7 7M21 12H3"/></svg>
+            </a>
+            <div class="cmd-chip">
+              <span class="cmd-prompt">$</span>
+              <span id="hero-cmd">npx stepwell</span>
+              <button data-copy="hero-cmd" class="copy-btn" title="Copy to clipboard" aria-label="Copy command">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              </button>
+            </div>
           </div>
-          <button data-copy="hero-cmd" class="ml-4 text-slate-400 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10" title="Copy to clipboard">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-            </svg>
-          </button>
         </div>
-
-        <a href="#quickstart" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-semibold text-sm shadow-lg shadow-blue-500/25 transition-all transform hover:-translate-y-0.5">
-          Get Started in 30s
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-          </svg>
-        </a>
+        <figure class="hero-plate reveal reveal-d1">
+          <span class="mark-hero"><span class="mark-crop"><img src="assets/stepwell-logo.jpg" alt="Stepwell logo: an isometric stepped well with a glowing amber target"></span></span>
+        </figure>
       </div>
-
     </section>
 
-    <!-- The Problem Section: Before vs After -->
-    <section id="problem" class="py-20 border-t border-white/5 bg-[#0d121f]/50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-3xl mx-auto mb-16">
-          <h2 class="text-xs font-mono uppercase tracking-widest text-cyan-400 font-semibold mb-2">The Reality of AI Coding</h2>
-          <p class="text-3xl sm:text-4xl font-bold text-white tracking-tight">The "Agent Drift" Crisis</p>
-          <p class="mt-4 text-slate-400">
-            LLMs don't fail because they can't write code. They fail on multi-turn tasks because free-hand document editing leads to silent drift, hallucinated completion, and prompt bloat.
-          </p>
+    <!-- Terrace divider: the well in cross-section -->
+    <div class="terrace-band" aria-hidden="true">
+      <svg class="terrace-svg" viewBox="0 0 1200 130" preserveAspectRatio="xMidYMax meet" focusable="false">
+        <g fill="none" stroke="#2e7f95" stroke-opacity="0.35" stroke-width="1.5">
+          <path d="M60 8 H1140 V40 H1050 V70 H960 V100 H870 V122"/>
+          <path d="M1140 8 V40 H1050"/>
+          <path d="M60 8 V40 H150 V70 H240 V100 H330 V122"/>
+        </g>
+        <g fill="none" stroke="#2e7f95" stroke-opacity="0.55" stroke-width="1.5">
+          <path d="M330 122 H870"/>
+          <path d="M330 122 V100 H420 V70 H510 V40 H600"/>
+          <path d="M870 122 V100 H780 V70 H690 V40 H600"/>
+        </g>
+        <circle cx="600" cy="122" r="5" fill="#e8993c"/>
+        <g stroke="#c97f24" stroke-width="1.5" stroke-linecap="round">
+          <path d="M600 108 V98"/><path d="M586 112 L578 104"/><path d="M614 112 L622 104"/>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Problem -->
+    <section id="problem" class="section section-alt">
+      <div class="shell">
+        <div class="section-head">
+          <h2>The agent drift problem</h2>
+          <p>LLMs don't fail because they can't write code. They fail on multi-turn tasks because free-hand
+          document editing leads to silent drift, hallucinated completion, and prompt bloat.</p>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <!-- The Chaos (Without Stepwell) -->
-          <div class="glass-card rounded-2xl p-6 sm:p-8 border-red-500/20 bg-red-950/10">
-            <div class="flex items-center gap-3 mb-6">
-              <span class="w-8 h-8 rounded-lg bg-red-500/20 text-red-400 flex items-center justify-center font-bold text-lg">✕</span>
-              <h3 class="text-xl font-bold text-white">Without Stepwell</h3>
-            </div>
-            <ul class="space-y-4 text-sm text-slate-300">
-              <li class="flex items-start gap-3">
-                <span class="text-red-400 font-bold mt-0.5">•</span>
-                <div>
-                  <strong class="text-red-300">Corrupted Documentation:</strong>
-                  The agent manually modifies Markdown tables, destroys pipes, forgets headers, or deletes previous context.
-                </div>
+        <div class="versus">
+          <div class="versus-col">
+            <h3 class="versus-title bad">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg>
+              Without stepwell
+            </h3>
+            <ul class="fact-list">
+              <li>
+                <strong>Corrupted documentation.</strong>
+                The agent manually modifies Markdown tables, destroys pipes, forgets headers, or deletes previous context.
               </li>
-              <li class="flex items-start gap-3">
-                <span class="text-red-400 font-bold mt-0.5">•</span>
-                <div>
-                  <strong class="text-red-300">Token Waste:</strong>
-                  Agent re-reads entire 2,000-line progress files on every session turn, burning 30,000+ context tokens unnecessarily.
-                </div>
+              <li>
+                <strong>Token waste.</strong>
+                Agent re-reads entire 2,000-line progress files on every session turn, burning 30,000+ context tokens unnecessarily.
               </li>
-              <li class="flex items-start gap-3">
-                <span class="text-red-400 font-bold mt-0.5">•</span>
-                <div>
-                  <strong class="text-red-300">Hallucinated Progress:</strong>
-                  Checked-off items linger in open lists; completed steps have no verifiable commit SHA audit trail.
-                </div>
+              <li>
+                <strong>Hallucinated progress.</strong>
+                Checked-off items linger in open lists; completed steps have no verifiable commit SHA audit trail.
               </li>
-              <li class="flex items-start gap-3">
-                <span class="text-red-400 font-bold mt-0.5">•</span>
-                <div>
-                  <strong class="text-red-300">Scope Creep:</strong>
-                  Agent takes on 4 tasks at once without approval gates, breaking tests in unrelated directories.
-                </div>
+              <li>
+                <strong>Scope creep.</strong>
+                Agent takes on 4 tasks at once without approval gates, breaking tests in unrelated directories.
               </li>
             </ul>
           </div>
-
-          <!-- With Stepwell -->
-          <div class="glass-card rounded-2xl p-6 sm:p-8 border-emerald-500/30 bg-emerald-950/10">
-            <div class="flex items-center gap-3 mb-6">
-              <span class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-lg">✔</span>
-              <h3 class="text-xl font-bold text-white">With Stepwell</h3>
-            </div>
-            <ul class="space-y-4 text-sm text-slate-300">
-              <li class="flex items-start gap-3">
-                <span class="text-emerald-400 font-bold mt-0.5">•</span>
-                <div>
-                  <strong class="text-emerald-300">Deterministic Tool Mutations:</strong>
-                  The agent never touches table formatting directly. 14 tools cover reads, mutations, and repairs (`progress_update`, `archive_item`, `backlog_add/update/remove`, `docs_repair`) — every write dry-run first.
-                </div>
+          <div class="versus-col">
+            <h3 class="versus-title good">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              With stepwell
+            </h3>
+            <ul class="fact-list">
+              <li>
+                <strong>Deterministic tool mutations.</strong>
+                The agent never touches table formatting directly. 14 tools cover reads, mutations, and repairs; every write dry-run first.
               </li>
-              <li class="flex items-start gap-3">
-                <span class="text-emerald-400 font-bold mt-0.5">•</span>
-                <div>
-                  <strong class="text-emerald-300">Radical Token Economy:</strong>
-                  `docs_status` with `nextStepScope` gives the exact target in 1 call. SHA-256 hashes short-circuit redundant reads; `fields[]` projection keeps payloads lean.
-                </div>
+              <li>
+                <strong>Radical token economy.</strong>
+                <code>docs_status</code> with <code>nextStepScope</code> gives the exact target in 1 call. SHA-256 hashes short-circuit redundant reads.
               </li>
-              <li class="flex items-start gap-3">
-                <span class="text-emerald-400 font-bold mt-0.5">•</span>
-                <div>
-                  <strong class="text-emerald-300">Dry-Run First & Audit Trails:</strong>
-                  Every write yields a line-diff preview and is re-parsed and verified after apply. Completed phases carry checkpoint SHAs; archives stay append-only — verbatim, never rewritten.
-                </div>
+              <li>
+                <strong>Dry-run first &amp; audit trails.</strong>
+                Every write yields a line-diff preview and is re-parsed and verified after apply. Archives stay append-only: verbatim, never rewritten.
               </li>
-              <li class="flex items-start gap-3">
-                <span class="text-emerald-400 font-bold mt-0.5">•</span>
-                <div>
-                  <strong class="text-emerald-300">Strict Human & Content Gates:</strong>
-                  Audited RED-first test requirements, per-file-class content gates. CI fails automatically with exit code 1 if documentation drifts.
-                </div>
+              <li>
+                <strong>Strict human &amp; content gates.</strong>
+                Audited RED-first test requirements, per-file-class content gates. CI fails with exit code 1 if documentation drifts.
               </li>
             </ul>
           </div>
@@ -224,353 +161,261 @@
       </div>
     </section>
 
-    <!-- Interactive Terminal Playground -->
-    <section id="playground" class="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center max-w-3xl mx-auto mb-12">
-        <h2 class="text-xs font-mono uppercase tracking-widest text-cyan-400 font-semibold mb-2">Interactive Playground</h2>
-        <p class="text-3xl sm:text-4xl font-bold text-white tracking-tight">Experience Deterministic Tooling</p>
-        <p class="mt-4 text-slate-400">
-          Inspect how Stepwell powers agent sessions via structured JSON, line diffs, and validation gates — outputs mirror the real tool surface.
-        </p>
-      </div>
-
-      <!-- Terminal Window Mockup -->
-      <div class="terminal-window rounded-2xl overflow-hidden border border-white/10 max-w-4xl mx-auto">
-        <!-- Terminal Header -->
-        <div class="terminal-header px-4 py-3 flex items-center justify-between gap-3">
-          <div class="flex items-center gap-2 shrink-0">
-            <span class="w-3 h-3 rounded-full bg-rose-500/80"></span>
-            <span class="w-3 h-3 rounded-full bg-amber-500/80"></span>
-            <span class="w-3 h-3 rounded-full bg-emerald-500/80"></span>
-            <span class="ml-2 text-xs font-mono text-slate-400 hidden lg:inline">stepwell-cli ~ v0.1.0</span>
-          </div>
-
-          <!-- Command Tabs -->
-          <div class="flex items-center gap-1 bg-[#090d16] p-1 rounded-lg border border-white/5 text-xs font-mono flex-wrap justify-end">
-            <button data-terminal-tab="status" class="px-2.5 py-1 rounded transition-colors">docs_status</button>
-            <button data-terminal-tab="archive" class="px-2.5 py-1 rounded transition-colors">archive_item</button>
-            <button data-terminal-tab="progress" class="px-2.5 py-1 rounded transition-colors">progress_update</button>
-            <button data-terminal-tab="validate" class="px-2.5 py-1 rounded transition-colors">docs_validate</button>
-            <button data-terminal-tab="sync" class="px-2.5 py-1 rounded transition-colors">workstream_sync</button>
-            <button data-terminal-tab="repair" class="px-2.5 py-1 rounded transition-colors">docs_repair</button>
-          </div>
+    <!-- Playground -->
+    <section id="playground" class="section">
+      <div class="shell-narrow">
+        <div class="section-head">
+          <h2>Experience deterministic tooling</h2>
+          <p>Inspect how stepwell powers agent sessions via structured JSON, line diffs, and validation gates —
+          outputs mirror the real tool surface.</p>
         </div>
 
-        <!-- Terminal Body -->
-        <div class="p-6 bg-[#0a0e17] code-font text-sm leading-relaxed">
-          <!-- Command Prompt -->
-          <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/5">
-            <div class="flex items-center gap-2 text-slate-200">
-              <span class="text-cyan-400 font-bold">$</span>
-              <span id="terminal-command" class="text-emerald-300 font-medium">stepwell status --root . --json</span>
-            </div>
-            <button data-copy="terminal-command" class="text-xs text-slate-400 hover:text-white flex items-center gap-1 bg-white/5 hover:bg-white/10 px-2 py-1 rounded transition-colors">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-              </svg>
-              Copy
-            </button>
-          </div>
-
-          <!-- Explanatory note -->
-          <div id="terminal-desc" class="text-xs text-slate-400 mb-4 bg-blue-950/20 border border-blue-500/20 rounded-lg p-2.5">
-            Session Kickoff in 1 Call: Delivers open priority counts, running steps, nextStepScope, and SHA-256 hashes for instant short-circuit.
-          </div>
-
-          <!-- Output Box -->
-          <pre id="terminal-output" class="text-slate-300 overflow-x-auto max-h-[420px] p-2 bg-[#060911] rounded-lg border border-white/5"></pre>
-        </div>
-      </div>
-    </section>
-
-    <!-- Core Pillars Deep Dive -->
-    <section id="pillars" class="py-20 border-t border-white/5 bg-[#0d121f]/30">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-3xl mx-auto mb-16">
-          <h2 class="text-xs font-mono uppercase tracking-widest text-cyan-400 font-semibold mb-2">Engineered for Precision</h2>
-          <p class="text-3xl sm:text-4xl font-bold text-white tracking-tight">The 4 Core Pillars</p>
-          <p class="mt-4 text-slate-400">
-            Stepwell is designed around fundamental constraints to guarantee safety, zero lock-in, and lightning-fast agent turns.
-          </p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <!-- Pillar 1 -->
-          <div class="glass-card rounded-2xl p-6 flex flex-col justify-between">
-            <div>
-              <div class="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-2xl mb-5">
-                🛡️
-              </div>
-              <h3 class="text-lg font-bold text-white mb-2">Dry-Run First</h3>
-              <p class="text-sm text-slate-400 leading-relaxed">
-                All write operations generate exact line diffs first (`dryRun: true` by default). Writes happen only with explicit `--apply` — and the result is freshly re-parsed and verified before success is reported.
-              </p>
-            </div>
-            <div class="mt-6 pt-4 border-t border-white/5 text-xs font-mono text-cyan-400">
-              dryRun default · verify after apply
+        <div class="terminal">
+          <div class="terminal-bar">
+            <span class="terminal-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="terminal-title">v0.1.0</span>
+            <div class="terminal-tabs" role="tablist" aria-label="Tool examples">
+              <button data-terminal-tab="status" role="tab">docs_status</button>
+              <button data-terminal-tab="archive" role="tab">archive_item</button>
+              <button data-terminal-tab="progress" role="tab">progress_update</button>
+              <button data-terminal-tab="validate" role="tab">docs_validate</button>
+              <button data-terminal-tab="sync" role="tab">workstream_sync</button>
+              <button data-terminal-tab="repair" role="tab">docs_repair</button>
             </div>
           </div>
-
-          <!-- Pillar 2 -->
-          <div class="glass-card rounded-2xl p-6 flex flex-col justify-between">
-            <div>
-              <div class="w-12 h-12 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-2xl mb-5">
-                ⚡
-              </div>
-              <h3 class="text-lg font-bold text-white mb-2">Token Economy</h3>
-              <p class="text-sm text-slate-400 leading-relaxed">
-                `nextStepScope` merges step, goal, and backlog item into a single call. SHA-256 hash short-circuits prevent redundant document reads; compact JSON and `fields[]` projection keep every payload lean.
-              </p>
+          <div class="terminal-body">
+            <div class="terminal-cmdline">
+              <span class="cmd-prompt">$</span>
+              <span id="terminal-command">stepwell status --root . --json</span>
+              <button data-copy="terminal-command" class="copy-btn on-dark" title="Copy" aria-label="Copy command">Copy</button>
             </div>
-            <div class="mt-6 pt-4 border-t border-white/5 text-xs font-mono text-cyan-400">
-              nextStepScope · hashes · fields[]
-            </div>
-          </div>
-
-          <!-- Pillar 3 -->
-          <div class="glass-card rounded-2xl p-6 flex flex-col justify-between">
-            <div>
-              <div class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-2xl mb-5">
-                📂
-              </div>
-              <h3 class="text-lg font-bold text-white mb-2">Zero-Dependency Core</h3>
-              <p class="text-sm text-slate-400 leading-relaxed">
-                Markdown is the only source of truth. The core engine has <strong>0 runtime dependencies</strong>, runs natively in Node.js 22+ (type stripping, no build step), and keeps all history append-only in Git — git-blind by design.
-              </p>
-            </div>
-            <div class="mt-6 pt-4 border-t border-white/5 text-xs font-mono text-cyan-400">
-              stepwell-core (0 deps)
-            </div>
-          </div>
-
-          <!-- Pillar 4 -->
-          <div class="glass-card rounded-2xl p-6 flex flex-col justify-between">
-            <div>
-              <div class="w-12 h-12 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold text-2xl mb-5">
-                🚦
-              </div>
-              <h3 class="text-lg font-bold text-white mb-2">Auditable Governance</h3>
-              <p class="text-sm text-slate-400 leading-relaxed">
-                Content-risk matrix (Low, Med, High) gates every file class. Test-first (RED → GREEN) enforcement, coverage gate, and checkpoint SHAs — phases move into the archive only verified.
-              </p>
-            </div>
-            <div class="mt-6 pt-4 border-t border-white/5 text-xs font-mono text-cyan-400">
-              CI Gate & Risk Matrix
-            </div>
+            <p id="terminal-desc" class="terminal-desc"></p>
+            <pre id="terminal-output" class="terminal-output"></pre>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- The 4-File Architecture -->
-    <section id="architecture" class="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center max-w-3xl mx-auto mb-16">
-        <h2 class="text-xs font-mono uppercase tracking-widest text-cyan-400 font-semibold mb-2">Structure & Schema</h2>
-        <p class="text-3xl sm:text-4xl font-bold text-white tracking-tight">The 4 Core Files + Phase Shards</p>
-        <p class="mt-4 text-slate-400">
-          Four mandatory Markdown files — every project starts with exactly these. The default archive write, though, is <strong>sharded by phase</strong>: while a phase runs, completed history appends to per-phase shard files, never to the canonical archives. Rotation is a tool operation, never a hand edit.
-        </p>
+    <!-- Principles -->
+    <section id="pillars" class="section section-alt">
+      <div class="shell">
+        <div class="section-head">
+          <h2>Four working principles</h2>
+          <p>Stepwell is designed around constraints that guarantee safety, zero lock-in, and fast agent turns.</p>
+        </div>
+        <dl class="principle-list">
+          <div class="principle">
+            <dt>
+              <svg class="icon draw" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M4 12h9M4 17h6M17 12v6M14 15h6"/></svg>
+              Dry-run first
+            </dt>
+            <dd>All write operations generate exact line diffs first (<code>dryRun: true</code> by default). Writes happen only with explicit <code>--apply</code>, and the result is freshly re-parsed and verified before success is reported.</dd>
+          </div>
+          <div class="principle">
+            <dt>
+              <svg class="icon draw" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" d="M4 5h16l-6 7v6l-4 2v-8L4 5z"/></svg>
+              Token economy
+            </dt>
+            <dd><code>nextStepScope</code> merges step, goal, and backlog item into a single call. SHA-256 hash short-circuits prevent redundant document reads; compact JSON and field projection keep every payload lean.</dd>
+          </div>
+          <div class="principle">
+            <dt>
+              <svg class="icon draw" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3zm0 0v9m0 0l8-4.5M12 12L4 7.5"/></svg>
+              Zero-dependency core
+            </dt>
+            <dd>Markdown is the only source of truth. The core engine has <strong>0 runtime dependencies</strong>, runs natively in Node.js 22+ (type stripping, no build step), and keeps all history append-only in Git, git-blind by design.</dd>
+          </div>
+          <div class="principle">
+            <dt>
+              <svg class="icon draw" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6l7-3zm-3 9l2.2 2.2L15.5 10"/></svg>
+              Auditable governance
+            </dt>
+            <dd>Content-risk matrix (low, medium, high) gates every file class. Test-first (RED → GREEN) enforcement, coverage gate, and checkpoint SHAs; phases move into the archive only verified.</dd>
+          </div>
+        </dl>
       </div>
+    </section>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- File 1: BACKLOG.md -->
-        <div class="glass-card rounded-2xl p-6">
-          <div class="flex items-center justify-between mb-4">
-            <span class="code-font text-blue-400 font-bold text-base">BACKLOG.md</span>
-            <span class="pill-badge text-xs border-blue-500/30 text-blue-300">Active</span>
-          </div>
-          <p class="text-sm text-slate-400 mb-4">
-            Priority-sorted open items (🔴 Critical → 🔵 Test gaps), one item = one block with <strong>Location</strong>/<strong>Acceptance</strong> bullets. `&gt; No open items.` placeholders keep empty sections honest — `docs_validate` flags lying markers.
-          </p>
-          <div class="code-font text-xs bg-[#090d16] p-3 rounded-lg border border-white/5 text-slate-400">
-            ### [ ] H9 — Mechanical repair path *(🟢 Low)*<br>
-            - **Location:** packages/core/src/validate.ts<br>
-            - **Acceptance:** RED→GRÜN, docs_validate clean
-          </div>
+    <!-- Architecture -->
+    <section id="architecture" class="section">
+      <div class="shell">
+        <div class="section-head">
+          <h2>Four core files, sharded by phase</h2>
+          <p>Four mandatory Markdown files; every project starts with exactly these. The default archive write,
+          though, is sharded by phase: while a phase runs, completed history appends to per-phase shard files,
+          never to the canonical archives. Rotation is a tool operation, never a hand edit.</p>
         </div>
 
-        <!-- File 2: PROGRESS.md -->
-        <div class="glass-card rounded-2xl p-6">
-          <div class="flex items-center justify-between mb-4">
-            <span class="code-font text-cyan-400 font-bold text-base">PROGRESS.md</span>
-            <span class="pill-badge text-xs border-cyan-500/30 text-cyan-300">Active</span>
-          </div>
-          <p class="text-sm text-slate-400 mb-4">
-            The permanent step index (`⬜ 🔄 ✅ ⛔`) plus detail blocks with goal, scope & acceptance — only for currently active phases.
-          </p>
-          <div class="code-font text-xs bg-[#090d16] p-3 rounded-lg border border-white/5 text-slate-400">
-            | Step | Task | Status |<br>
-            | 32.5 | PLAN_WITHOUT_WIP fix | ✅ |<br>
-            | 33.1 | Field test round 1 | 🔄 |
-          </div>
-        </div>
+        <div class="file-grid">
+          <article class="file-entry">
+            <header class="file-entry-head">
+              <span class="file-name">BACKLOG.md</span>
+              <span class="file-tag">mandatory · active</span>
+            </header>
+            <p>Priority-sorted open items (🔴 critical → 🔵 test gaps), one item = one block with
+            <strong>Location</strong>/<strong>Acceptance</strong> bullets. <code>&gt; No open items.</code> placeholders
+            keep empty sections honest, and <code>docs_validate</code> flags lying markers.</p>
+            <pre class="snippet">### [ ] H9 — Mechanical repair path *(🟢 Low)*
+- **Location:** packages/core/src/validate.ts
+- **Acceptance:** RED→GRÜN, docs_validate clean</pre>
+          </article>
 
-        <!-- File 3: BACKLOG_ARCHIVE.md -->
-        <div class="glass-card rounded-2xl p-6">
-          <div class="flex items-center justify-between mb-4">
-            <span class="code-font text-emerald-400 font-bold text-base">docs/archive/BACKLOG_ARCHIVE.md</span>
-            <span class="pill-badge text-xs border-emerald-500/30 text-emerald-300">Append-Only</span>
-          </div>
-          <p class="text-sm text-slate-400 mb-4">
-            Completed items move verbatim with `[x]` and a done line. <strong>While phase <em>n</em> runs — the normal case — the block and its Done-Index line land in the phase shard `BACKLOG_ARCHIVE.p&lt;n&gt;.md`</strong>, created with a greppable header line. The canonical file only receives appends made outside a running phase and holds the legacy stock.
-          </p>
-          <div class="code-font text-xs bg-[#090d16] p-3 rounded-lg border border-white/5 text-slate-400">
-            ### [x] H9 — Mechanical repair path *(🟢 Low)*<br>
-            - **Done:** Commit 4b6c2a1<br>
-            <span class="text-slate-600"># shard: docs/archive/BACKLOG_ARCHIVE.p33.md</span>
-          </div>
-        </div>
+          <article class="file-entry">
+            <header class="file-entry-head">
+              <span class="file-name">PROGRESS.md</span>
+              <span class="file-tag">mandatory · active</span>
+            </header>
+            <p>The permanent step index (<code>⬜ 🔄 ✅ ⛔</code>) plus detail blocks with goal, scope &amp; acceptance —
+            only for currently active phases.</p>
+            <pre class="snippet">| Step | Task                          | Status |
+| 32.5 | PLAN_WITHOUT_WIP fix          | ✅     |
+| 33.1 | Field test round 1            | 🔄     |</pre>
+          </article>
 
-        <!-- File 4: PROGRESS_ARCHIVE.md -->
-        <div class="glass-card rounded-2xl p-6">
-          <div class="flex items-center justify-between mb-4">
-            <span class="code-font text-purple-400 font-bold text-base">docs/archive/PROGRESS_ARCHIVE.md</span>
-            <span class="pill-badge text-xs border-purple-500/30 text-purple-300">Append-Only</span>
-          </div>
-          <p class="text-sm text-slate-400 mb-4">
-            On phase completion the detail block moves verbatim into its own shard `PROGRESS_ARCHIVE.p&lt;n&gt;.md` (header line included). Appends stay <strong>chronological by completion time</strong> — phase numbers across shards may stay non-monotonic (M10). The progress table remains the permanent index.
-          </p>
-          <div class="code-font text-xs bg-[#090d16] p-3 rounded-lg border border-white/5 text-slate-400">
-            ### Phase 33 — Field Test (Completed: 2026-11-12T21:30)<br>
-            **Verification:** Checkpoint 4b6c2a1 (suite green)
-          </div>
+          <article class="file-entry">
+            <header class="file-entry-head">
+              <span class="file-name">docs/archive/BACKLOG_ARCHIVE.md</span>
+              <span class="file-tag">append-only</span>
+            </header>
+            <p>Completed items move verbatim with <code>[x]</code> and a done line. <strong>While phase <em>n</em> runs —
+            the normal case, the block and its Done-Index line land in the phase shard
+            <code>BACKLOG_ARCHIVE.p&lt;n&gt;.md</code></strong>, created with a greppable header line. The canonical file
+            only receives appends made outside a running phase and holds the legacy stock.</p>
+            <pre class="snippet">### [x] H9 — Mechanical repair path *(🟢 Low)*
+- **Done:** Commit 4b6c2a1
+<span class="snippet-note"># shard: docs/archive/BACKLOG_ARCHIVE.p33.md</span></pre>
+          </article>
+
+          <article class="file-entry">
+            <header class="file-entry-head">
+              <span class="file-name">docs/archive/PROGRESS_ARCHIVE.md</span>
+              <span class="file-tag">append-only</span>
+            </header>
+            <p>On phase completion the detail block moves verbatim into its own shard
+            <code>PROGRESS_ARCHIVE.p&lt;n&gt;.md</code> (header line included). Appends stay
+            <strong>chronological by completion time</strong>; phase numbers across shards may stay non-monotonic (M10).
+            The progress table remains the permanent index.</p>
+            <pre class="snippet">### Phase 33 — Field Test (Completed: 2026-11-12T21:30)
+**Verification:** Checkpoint 4b6c2a1 (suite green)</pre>
+          </article>
         </div>
       </div>
     </section>
 
-    <!-- Workstreams: Parallel Phases via Git Satellite -->
-    <section id="workstreams" class="py-20 border-t border-white/5 bg-[#0d121f]/50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-3xl mx-auto mb-14">
-          <h2 class="text-xs font-mono uppercase tracking-widest text-cyan-400 font-semibold mb-2">Git Satellite · CLI-First</h2>
-          <p class="text-3xl sm:text-4xl font-bold text-white tracking-tight">Parallel Phases Without Merge Hell</p>
-          <p class="mt-4 text-slate-400">
-            One phase per git worktree + branch, merged back to trunk per step. The core engine stays <strong>git-blind</strong> — all git intelligence lives in the <code>stepwell-git</code> satellite, offered CLI-first (no MCP registration needed) and MCP-optional (`workstream_sync`).
-          </p>
+    <!-- Workstreams -->
+    <section id="workstreams" class="section section-alt">
+      <div class="shell">
+        <div class="section-head">
+          <h2>Parallel phases without merge hell</h2>
+          <p>One phase per git worktree + branch, merged back to trunk per step. The core engine stays
+          <strong>git-blind</strong>: all git intelligence lives in the <code>stepwell-git</code> satellite, offered
+          CLI-first (no MCP registration needed) and MCP-optional (<code>workstream_sync</code>).</p>
         </div>
 
-        <!-- Ritual Terminal -->
-        <div class="terminal-window rounded-2xl overflow-hidden border border-white/10 max-w-4xl mx-auto mb-10">
-          <div class="terminal-header px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <span class="w-3 h-3 rounded-full bg-rose-500/80"></span>
-              <span class="w-3 h-3 rounded-full bg-amber-500/80"></span>
-              <span class="w-3 h-3 rounded-full bg-emerald-500/80"></span>
-              <span class="ml-2 text-xs font-mono text-slate-400">per-step workstream ritual</span>
+        <div class="terminal">
+          <div class="terminal-bar">
+            <span class="terminal-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="terminal-title">per-step workstream ritual</span>
+          </div>
+          <div class="terminal-body">
+            <div class="ritual">
+              <div class="ritual-line"><span class="cmd-prompt">$</span> <span class="ritual-cmd">stepwell sync pull --root &lt;worktree&gt;</span> <span class="ritual-note"># trunk → branch, conflicts abort cleanly</span></div>
+              <div class="ritual-line ritual-comment"># … implement test-first, verify (typecheck + tests) …</div>
+              <div class="ritual-line"><span class="cmd-prompt">$</span> <span class="ritual-cmd">stepwell progress-update … --apply --commit</span> <span class="ritual-note"># doc commit: ONLY the doc files</span></div>
+              <div class="ritual-line"><span class="cmd-prompt">$</span> <span class="ritual-cmd">stepwell sync push --root &lt;worktree&gt;</span> <span class="ritual-note"># branch → trunk, atomic --ff-only</span></div>
+              <div class="ritual-line"><span class="cmd-prompt">$</span> <span class="ritual-cmd">stepwell sync status --root &lt;worktree&gt;</span> <span class="ritual-note"># liveness + overlap of all workstreams</span></div>
             </div>
           </div>
-          <div class="p-6 bg-[#0a0e17] code-font text-sm text-slate-300 overflow-x-auto">
-            <div><span class="text-cyan-400 font-bold">$</span> <span class="text-emerald-300">stepwell sync pull --root &lt;worktree&gt;</span> <span class="text-slate-500"># trunk → branch, conflicts abort cleanly</span></div>
-            <div class="text-slate-500 mt-2"># … implement test-first, verify (typecheck + tests) …</div>
-            <div class="mt-2"><span class="text-cyan-400 font-bold">$</span> <span class="text-emerald-300">stepwell progress-update … --apply --commit</span> <span class="text-slate-500"># doc commit: ONLY the doc files</span></div>
-            <div class="mt-2"><span class="text-cyan-400 font-bold">$</span> <span class="text-emerald-300">stepwell sync push --root &lt;worktree&gt;</span> <span class="text-slate-500"># branch → trunk, atomic --ff-only</span></div>
-            <div class="mt-2"><span class="text-cyan-400 font-bold">$</span> <span class="text-emerald-300">stepwell sync status --root &lt;worktree&gt;</span> <span class="text-slate-500"># liveness + overlap of all workstreams</span></div>
-          </div>
         </div>
 
-        <!-- Satellite mini-cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          <div class="glass-card rounded-2xl p-6">
-            <div class="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-2xl mb-5">🔭</div>
-            <h3 class="text-lg font-bold text-white mb-2">Foresight Before Edits</h3>
-            <p class="text-sm text-slate-400 leading-relaxed">
-              `predictedOverlap[]` lists files that OPEN items on both sides name in their Location bullets — visible before anyone edits them. `idCollisions[]` catches both sides reaching for the same next item ID.
-            </p>
+        <dl class="principle-list three">
+          <div class="principle">
+            <dt>
+              <svg class="icon draw" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" d="M3 3h8v8H3V3zm10 10h8v8h-8v-8zm0-6.5L16.5 3 21 7.5 16.5 12 13 8.5zM3 13.5L7.5 9 12 13.5 7.5 18 3 13.5z"/></svg>
+              Foresight before edits
+            </dt>
+            <dd><code>predictedOverlap[]</code> lists files that open items on both sides name in their Location bullets —
+            visible before anyone edits them. <code>idCollisions[]</code> catches both sides reaching for the same next item ID.</dd>
           </div>
-          <div class="glass-card rounded-2xl p-6">
-            <div class="w-12 h-12 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center font-bold text-2xl mb-5">🛡️</div>
-            <h3 class="text-lg font-bold text-white mb-2">Guarded Operations</h3>
-            <p class="text-sm text-slate-400 leading-relaxed">
-              Stable error codes — `DIRTY_TREE`, `STALE_BRANCH`, `TRUNK_DIRTY`, `MERGE_CONFLICT` (clean abort with a structured report). Dry-runs share the exact guard chain of the real operation; push is atomic `--ff-only`.
-            </p>
+          <div class="principle">
+            <dt>
+              <svg class="icon draw" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" d="M8 3h8l5 5v8l-5 5H8l-5-5V8l5-5zm-1 6l10 6M17 9L7 15"/></svg>
+              Guarded operations
+            </dt>
+            <dd>Stable error codes: <code>DIRTY_TREE</code>, <code>STALE_BRANCH</code>, <code>TRUNK_DIRTY</code>,
+            <code>MERGE_CONFLICT</code> (clean abort with a structured report). Dry-runs share the exact guard chain of the
+            real operation; push is atomic <code>--ff-only</code>.</dd>
           </div>
-          <div class="glass-card rounded-2xl p-6">
-            <div class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-2xl mb-5">📄</div>
-            <h3 class="text-lg font-bold text-white mb-2">Doc-Commits Only</h3>
-            <p class="text-sm text-slate-400 leading-relaxed">
-              `commit: true` on `progress_update` / `archive_item` stages <strong>only</strong> the doc files (+ archive shards) — deterministic staging, no secret risk. Code commits stay with the agent; a failed doc commit never rolls back the edits.
-            </p>
+          <div class="principle">
+            <dt>
+              <svg class="icon draw" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" d="M6 2h9l5 5v15H6V2zm9 0v5h5M9 13l2.2 2.2L15.5 11"/></svg>
+              Doc-commits only
+            </dt>
+            <dd><code>commit: true</code> stages <strong>only</strong> the doc files (+ archive shards): deterministic staging,
+            no secret risk. Code commits stay with the agent; a failed doc commit never rolls back the edits.</dd>
           </div>
-        </div>
+        </dl>
       </div>
     </section>
 
-    <!-- Quickstart & Integration -->
-    <section id="quickstart" class="py-24 border-t border-white/5 bg-[#0d121f]/30">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-3xl mx-auto mb-16">
-          <h2 class="text-xs font-mono uppercase tracking-widest text-cyan-400 font-semibold mb-2">Plug & Play</h2>
-          <p class="text-3xl sm:text-4xl font-bold text-white tracking-tight">Connect in Under 30 Seconds</p>
-          <p class="mt-4 text-slate-400">
-            Stepwell works instantly with any MCP-compliant editor or coding agent. No server daemon required.
-          </p>
+    <!-- Quickstart -->
+    <section id="quickstart" class="section">
+      <div class="shell-narrow">
+        <div class="section-head">
+          <h2>Connect in under 30 seconds</h2>
+          <p>Stepwell works instantly with any MCP-compliant editor or coding agent. No server daemon required.</p>
         </div>
 
-        <div class="max-w-3xl mx-auto glass-card rounded-2xl overflow-hidden border border-white/10">
-          <!-- Switcher Tabs -->
-          <div class="flex items-center justify-between border-b border-white/10 bg-[#131929] px-4 py-2.5">
-            <div class="flex items-center gap-1 flex-wrap">
-              <button data-config-tab="claude" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all">Claude Desktop</button>
-              <button data-config-tab="cursor" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all">Cursor</button>
-              <button data-config-tab="opencode" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all">OpenCode</button>
-              <button data-config-tab="zcode" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all">ZCode</button>
-              <button data-config-tab="cli" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all">Standalone CLI</button>
+        <div class="terminal">
+          <div class="terminal-bar light-bar">
+            <div class="terminal-tabs config-tabs" role="tablist" aria-label="Client configuration">
+              <button data-config-tab="claude" role="tab">Claude Desktop</button>
+              <button data-config-tab="cursor" role="tab">Cursor</button>
+              <button data-config-tab="opencode" role="tab">OpenCode</button>
+              <button data-config-tab="zcode" role="tab">ZCode</button>
+              <button data-config-tab="cli" role="tab">Standalone CLI</button>
             </div>
-            <button data-copy="config-code" class="text-xs text-slate-400 hover:text-white flex items-center gap-1 px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 transition-colors">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-              </svg>
-              Copy
-            </button>
+            <button data-copy="config-code" class="copy-btn on-dark" title="Copy" aria-label="Copy configuration">Copy</button>
           </div>
-
-          <!-- Code Box -->
-          <div class="p-6 bg-[#0a0e17]">
-            <pre id="config-code" class="code-font text-sm text-slate-300 overflow-x-auto leading-relaxed"></pre>
+          <div class="terminal-body">
+            <pre id="config-code" class="terminal-output plain"></pre>
           </div>
         </div>
 
-        <!-- CI Integration Note -->
-        <div class="max-w-3xl mx-auto mt-8 p-4 rounded-xl bg-blue-950/20 border border-blue-500/20 flex items-center justify-between text-xs sm:text-sm text-slate-300">
-          <div class="flex items-center gap-3">
-            <span class="text-blue-400 font-bold">CI Gate:</span>
-            <span>Enforce doc integrity in GitHub Actions: <code>npx stepwell validate --root .</code></span>
-          </div>
-          <span class="text-emerald-400 font-mono text-xs">Exit 1 on Drift</span>
+        <div class="callout">
+          <span class="callout-body"><strong>CI gate.</strong>
+          Enforce doc integrity in GitHub Actions: <code>npx stepwell validate --root .</code></span>
+          <span class="callout-side">exit 1 on drift</span>
         </div>
-
-        <!-- SKILL.md Note -->
-        <div class="max-w-3xl mx-auto mt-4 p-4 rounded-xl bg-purple-950/20 border border-purple-500/20 flex items-center justify-between text-xs sm:text-sm text-slate-300">
-          <div class="flex items-center gap-3">
-            <span class="text-purple-400 font-bold">Skill ecosystems:</span>
-            <span>The npm pack ships <code>SKILL.md</code> — which tool when, gates, test-first. Portable for Claude Skills, Gemini CLI, and friends.</span>
-          </div>
-          <span class="text-slate-500 font-mono text-xs hidden sm:inline">2nd distribution channel</span>
+        <div class="callout">
+          <span class="callout-body"><strong>Skill ecosystems.</strong>
+          The npm pack ships <code>SKILL.md</code> (which tool when, gates, test-first). Portable for
+          Claude Skills, Gemini CLI, and friends.</span>
+          <span class="callout-side">2nd distribution channel</span>
         </div>
       </div>
     </section>
   </main>
 
   <!-- Footer -->
-  <footer class="border-t border-white/10 bg-[#060911] py-12 z-10 text-sm text-slate-400">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
-      <div class="flex items-center gap-3">
-        <span class="font-bold text-white">stepwell</span>
-        <span>— The Agent Governance Framework</span>
+  <footer class="site-footer">
+    <div class="shell footer-row">
+      <div class="footer-brand">
+        <span class="brand-mark mark-footer" aria-hidden="true"><span class="mark-crop"><img src="assets/stepwell-logo.jpg" alt=""></span></span>
+        <span class="brand-name">stepwell</span>
+        <span class="footer-tag">— the agent governance framework</span>
       </div>
-
-      <div class="flex items-center gap-6 flex-wrap justify-center">
-        <a href="https://github.com/RealRauch/stepwell-tool/blob/main/docs/PLAYBOOK.md" target="_blank" class="hover:text-cyan-400 transition-colors">PLAYBOOK</a>
-        <a href="https://github.com/RealRauch/stepwell-tool/blob/main/docs/LESSONS.md" target="_blank" class="hover:text-cyan-400 transition-colors">LESSONS</a>
-        <a href="https://github.com/RealRauch/stepwell-tool/blob/main/docs/QUICKSTART.md" target="_blank" class="hover:text-cyan-400 transition-colors">QUICKSTART</a>
-        <a href="https://github.com/RealRauch/stepwell-tool" target="_blank" class="hover:text-cyan-400 transition-colors">GitHub</a>
-        <span class="text-slate-600">|</span>
+      <nav class="footer-links" aria-label="Documents">
+        <a href="https://github.com/RealRauch/stepwell-tool/blob/main/docs/PLAYBOOK.md" target="_blank" rel="noopener noreferrer">PLAYBOOK</a>
+        <a href="https://github.com/RealRauch/stepwell-tool/blob/main/docs/LESSONS.md" target="_blank" rel="noopener noreferrer">LESSONS</a>
+        <a href="https://github.com/RealRauch/stepwell-tool/blob/main/docs/QUICKSTART.md" target="_blank" rel="noopener noreferrer">QUICKSTART</a>
+        <a href="https://github.com/RealRauch/stepwell-tool" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <span class="footer-sep" aria-hidden="true">|</span>
         <span>MIT License</span>
-      </div>
+      </nav>
     </div>
   </footer>
 
-  <!-- App JS -->
   <script src="app.js"></script>
 </body>
 </html>

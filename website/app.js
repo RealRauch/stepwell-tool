@@ -174,13 +174,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function setTerminalTab(key) {
     terminalTabs.forEach(t => {
-      if (t.dataset.terminalTab === key) {
-        t.classList.add("bg-blue-600/20", "text-blue-400", "border-blue-500/50");
-        t.classList.remove("text-slate-400", "border-transparent");
-      } else {
-        t.classList.remove("bg-blue-600/20", "text-blue-400", "border-blue-500/50");
-        t.classList.add("text-slate-400", "border-transparent");
-      }
+      t.classList.toggle("is-active", t.dataset.terminalTab === key);
+      t.setAttribute("aria-selected", t.dataset.terminalTab === key ? "true" : "false");
     });
 
     const data = terminalData[key];
@@ -201,13 +196,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function setConfigTab(key) {
     configTabs.forEach(t => {
-      if (t.dataset.configTab === key) {
-        t.classList.add("bg-slate-700/80", "text-white");
-        t.classList.remove("text-slate-400");
-      } else {
-        t.classList.remove("bg-slate-700/80", "text-white");
-        t.classList.add("text-slate-400");
-      }
+      t.classList.toggle("is-active", t.dataset.configTab === key);
+      t.setAttribute("aria-selected", t.dataset.configTab === key ? "true" : "false");
     });
 
     if (configData[key] && configCode) {
@@ -228,18 +218,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const text = targetEl.textContent || targetEl.innerText;
       navigator.clipboard.writeText(text).then(() => {
-        const originalText = btn.innerHTML;
-        btn.innerHTML = `
-          <svg class="w-4 h-4 text-emerald-400 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-          </svg>
-          Copied!
-        `;
-        btn.classList.add("bg-emerald-950/60", "border-emerald-500/50");
+        const originalHtml = btn.innerHTML;
+        btn.classList.add("is-copied");
+        btn.innerHTML = `Copied!`;
         setTimeout(() => {
-          btn.innerHTML = originalText;
-          btn.classList.remove("bg-emerald-950/60", "border-emerald-500/50");
-        }, 2000);
+          btn.innerHTML = originalHtml;
+          btn.classList.remove("is-copied");
+        }, 1800);
       });
     });
   });
