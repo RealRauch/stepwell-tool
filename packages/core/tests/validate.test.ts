@@ -303,9 +303,10 @@ describe("docsValidate — PHASE_PLANNED vs PLAN_WITHOUT_WIP (M18/27.9)", () => 
   it("keeps a mixed state (✅ + ⬜, no 🔄) a PLAN_WITHOUT_WIP finding (contract anchor)", () => {
     const dir = tempCopy("project-k-planned");
     const progressPath = join(dir, "PROGRESS.md");
+    // ORPHANED order: ✅ AFTER ⬜ in table order (M23/32.5 — not sequential progress)
     writeFileSync(
       progressPath,
-      readFileSync(progressPath, "utf8").replace("| 9.1 | First step | ⬜ |", "| 9.1 | First step | ✅ |"),
+      readFileSync(progressPath, "utf8").replace("| 9.2 | Second step | ⬜ |", "| 9.2 | Second step | ✅ |"),
       "utf8",
     );
     const result = docsValidate(dir);
@@ -313,5 +314,53 @@ describe("docsValidate — PHASE_PLANNED vs PLAN_WITHOUT_WIP (M18/27.9)", () => 
     expect(result.findings[0]?.message).toContain("Phase 9");
     expect(result.warnings.filter((w) => w.code === "PHASE_PLANNED")).toEqual([]);
     expect(result.ok).toBe(false);
+  });
+
+  it("reports a sequential intermediate state (✅ before ⬜, none running) as PHASE_MIDWAY warning (M23/32.5)", () => {
+    const dir = tempCopy("project-k-planned");
+    const progressPath = join(dir, "PROGRESS.md");
+    // the transient window of every step transition: 9.1 flipped ✅, 9.2 still ⬜
+    writeFileSync(
+      progressPath,
+      readFileSync(progressPath, "utf8").replace("| 9.1 | First step | ⬜ |", "| 9.1 | First step | ✅ |"),
+      "utf8",
+    );
+    const result = docsValidate(dir);
+    expect(result.findings).toEqual([]);
+    expect(result.warnings.map((w) => w.code)).toEqual(["PHASE_MIDWAY"]);
+    expect(result.warnings[0]?.message).toContain("Phase 9");
+    expect(result.ok).toBe(true);
+  });
+
+  it("keeps a ⛔ island non-sequential (PLAN_WITHOUT_WIP finding, M23/32.5)", () => {
+    const dir = tempCopy("project-k-planned");
+    const progressPath = join(dir, "PROGRESS.md");
+    writeFileSync(
+      progressPath,
+      readFileSync(progressPath, "utf8")
+        .replace("| 9.1 | First step | ⬜ |", "| 9.1 | First step | ✅ |")
+        .replace("| 9.2 | Second step | ⬜ |", "| 9.2 | Second step | ⛔ |"),
+      "utf8",
+    );
+    const result = docsValidate(dir);
+    expect(result.findings.map((f) => f.code)).toEqual(["PLAN_WITHOUT_WIP"]);
+    expect(result.ok).toBe(false);
+  });
+
+  it("multi-done then open stays sequential (✅✅…⬜ → PHASE_MIDWAY, M23/32.5)", () => {
+    const dir = tempCopy("project-k-planned");
+    const progressPath = join(dir, "PROGRESS.md");
+    writeFileSync(
+      progressPath,
+      readFileSync(progressPath, "utf8")
+        .replace("| 9.1 | First step | ⬜ |", "| 9.1 | First step | ✅ |")
+        .replace("| 9.2 | Second step | ⬜ |", "| 9.2 | Second step | ✅ |\n| 9.3 | Third step | ⬜ |")
+        .replace("- **9.2 Second step**", "- **9.2 Second step**\n- **9.3 Third step**"),
+      "utf8",
+    );
+    const result = docsValidate(dir);
+    expect(result.findings).toEqual([]);
+    expect(result.warnings.map((w) => w.code)).toEqual(["PHASE_MIDWAY"]);
+    expect(result.ok).toBe(true);
   });
 });

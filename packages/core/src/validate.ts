@@ -358,12 +358,37 @@ export function docsValidate(root: string): {
         message: `Detail block "${block.name}" is fully planned but not started yet (no 🔄 step) — start it with progress_update when work begins.`,
       });
     } else {
-      findings.push({
-        code: "PLAN_WITHOUT_WIP",
-        file: progressPath,
-        line: block.span.start,
-        message: `Detail block "${block.name}" has no 🔄 step in the progress table.`,
+      // M23/32.5: a sequential intermediate state (all ✅ before all ⬜ in table
+      // order, no ⛔ anywhere) is legitimate progress BETWEEN two step flips —
+      // the window every docs_validate in a CI chain runs in. Warning, never a
+      // finding; a true orphaned state (✅ AFTER ⬜ in table order, or a ⛔ island)
+      // stays the PLAN_WITHOUT_WIP finding.
+      // empty blockRows (scope matches no table row) is NOT sequential — that is
+      // the D12 orphaned-block contract, unchanged
+      const sequentialProgress =
+        blockRows.length > 0 &&
+        !blockRows.some((row, idx) => {
+        if (row.status === "⛔") return true;
+        if (row.status === "✅") {
+          return blockRows.slice(0, idx).some((prev) => prev.status === "⬜" || prev.status === "⛔");
+        }
+        return false;
       });
+      if (sequentialProgress) {
+        validateWarnings.push({
+          code: "PHASE_MIDWAY",
+          file: progressPath,
+          line: block.span.start,
+          message: `Detail block "${block.name}" is between steps (sequential ✅…⬜, none running) — legitimate progress; the next open step flips to 🔄.`,
+        });
+      } else {
+        findings.push({
+          code: "PLAN_WITHOUT_WIP",
+          file: progressPath,
+          line: block.span.start,
+          message: `Detail block "${block.name}" has no 🔄 step in the progress table.`,
+        });
+      }
     }
   }
 

@@ -349,6 +349,7 @@ is silently tolerated (stripped deterministically, T5/9.13) — no warning.
 | `INDEX_LOCATION` (M24/32.3) | validate | index line lives in a different file than its block (strict locality — the line belongs where the block lives); `docs_repair` reconstructs it into the right file |
 | `WIP_WITHOUT_PLAN` (D11) | validate | 🔄 row without a matching detail block |
 | `PHASE_PLANNED` (M18/27.9) | validate **warning** | purely planned phase — block exists, every table step still ⬜ (the `progress_plan_phase` state); reported, does **not** flip `ok` (forward planning is legitimate) |
+| `PHASE_MIDWAY` (M23/32.5) | validate **warning** | sequential intermediate state — all ✅ before all ⬜ in table order, no ⛔, none running (the transient window of every step transition); reported, does **not** flip `ok` (a docs_validate between flips stays green). True orphaned states (✅ after ⬜, ⛔ island, scope without rows) stay `PLAN_WITHOUT_WIP` findings |
 | `PLAN_WITHOUT_WIP` (D12) | validate | detail block without a 🔄 step in a **mixed** state (✅ + ⬜, none running — orphaned block) or without any table rows in its scope |
 | `STEP_DUPLICATE` (R6) | validate | step number appears twice in the progress table — `progress_update` maintains only the first row |
 | `EMPTY_MARKER_STALE` (H6) | validate | section carries open items **and** a `> No open items.` placeholder — lying structure (invariant: placeholder ⟺ section empty; the mutations restore the invariant on add/remove, this finding surfaces pre-tool drift) |

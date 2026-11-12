@@ -13,6 +13,27 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
 
 ## [Unreleased]
 
+### Phase 32 — Archive sharding (2026-11-12, in progress)
+
+#### Added
+- **Archive sharding (H11/H12/32.1–32.2):** `docs/archive/*_ARCHIVE*.md` shards are read
+  concatenated (p<n> NUMBER-ascending, canonical last); rotation writes item blocks to
+  `BACKLOG_ARCHIVE.p<n>.md` during the running phase and the phase block to
+  `PROGRESS_ARCHIVE.p<n>.md` on completion — write-once shard headers, canonical files
+  freeze as legacy homes. Commit staging stages canonical four + existing shards.
+- **Coupled Done Index (M24/32.3):** an index line lives where its block lives — BACKLOG's
+  Done Index for canonical blocks, each shard's own section for shard blocks. New
+  `INDEX_LOCATION` finding (strict locality); `docs_repair` reconstructs into the right file.
+- **Derived doc file sets (M25/32.4):** `docFileSet(root)` (canonical four + existing
+  shards) drives the hash fast path, commit staging and sync docSet; hashes manifest keys
+  include shards. `workstream_sync` pull resolves both-added shard collisions against an
+  empty base and preserves mid-file conflict regions (append-path regions stay file-end-only).
+- **`PHASE_MIDWAY` warning (M23/32.5):** a sequential intermediate state (✅ before ⬜,
+  none running, no ⛔) no longer fires `PLAN_WITHOUT_WIP` — docs_validate between two step
+  flips stays green (ok: true). Orphaned states stay findings.
+
+
+
 ### Phase 30 — Validator repair path + workstream foresight (2026-11-11T22:00)
 
 #### Added
