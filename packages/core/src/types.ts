@@ -108,7 +108,16 @@ export interface DocsStatus {
   nextStepScope?: NextStepScope;
   /** SHA256 je Doku-Datei (E2/12.5) — Grundlage des Hash-Kurzschlusses (Fast-Pfad E3). */
   hashes: Record<string, string>;
+  /** Zeilen/Bytes je Doku-Datei (L24/32.7) — Wachstum messbar statt unsichtbar. */
+  docFiles: DocFileInfo[];
   warnings: Warning[];
+}
+
+export interface DocFileInfo {
+  /** Posix-Relativpfad (wie die hashes-Keys). */
+  file: string;
+  lines: number;
+  bytes: number;
 }
 
 /** Step-Kontext für den Session-Einstieg (E2/12.3) — 1 Call statt docs_status + progress_show + backlog_show. */

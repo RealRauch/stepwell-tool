@@ -1,10 +1,13 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { fileHashes } from "./hashes.ts";
 import { loadProject, type ProjectDocs } from "./project.ts";
-import { ProjectNotInitializedError } from "./project-files.ts";
+import { ProjectNotInitializedError, docFileSet } from "./project-files.ts";
 import { scopeEntryFor, scopeSteps } from "./progress.ts";
 import { docsValidate } from "./validate.ts";
 import type {
   BacklogItem,
+  DocFileInfo,
   DocsStatus,
   NextStepScope,
   Priority,
@@ -62,6 +65,7 @@ export function docsStatus(root: string, options?: DocsStatusOptions): DocsStatu
         nextStep: undefined,
         nextPriority: undefined,
         hashes: {},
+        docFiles: [],
         warnings: [{ code: "PROJECT_NOT_INITIALIZED", file: root, message: err.message }],
       };
     }
@@ -135,7 +139,20 @@ export function docsStatus(root: string, options?: DocsStatusOptions): DocsStatu
     nextStep,
     nextPriority,
     hashes: fileHashes(root),
+    docFiles: docFileSizes(root), // L24/32.7: growth is measurable, not invisible
     ...(nextStepScope !== undefined ? { nextStepScope } : {}),
     warnings,
   };
+}
+
+/** L24/32.7: lines/bytes per doc file (canonical four + existing shards). */
+function docFileSizes(root: string): DocFileInfo[] {
+  return docFileSet(root).map((rel) => {
+    const content = readFileSync(join(root, ...rel.split("/")), "utf8");
+    return {
+      file: rel,
+      lines: content.split(/\r?\n/).length,
+      bytes: Buffer.byteLength(content, "utf8"),
+    };
+  });
 }

@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { applyPhasePlan, planPhase } from "../src/mutations.ts";
 import { docsStatus } from "../src/status.ts";
+import { docFileSet } from "../src/project-files.ts";
 
 const fixtures = join(import.meta.dirname, "fixtures");
 
@@ -36,6 +37,29 @@ describe("docsStatus — project-a (clean)", () => {
 
   it("computes the ✅ quote over the full table", () => {
     expect(status.doneQuote).toEqual({ done: 5, total: 9, percent: 56 });
+  });
+
+  it("reports doc file sizes (L24/32.7): lines/bytes per doc file", () => {
+    expect(status.docFiles).toBeDefined();
+    expect(status.docFiles!.map((f) => f.file)).toEqual([
+      "BACKLOG.md",
+      "PROGRESS.md",
+      "docs/archive/BACKLOG_ARCHIVE.md",
+      "docs/archive/PROGRESS_ARCHIVE.md",
+    ]);
+    const backlog = status.docFiles!.find((f) => f.file === "BACKLOG.md")!;
+    const expectedBytes = Buffer.byteLength(readFileSync(join(fixtures, "project-a", "BACKLOG.md"), "utf8"), "utf8");
+    expect(backlog.bytes).toBe(expectedBytes);
+    expect(backlog.lines).toBeGreaterThan(0);
+    for (const f of status.docFiles!) {
+      expect(f.lines).toBeGreaterThan(0);
+      expect(f.bytes).toBeGreaterThan(0);
+    }
+  });
+
+  it("docFiles includes shards on a sharded project (M25/32.4 follow-up)", () => {
+    const sharded = docsStatus(join(fixtures, "project-m-shards"));
+    expect(sharded.docFiles!.map((f) => f.file)).toEqual(docFileSet(join(fixtures, "project-m-shards")));
   });
 
   it("derives next action: first ⬜ of the running phase and highest open priority (L7)", () => {

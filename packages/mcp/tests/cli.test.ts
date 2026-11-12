@@ -38,6 +38,7 @@ describe("runCli — status", () => {
     expect(io.stdout).toContain("Phase 2 — UI-Polish");
     expect(io.stdout).toContain("✅ ratio: 5/9 (56%)");
     expect(io.stdout).toContain("Warnings: 0");
+    expect(io.stdout).toMatch(/Doc files: 4 files, \d+ lines, \d+ bytes/u); // L24/32.7
   });
 
   it("prints raw JSON with --json", async () => {
@@ -344,7 +345,7 @@ it("stamps schema: 2 on every JSON payload (13.2/N1: URI-Schema + TOOL_NAME)", a
     const io = makeIo();
     await runCli(["status", "--root", projectA, "--json"], io.io);
     expect(Object.keys(JSON.parse(io.stdout) as object).sort()).toEqual([
-      "doneQuote", "hashes", "nextPriority", "nextStep", "openByPriority", "openTotal", "runningPhases", "runningSteps", "schema", "warnings",
+      "docFiles", "doneQuote", "hashes", "nextPriority", "nextStep", "openByPriority", "openTotal", "runningPhases", "runningSteps", "schema", "warnings",
     ]);
   });
 });

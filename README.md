@@ -266,7 +266,8 @@ bump `schema` (in lockstep with the npm MAJOR).
   against the installed artefact (`server stepwell`).
 
 ```bash
-# Status aggregate
+# Status aggregate — includes the Doc files line (files/lines/bytes, L24/32.7):
+# growth is measurable, not invisible
 node packages/mcp/src/cli.ts status --root <project> [--json]
 
 # List/filter backlog — icons or ASCII aliases (red/kritisch/p1, hoch/p2, mittel/p3, niedrig/p4, blue/test/p5)

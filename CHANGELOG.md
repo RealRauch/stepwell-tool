@@ -31,6 +31,11 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
 - **`PHASE_MIDWAY` warning (M23/32.5):** a sequential intermediate state (✅ before ⬜,
   none running, no ⛔) no longer fires `PLAN_WITHOUT_WIP` — docs_validate between two step
   flips stays green (ok: true). Orphaned states stay findings.
+- **Doc files aggregate (L24/32.7):** `docs_status`/CLI `status` report
+  `docFiles: [{file, lines, bytes}]` (canonical four + shards) and render a compact
+  `Doc files:` line — archive growth stays measurable (additive JSON, schema 2).
+- **Workstream report refactor (L22/32.6):** `foreignDocState` parses BACKLOG once per
+  branch, `idCollisions` computes the base state once — byte-identical behavior.
 
 
 

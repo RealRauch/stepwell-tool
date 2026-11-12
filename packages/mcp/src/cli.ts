@@ -324,6 +324,10 @@ function statusText(s: DocsStatus): string {
     ? `${s.nextPriority} (${s.openByPriority[s.nextPriority]} open)`
     : "(none)";
   const quote = `✅ ratio: ${s.doneQuote.done}/${s.doneQuote.total} (${s.doneQuote.percent}%)`;
+  // L24/32.7: growth is measurable — one compact line over all doc files
+  const docFiles = s.docFiles.length > 0
+    ? `Doc files: ${s.docFiles.length} files, ${s.docFiles.reduce((n, f) => n + f.lines, 0)} lines, ${s.docFiles.reduce((n, f) => n + f.bytes, 0)} bytes`
+    : "Doc files: (none)";
   return [
     `Open items: ${s.openTotal} (${prioLine})`,
     `Running steps: ${steps}`,
@@ -331,6 +335,7 @@ function statusText(s: DocsStatus): string {
     `Next step: ${nextStep}`,
     `Next priority: ${nextPriority}`,
     quote,
+    docFiles,
     `Warnings: ${s.warnings.length}`,
     "",
   ].join("\n");
