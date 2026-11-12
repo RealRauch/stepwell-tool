@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { parseBacklog } from "./backlog.ts";
-import { parseBacklogArchive, parseProgressArchive } from "./archive.ts";
+import { parseProgressArchive, toArchiveItem } from "./archive.ts";
 import { parseProgress } from "./progress.ts";
 import {
   BACKLOG_ARCHIVE_PATH,
@@ -18,6 +18,7 @@ import type {
   ArchiveItem,
   Backlog,
   BacklogEntry,
+  DoneEntry,
   PhaseBlock,
   Progress,
   ParseResult,
@@ -53,9 +54,20 @@ export interface ProjectDocs {
   /**
    * H11/32.1: per-file archive parses (shards p<n>-ascending, canonical last).
    * Values concat to backlogArchive().value; warnings carry per-file attribution.
+   * M24/32.3: each record also carries the file's own Done-Index section entries
+   * (coupled model — an index line lives where its block lives).
    */
-  backlogArchiveFiles(): ReadonlyArray<{ file: string; result: ParseResult<ArchiveItem[]> }>;
+  backlogArchiveFiles(): ReadonlyArray<{
+    file: string;
+    result: ParseResult<ArchiveItem[]>;
+    doneIndex: DoneEntry[];
+  }>;
   progressArchiveFiles(): ReadonlyArray<{ file: string; result: ParseResult<PhaseBlock[]> }>;
+  /**
+   * M24/32.3: the union Done Index — BACKLOG.md's section plus every shard's
+   * own section (order: BACKLOG first, then shards p<n>-ascending).
+   */
+  doneIndexAll(): DoneEntry[];
 }
 
 export function loadProject(root: string): ProjectDocs {
@@ -66,20 +78,26 @@ export function loadProject(root: string): ProjectDocs {
   if (missing.length > 0) {
     throw new Error(`missing required file(s) under ${root}: ${missing.join(", ")}`);
   }
-  const backlogArchiveFiles = memo(() =>
-    archiveFiles(root, "backlog", BACKLOG_ARCHIVE_PATH, parseBacklogArchive),
+  const backlogMemo = memo(() =>
+    parseBacklog(readRequired(root, BACKLOG_PATH), join(root, BACKLOG_PATH)),
   );
+  const backlogArchiveFiles = memo(() => backlogArchiveFileParses(root));
   const progressArchiveFiles = memo(() =>
     archiveFiles(root, "progress", PROGRESS_ARCHIVE_PATH, parseProgressArchive),
   );
+  const doneIndexAll = memo(() => [
+    ...backlogMemo().value.doneIndex,
+    ...backlogArchiveFiles().flatMap((f) => f.doneIndex),
+  ]);
   return {
     root,
-    backlog: memo(() => parseBacklog(readRequired(root, BACKLOG_PATH), join(root, BACKLOG_PATH))),
+    backlog: backlogMemo,
     progress: memo(() => parseProgress(readRequired(root, PROGRESS_PATH), join(root, PROGRESS_PATH))),
-    backlogArchive: memo(() => concatArchive(backlogArchiveFiles())),
+    backlogArchive: memo(() => concatArchive(backlogArchiveFiles().map((f) => ({ result: f.result })))),
     progressArchive: memo(() => concatArchive(progressArchiveFiles())),
     backlogArchiveFiles,
     progressArchiveFiles,
+    doneIndexAll,
   };
 }
 
@@ -97,6 +115,20 @@ function archiveFiles<T>(
   });
 }
 
+/** Backlog archives with per-file done-index sections (M24/32.3). */
+function backlogArchiveFileParses(root: string) {
+  const files = [...archiveShardPaths(root, "backlog"), BACKLOG_ARCHIVE_PATH];
+  return files.map((rel) => {
+    const file = join(root, rel);
+    const parsed = parseBacklog(readRequired(root, rel), file);
+    return {
+      file,
+      result: { value: parsed.value.items.map(toArchiveItem), warnings: parsed.warnings },
+      doneIndex: parsed.value.doneIndex,
+    };
+  });
+}
+
 function concatArchive<T>(files: ReadonlyArray<{ result: ParseResult<T[]> }>): ParseResult<T[]> {
   const value = files.flatMap((f) => f.result.value);
   const warnings = files.flatMap((f) => f.result.warnings);
@@ -110,7 +142,7 @@ export function backlogShow(root: string, id: string): BacklogEntry | undefined 
   const backlog = docs.backlog().value;
   const openItem = backlog.items.find((item) => item.id === id);
   if (openItem) entry.item = openItem;
-  const done = backlog.doneIndex.find((d) => d.id === id);
+  const done = docs.doneIndexAll().find((d) => d.id === id);
   if (done) entry.done = done;
 
   const archive = docs.backlogArchive().value.find((item) => item.id === id);

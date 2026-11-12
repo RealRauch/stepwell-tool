@@ -210,24 +210,42 @@ export function planArchiveItem(
       blockLines.push(`- **${doneLabel}:** ${note}`);
     }
     const blockText = blockLines.join(eol);
-    return appendWithOptionalHeader(
+    const blockOnly = (content2: string, eol2: string): string =>
+      appendWithOptionalHeader(
+        content2,
+        eol2,
+        blockText,
+        (eol3) => shardHeader("backlog", shardPhase ?? 0, `items archived during Phase ${shardPhase}`, eol3),
+      );
+    if (shardPhase === undefined) return blockOnly(content, eol);
+    // M24/32.3 coupled index: shard archives keep their one-liner in their own section
+    const entryLine = `- ${item.id} — ${item.title} — ${doneWord}${note !== undefined ? ` (${note})` : ""}`;
+    return appendBlockAndIndexLine(
       content,
       eol,
       blockText,
-      (eol2) => shardHeader("backlog", shardPhase ?? 0, `items archived during Phase ${shardPhase}`, eol2),
+      (eol2) => shardHeader("backlog", shardPhase, `items archived during Phase ${shardPhase}`, eol2),
+      entryLine,
+      `## ✅ ${canonical("doneIndexHeading", locale)}`,
     );
   };
 
   const changes = buildChanges(root, [
     {
       relPath: backlogRel,
-      description: `Item "${id}" aus dem offenen BACKLOG entfernen (span ${item.span.start}–${item.span.end}, verbatim)`,
-      transform: (content, eol) => appendIndexLine(removeBlock(content, eol), eol),
+      description:
+        shardPhase === undefined
+          ? `Item "${id}" aus dem offenen BACKLOG entfernen (span ${item.span.start}–${item.span.end}, verbatim)`
+          : `Item "${id}" aus dem offenen BACKLOG entfernen (Index-Zeile lebt gekoppelt im Shard, M24/32.3)`,
+      transform: (content, eol) =>
+        shardPhase === undefined
+          ? appendIndexLine(removeBlock(content, eol), eol)
+          : removeBlock(content, eol),
     },
     {
       relPath: archiveRel,
       createIfMissing: true,
-      description: `Item-Block "${id}" verbatim anhängen (Checkbox → [x]${note !== undefined ? ", mit Erledigt-Zeile" : ""}) — Ziel: ${archiveRel}${shardPhase !== undefined ? " (Shard der laufenden Phase)" : " (kanonisch, keine laufende Phase)"}`,
+      description: `Item-Block "${id}" verbatim anhängen (Checkbox → [x]${note !== undefined ? ", mit Erledigt-Zeile" : ""})${shardPhase !== undefined ? " + Index-Zeile in der Shard-Sektion (M24/32.3)" : ""} — Ziel: ${archiveRel}${shardPhase !== undefined ? " (Shard der laufenden Phase)" : " (kanonisch, keine laufende Phase)"}`,
       transform: appendToArchive,
     },
   ]);
@@ -312,6 +330,69 @@ function appendWithOptionalHeader(
   return `${start}${blockText}${eol}`;
 }
 
+/**
+ * M24/32.3 (coupled Done Index): append a block to a shard file AND its index
+ * one-liner to that file's Done-Index section. New blocks land BEFORE an
+ * existing section (blocks stay contiguous at the top); the section is created
+ * on demand at the file end after the first block.
+ */
+export function appendBlockAndIndexLine(
+  content: string,
+  eol: string,
+  blockText: string,
+  header: (eol: string) => string,
+  line: string,
+  heading: string,
+): string {
+  const lines = splitLines(content);
+  const sectionIdx = lines.findIndex((l) => SECTION_HEADING.test(l) && INDEX_HEADING.test(l));
+  if (sectionIdx === -1) {
+    const withBlock = appendWithOptionalHeader(content, eol, blockText, header);
+    return appendIndexLineToSection(withBlock, eol, line, heading);
+  }
+  const before = lines.slice(0, sectionIdx).join(eol);
+  const section = lines.slice(sectionIdx).join(eol);
+  const withBlock = appendWithOptionalHeader(before, eol, blockText, header);
+  return appendIndexLineToSection(`${withBlock}${eol}${section}`, eol, line, heading);
+}
+
+/**
+ * M24/32.3 (coupled Done Index): append an index one-liner to the Done-Index
+ * SECTION of an archive file — the line lives where its block lives. The
+ * section is created on demand at the file end (write-once heading, then the
+ * line). Existing sections get the line appended at the section tail.
+ */
+export function appendIndexLineToSection(
+  content: string,
+  eol: string,
+  line: string,
+  heading: string,
+): string {
+  const lines = splitLines(content);
+  let sectionStart = -1;
+  for (const [idx, line2] of lines.entries()) {
+    if (SECTION_HEADING.test(line2) && INDEX_HEADING.test(line2)) {
+      sectionStart = idx;
+      break;
+    }
+  }
+  if (sectionStart === -1) {
+    // create the section at the file end
+    const trimmed = content.replace(/\s+$/u, "");
+    return `${trimmed}${eol}${eol}${heading}${eol}${eol}> Einzeiler je abgeschlossenem Item (Details oben).${eol}${eol}${line}${eol}`;
+  }
+  let end = sectionStart + 1;
+  while (end < lines.length && !SECTION_HEADING.test(lines[end]!) && !RULE_LINE.test(lines[end]!)) {
+    end += 1;
+  }
+  let insertAt = end;
+  while (insertAt > sectionStart + 1 && (lines[insertAt - 1]?.trim() ?? "") === "") {
+    insertAt -= 1;
+  }
+  lines.splice(insertAt, 0, line);
+  return lines.join(eol);
+}
+
 export function applyArchivePlan(plan: ArchiveItemPlan): ApplyResult {
   if (plan.dryRun) {
     throw new Error(
@@ -330,7 +411,7 @@ export function applyArchivePlan(plan: ArchiveItemPlan): ApplyResult {
   const backlog = fresh.backlog().value;
   const stillOpen = backlog.items.some((i) => i.id === plan.id);
   const inArchive = fresh.backlogArchive().value.some((i) => i.id === plan.id);
-  const inIndex = backlog.doneIndex.some((d) => d.id === plan.id);
+  const inIndex = fresh.doneIndexAll().some((d) => d.id === plan.id);
   if (!stillOpen) messages.push(`item "${plan.id}" removed from open BACKLOG`);
   else messages.push(`item "${plan.id}" is STILL in the open BACKLOG`);
   if (inArchive) messages.push(`item "${plan.id}" present in BACKLOG_ARCHIVE`);
@@ -1033,7 +1114,7 @@ function buildItemBlock(
 function collectKnownIds(docs: ReturnType<typeof loadProject>): Set<string> {
   const ids = new Set<string>();
   for (const item of docs.backlog().value.items) ids.add(item.id);
-  for (const done of docs.backlog().value.doneIndex) ids.add(done.id);
+  for (const done of docs.doneIndexAll()) ids.add(done.id); // M24/32.3: union (BACKLOG + shards)
   for (const item of docs.backlogArchive().value) ids.add(item.id);
   return ids;
 }
@@ -1279,15 +1360,15 @@ export function planBacklogRemove(root: string, id: string, options: BacklogRemo
   const removedWord = canonical("removedWord", locale);
   const removedLabel = canonical("removedLabel", locale);
 
+  const removedLine = `- ${item.id} — ${item.title} — ${removedWord}${note !== undefined ? ` (${note})` : ""}`;
+
   const editBacklog = (content: string, eol: string): string => {
     const lines = splitLines(content);
     removeItemLines(lines, item.span);
     restoreEmptyMarker(lines, sectionHeadingLineAt(lines, item.section)); // H6/27.4
-    appendIndexTail(
-      lines,
-      `- ${item.id} — ${item.title} — ${removedWord}${note !== undefined ? ` (${note})` : ""}`,
-      backlogRel,
-    );
+    if (shardPhase === undefined) {
+      appendIndexTail(lines, removedLine, backlogRel);
+    }
     refreshHeadingStamp(lines);
     return lines.join(eol);
   };
@@ -1297,24 +1378,35 @@ export function planBacklogRemove(root: string, id: string, options: BacklogRemo
     if (note !== undefined) {
       blockLines.push(`- **${removedLabel}:** ${note}`);
     }
-    return appendWithOptionalHeader(
+    if (shardPhase === undefined) {
+      return appendWithOptionalHeader(
+        content,
+        eol,
+        blockLines.join(eol),
+        (eol2) => shardHeader("backlog", shardPhase ?? 0, `items archived during Phase ${shardPhase}`, eol2),
+      );
+    }
+    // M24/32.3: removed tails live in the shard's own index section too
+    return appendBlockAndIndexLine(
       content,
       eol,
       blockLines.join(eol),
-      (eol2) => shardHeader("backlog", shardPhase ?? 0, `items archived during Phase ${shardPhase}`, eol2),
+      (eol2) => shardHeader("backlog", shardPhase, `items archived during Phase ${shardPhase}`, eol2),
+      removedLine,
+      `## ✅ ${canonical("doneIndexHeading", locale)}`,
     );
   };
 
   const changes = buildChanges(root, [
     {
       relPath: backlogRel,
-      description: `Item "${id}" aus dem offenen BACKLOG entfernen (verbatim-Verschub ins Archiv, Index-Tail ohne Erledigt-Marker)`,
+      description: `Item "${id}" aus dem offenen BACKLOG entfernen (verbatim-Verschub ins Archiv, Index-Tail ohne Erledigt-Marker${shardPhase !== undefined ? " — lebt gekoppelt im Shard, M24/32.3" : ""})`,
       transform: editBacklog,
     },
     {
       relPath: archiveRel,
       createIfMissing: true,
-      description: `Item-Block "${id}" verbatim anhängen (Checkbox bleibt [ ])${note !== undefined ? ", mit Entfernt-Zeile" : ""} — Ziel: ${archiveRel}${shardPhase !== undefined ? " (Shard der laufenden Phase)" : " (kanonisch, keine laufende Phase)"}`,
+      description: `Item-Block "${id}" verbatim anhängen (Checkbox bleibt [ ])${note !== undefined ? ", mit Entfernt-Zeile" : ""}${shardPhase !== undefined ? " + Index-Zeile in der Shard-Sektion (M24/32.3)" : ""} — Ziel: ${archiveRel}${shardPhase !== undefined ? " (Shard der laufenden Phase)" : " (kanonisch, keine laufende Phase)"}`,
       transform: editArchive,
     },
   ]);
@@ -1336,6 +1428,7 @@ export function applyBacklogRemovePlan(plan: BacklogRemovePlan): ApplyResult {
   const fresh = loadProject(plan.root);
   const stillOpen = fresh.backlog().value.items.some((i) => i.id === plan.id);
   const inArchive = fresh.backlogArchive().value.some((i) => i.id === plan.id);
+  const inIndex = fresh.doneIndexAll().some((d) => d.id === plan.id);
   messages.push(
     stillOpen ? `item "${plan.id}" is STILL in the open BACKLOG` : `item "${plan.id}" removed from open BACKLOG`,
   );

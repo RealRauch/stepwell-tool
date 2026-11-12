@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, sep } from "node:path";
 import { allSynonyms, escapeRegExp } from "./profile.ts";
 import { loadProject, type ProjectDocs } from "./project.ts";
 import { ProjectNotInitializedError } from "./project-files.ts";
@@ -164,29 +164,70 @@ export function docsValidate(root: string): {
     }
   }
 
-  const archiveIds = new Set(backlogArchive.value.map((item) => item.id));
-  for (const done of backlog.value.doneIndex) {
-    if (!archiveIds.has(done.id)) {
-      findings.push({
-        code: "INDEX_WITHOUT_ARCHIVE",
-        file: backlogPath,
-        message: `Done Index entry "${done.id}" has no block in BACKLOG_ARCHIVE.md.`,
-      });
+  // M24/32.3 (coupled Done Index, strict locality): an index line lives where its
+  // block lives — BACKLOG.md's Done Index is the index OF the canonical archive
+  // file; each shard carries its own section. Pairing:
+  //   canonical blocks ↔ BACKLOG.md Done Index · shard blocks ↔ shard section
+  // Checks:
+  //   ARCHIVE_WITHOUT_INDEX — block without a line in its paired index
+  //   INDEX_WITHOUT_ARCHIVE — line without a block anywhere (union)
+  //   INDEX_LOCATION        — line whose block is paired with ANOTHER index
+  //                           (finding: self-contained shards, precise move)
+  const archiveFiles = docs.backlogArchiveFiles();
+  const canonicalArchivePath = join(root, "docs", "archive", "BACKLOG_ARCHIVE.md");
+  const shortName = (path: string): string => path.replace(root + sep, "");
+  const indexFileOf = (archiveFile: string): string =>
+    archiveFile === canonicalArchivePath ? backlogPath : archiveFile;
+  const blockIndexFileById = new Map<string, string>();
+  for (const { file, result } of archiveFiles) {
+    for (const item of result.value) {
+      if (item.open) continue;
+      if (!blockIndexFileById.has(item.id)) blockIndexFileById.set(item.id, indexFileOf(file));
+    }
+  }
+  const doneIdsByFile = new Map<string, Set<string>>();
+  for (const { file, doneIndex } of archiveFiles) {
+    doneIdsByFile.set(file, new Set(doneIndex.map((d) => d.id)));
+  }
+  doneIdsByFile.set(backlogPath, new Set(backlog.value.doneIndex.map((d) => d.id)));
+
+  const indexSources: ReadonlyArray<{ file: string; ids: Iterable<string> }> = [
+    { file: backlogPath, ids: backlog.value.doneIndex.map((d) => d.id) },
+    ...archiveFiles
+      .filter((f) => f.file !== canonicalArchivePath)
+      .map((f) => ({ file: f.file, ids: f.doneIndex.map((d) => d.id) })),
+  ];
+  for (const { file, ids } of indexSources) {
+    for (const id of ids) {
+      const pairedIndex = blockIndexFileById.get(id);
+      if (pairedIndex === undefined) {
+        findings.push({
+          code: "INDEX_WITHOUT_ARCHIVE",
+          file,
+          message: `Done Index entry "${id}" has no archive block in any archive file.`,
+        });
+      } else if (pairedIndex !== file) {
+        findings.push({
+          code: "INDEX_LOCATION",
+          file,
+          message: `Done Index entry "${id}" lives in ${shortName(file)}, but its block lives in ${shortName(pairedIndex === backlogPath ? canonicalArchivePath : pairedIndex)} — move the line to the file of its block (strict locality, M24/32.3).`,
+        });
+      }
     }
   }
 
-  const doneIds = new Set(backlog.value.doneIndex.map((done) => done.id));
-  // H11/32.1: attribute the finding to the file the block actually lives in
-  // (canonical or shard) — provenance comes with the per-file parses.
-  for (const { file, result } of docs.backlogArchiveFiles()) {
+  for (const { file, result } of archiveFiles) {
+    const localIds = doneIdsByFile.get(indexFileOf(file))!;
+    const pairedIndexName =
+      file === canonicalArchivePath ? "the Done Index of BACKLOG.md" : `its own shard index section (${shortName(file)})`;
     for (const item of result.value) {
       if (item.open) continue;
-      if (!doneIds.has(item.id)) {
+      if (!localIds.has(item.id)) {
         findings.push({
           code: "ARCHIVE_WITHOUT_INDEX",
           file,
           line: item.span.start,
-          message: `Archive block "${item.id}" is missing from the Done Index of BACKLOG.md.`,
+          message: `Archive block "${item.id}" is missing from ${pairedIndexName}.`,
         });
       }
     }
@@ -247,7 +288,7 @@ export function docsValidate(root: string): {
     const knownIds = new Set<string>([
       ...backlog.value.items.map((i) => i.id),
       ...backlogArchive.value.map((i) => i.id),
-      ...backlog.value.doneIndex.map((d) => d.id),
+      ...docs.doneIndexAll().map((d) => d.id), // M24/32.3: union (BACKLOG + shards)
     ]);
     for (const item of backlog.value.items) {
       for (const dep of item.dependsOn) {

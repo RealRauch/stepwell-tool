@@ -86,7 +86,8 @@ describe("tool commit automation (H5/26.3)", () => {
       const archive = readFileSync(join(dir, "docs", "archive", "BACKLOG_ARCHIVE.p2.md"), "utf8");
       expect(archive).toContain("### [x] H1 —");
       const backlog = readFileSync(join(dir, "BACKLOG.md"), "utf8");
-      expect(backlog).toContain("- H1 —");
+      expect(backlog).not.toContain("- H1 —");
+      expect(archive).toContain("- H1 —"); // M24/32.3: coupled shard section
       // staged state untouched
       expect(git(dir, ["diff", "--cached", "--name-only"])).toContain("staged.txt");
     } finally {

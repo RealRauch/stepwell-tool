@@ -1,8 +1,14 @@
 import { readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, relative } from "node:path";
 import { lineDiff } from "./diff.ts";
 import { canonical, detectLocale, synonymPattern } from "./profile.ts";
-import { applyArchivePlan, insertRunningPhaseSkeleton, planArchiveItem, splitLines } from "./mutations.ts";
+import {
+  appendIndexLineToSection,
+  applyArchivePlan,
+  insertRunningPhaseSkeleton,
+  planArchiveItem,
+  splitLines,
+} from "./mutations.ts";
 import { readProgress } from "./progress.ts";
 import { loadProject } from "./project.ts";
 import { docsValidate } from "./validate.ts";
@@ -144,40 +150,25 @@ function appendIndexLine(root: string, id: string): PlanChange[] {
   const backlogText = readFileSync(join(root, "BACKLOG.md"), "utf8");
   const locale = detectLocale(backlogText, archiveText);
   const doneWord = canonical("doneWord", locale);
-  const archived = docs.backlogArchive().value.find((item) => item.id === id);
-  if (archived === undefined) {
+  // M24/32.3: the line goes where the block lives — shard section for shard
+  // blocks (strict locality), BACKLOG's Done Index for canonical blocks.
+  const blockFile = docs
+    .backlogArchiveFiles()
+    .find((f) => f.result.value.some((item) => item.id === id && !item.open));
+  if (blockFile === undefined) {
     throw new Error(`stale repair: archive block "${id}" is gone — retry docs_repair`);
   }
-  const doneIndexHeading = synonymPattern("doneIndexHeading");
+  const archived = blockFile.result.value.find((item) => item.id === id)!;
+  const line = `- ${id} — ${archived.title} — ${doneWord} (index line reconstructed by docs_repair; commit unknown)`;
+  const relPath =
+    blockFile.file === join(root, "docs", "archive", "BACKLOG_ARCHIVE.md")
+      ? "BACKLOG.md"
+      : relative(root, blockFile.file);
   return applyTransform(
     root,
-    "BACKLOG.md",
-    `docs_repair: Done Index line for "${id}" reconstructed from the archive block title`,
-    (content, eol) => {
-      const lines = splitLines(content);
-      let sectionStart = -1;
-      for (const [idx, line] of lines.entries()) {
-        if (SECTION_HEADING.test(line) && doneIndexHeading.test(line)) {
-          sectionStart = idx;
-          break;
-        }
-      }
-      if (sectionStart === -1) throw new Error("missing Done Index section in BACKLOG.md");
-      let end = sectionStart + 1;
-      while (end < lines.length && !SECTION_HEADING.test(lines[end]!) && !RULE_LINE.test(lines[end]!)) {
-        end += 1;
-      }
-      let insertAt = end;
-      while (insertAt > sectionStart + 1 && (lines[insertAt - 1]?.trim() ?? "") === "") {
-        insertAt -= 1;
-      }
-      lines.splice(
-        insertAt,
-        0,
-        `- ${id} — ${archived.title} — ${doneWord} (index line reconstructed by docs_repair; commit unknown)`,
-      );
-      return lines.join(eol);
-    },
+    relPath,
+    `docs_repair: Done Index line for "${id}" reconstructed from the archive block title (${relPath})`,
+    (content, eol) => appendIndexLineToSection(content, eol, line, `## ✅ ${canonical("doneIndexHeading", locale)}`),
   );
 }
 

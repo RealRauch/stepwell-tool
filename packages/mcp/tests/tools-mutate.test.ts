@@ -51,7 +51,11 @@ describe("tool archive_item — dry-run only (3.1)", () => {
       expect(result.isError).toBeFalsy();
       const data = payload(result);
       const backlogChange = data.changes.find((ch: { file: string }) => ch.file.endsWith("BACKLOG.md"));
-      expect(backlogChange.after).toContain("- H2 — Session-Cookie ohne SameSite — done (Commit `9f8e7d6`)");
+      expect(backlogChange.after).not.toContain("- H2 —");
+      const archiveChange = data.changes.find((ch: { file: string }) =>
+        ch.file.endsWith("BACKLOG_ARCHIVE.p2.md"),
+      );
+      expect(archiveChange.after).toContain("- H2 — Session-Cookie ohne SameSite — done (Commit `9f8e7d6`)"); // M24/32.3: shard section
     } finally {
       await c.close();
     }
@@ -76,7 +80,9 @@ describe("tool archive_item — dry-run only (3.1)", () => {
     }
     const backlog = readFileSync(join(dir, "BACKLOG.md"), "utf8");
     expect(backlog).not.toContain("### [ ] L3");
-    expect(backlog).toContain("- L3 — Docs-Build-Warnungen aufräumen — erledigt (Commit `c0ffee0`)");
+    expect(backlog).not.toContain("- L3 —");
+    const shard = readFileSync(join(dir, "docs", "archive", "BACKLOG_ARCHIVE.p2.md"), "utf8");
+    expect(shard).toContain("- L3 — Docs-Build-Warnungen aufräumen — erledigt (Commit `c0ffee0`)"); // M24/32.3
   });
 });
 
@@ -189,10 +195,11 @@ describe("tools backlog_add/update/remove (T1, 6.9)", () => {
       await c.close();
     }
     const backlog = readFileSync(join(dir, "BACKLOG.md"), "utf8");
-    expect(backlog).toContain("- T8 — Fehlverhalten bei leerer DB abdecken — entfernt (durch H3 abgedeckt)");
+    expect(backlog).not.toContain("- T8 —"); // M24/32.3: tail lives in the shard section
     const archive = readFileSync(join(dir, "docs", "archive", "BACKLOG_ARCHIVE.p2.md"), "utf8");
     expect(archive).toContain("### [ ] T8");
     expect(archive).toContain("- **Entfernt:** durch H3 abgedeckt");
+    expect(archive).toContain("- T8 — Fehlverhalten bei leerer DB abdecken — entfernt (durch H3 abgedeckt)");
   });
 });
 

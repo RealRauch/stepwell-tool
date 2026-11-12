@@ -143,7 +143,9 @@ describe("runCli — archive (3.2)", () => {
     expect(io.stdout).toContain("OK");
     const backlog = readFileSync(join(dir, "BACKLOG.md"), "utf8");
     expect(backlog).not.toContain("### [ ] L3");
-    expect(backlog).toContain("- L3 — Docs-Build-Warnungen aufräumen — erledigt (Commit `c0ffee0`)");
+    expect(backlog).not.toContain("- L3 —");
+    const shard = readFileSync(join(dir, "docs", "archive", "BACKLOG_ARCHIVE.p2.md"), "utf8");
+    expect(shard).toContain("- L3 — Docs-Build-Warnungen aufräumen — erledigt (Commit `c0ffee0`)"); // M24/32.3
   });
 
   it("fails with exit 1 for unknown ids", async () => {
@@ -212,7 +214,9 @@ describe("runCli — archive locale (4.2)", () => {
     );
     expect(code).toBe(0);
     const backlog = readFileSync(join(dir, "BACKLOG.md"), "utf8");
-    expect(backlog).toContain("- H2 — Session-Cookie ohne SameSite — done (Commit `9f8e7d6`)");
+    expect(backlog).not.toContain("- H2 —");
+    const shard = readFileSync(join(dir, "docs", "archive", "BACKLOG_ARCHIVE.p2.md"), "utf8");
+    expect(shard).toContain("- H2 — Session-Cookie ohne SameSite — done (Commit `9f8e7d6`)"); // M24/32.3
   });
 
   it("rejects invalid locales with usage exit 2", async () => {

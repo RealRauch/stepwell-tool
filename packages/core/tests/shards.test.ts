@@ -92,8 +92,8 @@ describe("archive sharding (H11/32.1)", () => {
 
   it("docs_validate attributes ARCHIVE_WITHOUT_INDEX to the shard file", () => {
     const root = tempShardsProject();
-    // drop the Done Index line for M7 (lives in BACKLOG_ARCHIVE.p2.md)
-    const backlogPath = join(root, "BACKLOG.md");
+    // drop the coupled index line for M7 from its shard section (M24/32.3)
+    const backlogPath = join(root, "docs", "archive", "BACKLOG_ARCHIVE.p2.md");
     let text = readFileSync(backlogPath, "utf8");
     text = text.replace(
       "- M7 — Duplizierte Geo-Logik auf Shared-Helper umgestellt — erledigt in `c3d4e5f` (Details: Archiv)\n",

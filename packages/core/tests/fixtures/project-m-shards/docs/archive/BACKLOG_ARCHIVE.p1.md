@@ -13,3 +13,9 @@
 - **Erledigt:** Commit `b2c3d4e` (08/2026).
 
 ---
+
+## ✅ Erledigt-Index
+
+> Einzeiler je abgeschlossenem Item (Details oben).
+
+- S2 — Env-Config failt hart bei fehlenden Secrets — erledigt in `b2c3d4e` (Details: Archiv)

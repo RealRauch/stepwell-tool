@@ -84,7 +84,7 @@ describe("planArchiveItem — dry-run planning (3.1)", () => {
 
     const archiveChange = plan.changes.find((c) => c.file.endsWith("BACKLOG_ARCHIVE.p2.md"))!;
     expect(archiveChange.after).toContain("\n---\n\n### [x] H1 — Upload-Endpunkt ohne Größenlimit — 🟠");
-    expect(archiveChange.after.trimEnd().endsWith("Oversize-Upload liefert 413; reguläre Uploads bis Limit funktionieren; Suite grün.")).toBe(true);
+    expect(archiveChange.after.trimEnd().endsWith("- H1 — Upload-Endpunkt ohne Größenlimit — erledigt")).toBe(true); // M24/32.3: shard ends with its index line
 
     expect(readFileSync(backlogPath, "utf8")).toBe(backlogBefore);
     expect(readFileSync(archivePath, "utf8")).toBe(archiveBefore);
@@ -105,18 +105,17 @@ describe("planArchiveItem — dry-run planning (3.1)", () => {
     const archiveChange = plan.changes.find((c) => c.file.endsWith("BACKLOG_ARCHIVE.p2.md"))!;
     expect(archiveChange.after).toContain("- **Erledigt:** Commit `a1b2c3d`, 120/120 Tests grün");
 
-    const backlogChange = plan.changes.find((c) => c.file.endsWith("BACKLOG.md"))!;
-    expect(backlogChange.after).toContain(
+    expect(archiveChange.after).toContain(
       "- H2 — Session-Cookie ohne SameSite — erledigt (Commit `a1b2c3d`, 120/120 Tests grün)",
-    );
-    const after = backlogChange.after;
-    const indexHead = after.indexOf("## ✅ Erledigt-Index");
-    const entryAt = after.indexOf("- H2 — Session-Cookie ohne SameSite — erledigt");
-    const trailingRule = after.lastIndexOf("---");
+    ); // M24/32.3: the line lives in the shard's own index section
+    const backlogChange = plan.changes.find((c) => c.file.endsWith("BACKLOG.md"))!;
+    expect(backlogChange.after).not.toContain("- H2 — Session-Cookie");
+    const shardAfter = archiveChange.after;
+    const indexHead = shardAfter.indexOf("## ✅ Erledigt-Index");
+    const entryAt = shardAfter.indexOf("- H2 — Session-Cookie ohne SameSite — erledigt");
     expect(indexHead).toBeGreaterThan(-1);
-    expect(entryAt).toBeGreaterThan(indexHead);
-    expect(entryAt).toBeLessThan(trailingRule);
-    expect(after).toContain("- S1 — Schema-Migration 001→002 abgesichert — erledigt in `a1b2c3d`");
+    expect(entryAt).toBeGreaterThan(indexHead); // section tail; shard files carry no trailing rule
+    expect(backlogChange.after).toContain("- S1 — Schema-Migration 001→002 abgesichert — erledigt in `a1b2c3d`");
   });
 
   it("rejects unknown and already-archived ids", () => {
@@ -132,7 +131,7 @@ describe("planArchiveItem — dry-run planning (3.1)", () => {
     expect(archiveChange.after).toContain("### [x] H9 — Abgehakt, aber noch nicht archiviert (Validate-Fall) — 🟠");
     const backlogChange = plan.changes.find((c) => c.file.endsWith("BACKLOG.md"))!;
     expect(backlogChange.after).not.toContain("### [x] H9");
-    expect(backlogChange.after).toContain("- H9 — Abgehakt, aber noch nicht archiviert (Validate-Fall) — erledigt");
+    expect(archiveChange.after).toContain("- H9 — Abgehakt, aber noch nicht archiviert (Validate-Fall) — erledigt"); // M24/32.3
   });
 });
 
@@ -157,11 +156,13 @@ describe("applyArchivePlan — apply + verification (3.2)", () => {
 
     const backlog = readFileSync(join(dir, "BACKLOG.md"), "utf8");
     expect(backlog).not.toContain("### [ ] H1");
-    expect(backlog).toContain("- H1 — Upload-Endpunkt ohne Größenlimit — erledigt (Commit `deadbee`)");
+    expect(backlog).not.toContain("- H1 —");
 
     const archive = readFileSync(join(dir, "docs", "archive", "BACKLOG_ARCHIVE.p2.md"), "utf8");
     expect(archive).toContain("### [x] H1");
     expect(archive).toContain("- **Erledigt:** Commit `deadbee`");
+    // M24/32.3: the done line lives in the shard's own index section
+    expect(archive).toContain("- H1 — Upload-Endpunkt ohne Größenlimit — erledigt (Commit `deadbee`)");
   });
 
   it("clears the D2 finding for a checked-off item after apply", () => {
@@ -357,20 +358,22 @@ describe("locale generation (4.2)", () => {
     const plan = planArchiveItem(dir, "E1", { note: "Commit `f0e1d2c`" });
     expect(plan.note).toBe("Commit `f0e1d2c`");
 
-    const backlogChange = plan.changes.find((c) => c.file.endsWith("BACKLOG.md"))!;
-    expect(backlogChange.after).toContain("- E1 — Upload endpoint without size limit — done (Commit `f0e1d2c`)");
     const archiveChange = plan.changes.find((c) => c.file.endsWith("BACKLOG_ARCHIVE.p2.md"))!;
     expect(archiveChange.after).toContain("- **Done:** Commit `f0e1d2c`");
+    expect(archiveChange.after).toContain("- E1 — Upload endpoint without size limit — done (Commit `f0e1d2c`)"); // M24/32.3: shard section
+    const backlogChange = plan.changes.find((c) => c.file.endsWith("BACKLOG.md"))!;
+    expect(backlogChange.after).not.toContain("- E1 —");
   });
 
   it("honors an explicit locale override on a German project", () => {
     const dir = tempCopy("project-a");
     const plan = planArchiveItem(dir, "H1", { locale: "en", note: "Commit `aabbcc1`" });
 
-    const backlogChange = plan.changes.find((c) => c.file.endsWith("BACKLOG.md"))!;
-    expect(backlogChange.after).toContain("- H1 — Upload-Endpunkt ohne Größenlimit — done (Commit `aabbcc1`)");
     const archiveChange = plan.changes.find((c) => c.file.endsWith("BACKLOG_ARCHIVE.p2.md"))!;
     expect(archiveChange.after).toContain("- **Done:** Commit `aabbcc1`");
+    expect(archiveChange.after).toContain("- H1 — Upload-Endpunkt ohne Größenlimit — done (Commit `aabbcc1`)"); // M24/32.3: shard section
+    const backlogChange = plan.changes.find((c) => c.file.endsWith("BACKLOG.md"))!;
+    expect(backlogChange.after).not.toContain("- H1 —");
   });
 
   it("generates English skeletons and verification lines for progress_update", () => {
@@ -710,7 +713,7 @@ describe("backlog CRUD (T1, 6.9)", () => {
 
     const backlog = readFileSync(join(dir, "BACKLOG.md"), "utf8");
     expect(backlog).not.toContain("### [ ] R4");
-    expect(backlog).toContain("- R4 — Feldtest auf Zielgeräten — entfernt (Thema veraltet)");
+    expect(backlog).not.toContain("- R4 —");
     expect(backlog).toContain("- S1 — Schema-Migration 001→002 abgesichert — erledigt in `a1b2c3d`");
     expect(readFileSync(join(dir, "BACKLOG.md"), "utf8")).not.toBe(before);
 
@@ -719,6 +722,7 @@ describe("backlog CRUD (T1, 6.9)", () => {
       "### [ ] R4 — Feldtest auf Zielgeräten — 🟠 *(vor Pilotbetrieb zwingend)*",
     );
     expect(archive).toContain("- **Entfernt:** Thema veraltet");
+    expect(archive).toContain("- R4 — Feldtest auf Zielgeräten — entfernt (Thema veraltet)"); // M24/32.3: tail in shard section
 
     const validation = docsValidate(dir);
     expect(validation.findings.filter((f) => f.message.includes("R4"))).toEqual([]);

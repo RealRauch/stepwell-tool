@@ -73,14 +73,14 @@ fixtures/
 │   ├── BACKLOG.md          #   blockedBy, X3 ready), cycle X4↔X5 (DEP_CYCLE finding),
 │   ├── PROGRESS.md         #   unknown ref X6→Z9 (DEP_UNKNOWN warning, no ready-flip).
 │   └── docs/archive/
-├── project-m-shards/       # H11/32.1: project-a with SPLIT archives — canonical
-│   ├── BACKLOG.md          #   BACKLOG_ARCHIVE.md (S1) + shards .p1 (S2) / .p2 (M7),
-│   ├── PROGRESS.md         #   PROGRESS_ARCHIVE.md (Phase 0) + shard .p1 (Phase 1).
-│   └── docs/archive/       #   Reader concatenates shards (p<n> NUMBER-ascending,
-│       ├── BACKLOG_ARCHIVE.md        #   p2 < p10) then canonical; Done Index unchanged
-│       ├── BACKLOG_ARCHIVE.p1.md     #   → docs_validate clean; ARCHIVE_WITHOUT_INDEX
-│       ├── BACKLOG_ARCHIVE.p2.md     #   attributes to the shard file the block lives in.
-│       ├── PROGRESS_ARCHIVE.md
+├── project-m-shards/       # H11/32.1 + M24/32.3: project-a with SPLIT archives —
+│   ├── BACKLOG.md          #   canonical BACKLOG_ARCHIVE.md (S1; its Done-Index
+│   ├── PROGRESS.md         #   lines stay in BACKLOG.md) + shards .p1 (S2) / .p2 (M7)
+│   └── docs/archive/       #   with their OWN index sections (coupled Done Index),
+│       ├── BACKLOG_ARCHIVE.md        #   PROGRESS_ARCHIVE.md (Phase 0) + .p1 (Phase 1).
+│       ├── BACKLOG_ARCHIVE.p1.md     #   Reader concatenates shards (p<n> NUMBER-
+│       ├── BACKLOG_ARCHIVE.p2.md     #   ascending, p2 < p10) then canonical; strict
+│       ├── PROGRESS_ARCHIVE.md       #   locality: wrong-file lines → INDEX_LOCATION.
 │       └── PROGRESS_ARCHIVE.p1.md
 
 project-empty/             # empty directory (.gitkeep only; M5/9.3) — root WITHOUT a

@@ -13,3 +13,9 @@
 - **Erledigt:** Commit `c3d4e5f` (09/2026).
 
 ---
+
+## ✅ Erledigt-Index
+
+> Einzeiler je abgeschlossenem Item (Details oben).
+
+- M7 — Duplizierte Geo-Logik auf Shared-Helper umgestellt — erledigt in `c3d4e5f` (Details: Archiv)

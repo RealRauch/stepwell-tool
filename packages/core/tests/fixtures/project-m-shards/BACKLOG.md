@@ -98,7 +98,5 @@
 > Einzeiler je abgeschlossenem Item (Details im Archiv).
 
 - S1 — Schema-Migration 001→002 abgesichert — erledigt in `a1b2c3d` (Details: Archiv)
-- S2 — Env-Config failt hart bei fehlenden Secrets — erledigt in `b2c3d4e` (Details: Archiv)
-- M7 — Duplizierte Geo-Logik auf Shared-Helper umgestellt — erledigt in `c3d4e5f` (Details: Archiv)
 
 ---

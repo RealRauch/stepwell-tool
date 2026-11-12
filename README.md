@@ -340,8 +340,9 @@ is silently tolerated (stripped deterministically, T5/9.13) — no warning.
 | `NOT_ARCHIVED` (D2) | validate | `[x]` checkbox still hangs in the open BACKLOG → `archive_item` |
 | `ID_DUPLICATE` (D5) | validate | item ID appears twice |
 | `ID_CONVENTION` (D14) | validate | ID violates `^[A-Z][0-9]+$` (series letter + number) — warning, item stays listed |
-| `INDEX_WITHOUT_ARCHIVE` (D8) | validate | Done Index entry without an archive block |
-| `ARCHIVE_WITHOUT_INDEX` (D13) | validate | completed archive block (`[x]`) without a Done Index entry; removed blocks (checkbox `[ ]`, via `backlog_remove`) are deliberately indexless |
+| `INDEX_WITHOUT_ARCHIVE` (D8) | validate | Done Index entry without an archive block (checked across BACKLOG **and** shard index sections, M24/32.3) |
+| `ARCHIVE_WITHOUT_INDEX` (D13) | validate | completed archive block (`[x]`) without a Done Index entry in its **paired** index — BACKLOG's Done Index for the canonical archive, the shard's own section for shard blocks (M24/32.3); removed blocks (checkbox `[ ]`, via `backlog_remove`) are deliberately indexless |
+| `INDEX_LOCATION` (M24/32.3) | validate | index line lives in a different file than its block (strict locality — the line belongs where the block lives); `docs_repair` reconstructs it into the right file |
 | `WIP_WITHOUT_PLAN` (D11) | validate | 🔄 row without a matching detail block |
 | `PHASE_PLANNED` (M18/27.9) | validate **warning** | purely planned phase — block exists, every table step still ⬜ (the `progress_plan_phase` state); reported, does **not** flip `ok` (forward planning is legitimate) |
 | `PLAN_WITHOUT_WIP` (D12) | validate | detail block without a 🔄 step in a **mixed** state (✅ + ⬜, none running — orphaned block) or without any table rows in its scope |
