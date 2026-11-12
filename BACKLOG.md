@@ -14,42 +14,16 @@
 
 ## 🟠 HIGH
 
-### [ ] H11 — Shard-fähiges Archive-Lesen (core): docs/archive/*_ARCHIVE*.md glob + konkatenierter Parse — Phase → Datei über Phasennummer-Naming — 🟠
-- **Location:** `packages/core/src/project-files.ts` (`REQUIRED_FILES`), `packages/core/src/project.ts` (`loadProject`/ProjectDocs-Zugriffe), `packages/core/src/validate.ts` (`INDEX_WITHOUT_ARCHIVE`/`ARCHIVE_WITHOUT_INDEX`), `packages/core/src/context.ts` (`findBlock`/`resolveItem`), `packages/core/src/repair.ts` (`appendIndexLine`). Fund: Design-Dialog 11/2026 (Nutzer) — Archiv-Anteil 73 % gemessen, Wachstum unbeschränkt; Inventur (11/2026): die Ein-Datei-Annahme steckt in ~20 Aufrufstellen, Shard-Dateien wären heute stillschweigend unsichtbar (kein Crash, stille Verlust-Wirkung).
-- **Problem:** Alles Lesen/Konsistenz-Prüfen der Archive geht von genau zwei Archiv-Dateien aus — ein Shard-Modell ist ohne shard-fähiges Lesen nicht einmal unsichtbar möglich, es wäre schlicht falsch (Funde fehlen, Blöcke unauffindbar, Hashes blind).
-- **Fix:** Reader zuerst — alles andere (31.x-Rotation, Index-Kopplung, Satellit) baut darauf: (1) `project-files`/`project`: Glob `docs/archive/{BACKLOG,PROGRESS}_ARCHIVE*.md` + konkatenierter Parse in fester Ordnung (p<n> aufsteigend, kanonische Datei zuletzt). (2) **Naming-Entscheid (Nutzer): Phasennummer statt Sequenznummer** (`PROGRESS_ARCHIVE.p53.md`) — die permanente Fortschrittstabelle ist damit der Discovery-Index (Phase → Datei steht im Namen); kein Manifest (zweite Wahrheit, H6-Falle); Chronologie steckt in den Abschluss-Zeitstempeln **in** den Blöcken, die Datei-Menge ist ordnungsfrei (M10 nicht-monotone Abschluss-Reihenfolge entproblematisiert). (3) Inventory-prüfen: hartkodierte Archiv-Pfade in validate/context/repair auf den konkatenierten Reader umstellen.
-- **Acceptance:** RED→GRÜN mit neuem Fixture (kanonische Datei + zwei Shard-Dateien, Blöcke über Shard-Dateien verteilt): Funde/Lookups ergebnisgleich zum konkatenierten Erwartungsstand; Projekte ohne Shard-Dateien byte-gleich (Backward-compat per bestehender Suite); `docs_validate` clean.
+> No open items.
 
-### [ ] H12 — Rotation als Tool-Op im Phasen-Abschluss: Direktschreib-Modell — Item-Appends an BACKLOG_ARCHIVE.p<n>.md, Phase-Block bei completedPhase an PROGRESS_ARCHIVE.p<n>.md — 🟠
-- **Location:** `packages/core/src/mutations.ts` (~8 Append-/Verify-Stellen: `appendToArchive`, `appendIndexLine`, `completedPhase`-Archiv-Append, step-reuse-Guard), `packages/core/src/project-files.ts`. Fund: Design-Dialog 11/2026 (Nutzer-Entscheid „Shard je Phase“, Direktschreib-Variante).
-- **Problem:** Alle Appends landen in der einen kanonischen Archiv-Datei — das Wachstums- und Cross-Machine-Merge-Traffic-Problem; ein Agent-Ritual „manuelles Rotieren“ wäre die Hand-Edit-Falle (LESSONS 17).
-- **Fix:** Direktschreib-Variante, Shard je Phase: Item-Blöcke, die **während** Phase n archiviert werden, hängen direkt an `BACKLOG_ARCHIVE.p<n>.md`; bei `completedPhase` hängt der Phase-Block an `PROGRESS_ARCHIVE.p<n>.md`; **Kopfzeile je Shard-Datei** beim Anlegen (Phase, Abschluss-Stempel, Enthält-Zeile — nie editiert, greppbar). Die kanonische `*_ARCHIVE.md` bleibt Heim für Legacy-Bestand (frozen, siehe L-Serie Legacy-Rename) und Appends **ohne laufende Phase** (0.1-Baseline, Packaging-Gap). Workstream-Bonus (H5): je Worktree läuft genau eine Phase → Workstreams schreiben auf **unterschiedliche Shard-Dateien** → die H7-Archiv-Merge-Konflikte verschwinden für Item-Appends weitgehend (H7 bleibt für die kanonische Datei und echte Inhaltskonflikte). Rotation ist vollständig Tool-Op, kein Agent-Ritual, keine Hand-Edits.
-- **Design-Notizen (Entscheid bei Implementierung):** erstes Append, bevor eine Phase läuft (0.1-Baseline/Kanonik-Regel); Naming bei zwei parallel laufenden Phasen (zwei Worktrees → zwei p<n>-Shard-Dateien desselben Typs — kollisionsfrei, Schema dokumentieren).
-- **Acceptance:** RED→GRÜN: Archiv während laufender Phase → Block in p<n>; Phasen-Abschluss → Phase-Block in p<n> + Kopfzeile; Archiv ohne laufende Phase → kanonische Datei; byte-gleiches Verhalten überall sonst; Suite grün.
 
 
 ---
 
 ## 🟡 MEDIUM
 
-### [ ] M23 — PLAN_WITHOUT_WIP feuert transient bei JEDEM Step-Übergang (✅ geflippt, nächster ⬜ noch nicht 🔄) — sequentieller Zwischenzustand ist legitimer Fortschritt — 🟡
-- **Location:** `packages/core/src/validate.ts` (M18-Semantik: gemischt ohne 🔄 = PLAN_WITHOUT_WIP-Finding). Fund: eigene Session 11/2026, Phase 30 — bei JEDEM Step-Übergang (Step N ✅ geflippt, Step N+1 noch ⬜) feuert das Finding transient; ein `docs_validate` in diesem Fenster bricht `&&`-Ketten (exit 1), wie beim 30.3-Flip geschehen.
-- **Problem:** M18 unterscheidet rein geplant (Warning) und verwaist (Finding) — aber den dritten legitimen Zustand „Phase läuft, zwischen zwei Steps" (✅…✅ gefolgt von ⬜…⬜, kein 🔄) behandelt sie als Verwaist-Finding. Bei aktiver Arbeit ist das kein Inkonsistenz-Fund, sondern ein Timing-Artefakt der Step-Flips; CI-Validates zwischen Flips würden fälschlich rot.
-- **Fix:** Sequentiellen Fortschritt erkennen: alle ✅ liegen vor allen ⬜ in der Tabellen-Ordnung der Phase und kein ⛔/🔄 dazwischen → neues Warning `PHASE_MIDWAY` (kippt kein ok); echtes Verwaist-Sein (✅ NACH ⬜ in Tabellen-Ordnung, oder ⛔-Insel) bleibt PLAN_WITHOUT_WIP-Finding. Code bleibt im Kontrakt (Decision 10), semantisch MINOR + Release-Note; README-Warning-Tabelle nachziehen.
-- **Acceptance:** RED→GRÜN-Fixtures: sequentieller Zwischenzustand → nur Warning, ok:true; verwaister Block (✅ nach ⬜) → Finding, ok:false; M18-Fälle unverändert; Suite grün.
+> No open items.
 
-### [ ] M24 — Done-Index-Kopplung: Index-Zeile lebt dort, wo ihr Block lebt (Shard-Index-Sektionen) — 🟡
-- **Location:** `packages/core/src/mutations.ts` (Index-Zeilen-Appends + Schließen-Pfad), `packages/core/src/backlog.ts` (Done-Index-Parse über BACKLOG + Shard-Dateien), `packages/core/src/validate.ts` (INDEX-/ARCHIVE-Strenge). Fund: Design-Dialog 11/2026 (Nutzer-Entscheid „gekoppelt“).
-- **Problem:** Der Done Index in BACKLOG.md wächst linear je erledigtem Item — im Shard-Modell bliebe er die einzige immer weiter wachsende offene Datei.
-- **Fix:** Gekoppelte Variante (Nutzer-Entscheid): **Index-Zeile lebt dort, wo ihr Block lebt** — beim Schließen einer Shard-Datei wandern die Einzeiler ihrer Blöcke (Inhalt byte-identisch) in eine Done-Index-Sektion der Shard-Datei; der BACKLOG Done Index hält nur Zeilen für Blöcke der kanonischen Datei. Konsequenz explizit dokumentiert (README/SKILL bei Umsetzung): **keine einzelne Indexdatei für „alles Erledigte“ mehr** — der Lese-Pfad ist das Tool (konkateniert BACKLOG + Shard-Index-Sektionen) bzw. verteiltes Grep; dafür friert BACKLOG praktisch ein.
-- **Offener Punkt (L13-Muster, Entscheidung bei Implementierung):** „Index-Zeile nicht dort, wo ihr Block lebt“ = FINDING (strenge Lokalität) oder nur globale Existenz-Prüfung?
-- **Acceptance:** RED→GRÜN: Schließen einer Shard-Datei verschiebt die zugehörigen Index-Zeilen byte-identisch in die Shard-Index-Sektion; INDEX-/ARCHIVE-Checks über BACKLOG + Shard-Dateien ergebnisgleich; Suite grün.
-
-### [ ] M25 — Satellit/Hashes/Resources shard-fähig: DOC_FILES-Staging, sync docSet, hashes-Resource, archivePath() — 🟡
-- **Location:** `packages/core/src/hashes.ts` (`DOC_FILES` — eine von **drei** separaten Listen: project-files.ts, hashes.ts, mcp/tests/gitattributes.test.ts), `packages/git/src/commit.ts` (DOC_FILES-Staging), `packages/git/src/sync.ts` (`docSet`, H7-Auto-Resolution), `packages/mcp/src/resources.ts` (`archivePath()`, hashes-Resource), `packages/mcp/tests/resources.test.ts` (L114-119 Key-Set), `packages/core/tests/fixtures/README.md` („File Inventory strict“). Fund: Inventur 11/2026 (Explore-Agent).
-- **Problem:** Die Vier-Datei-Listen und die Resource-Surface kennen genau vier Dateien — Shard-Dateien würden vom `--commit`-Staging, der H7-Auto-Resolution und dem Hash-Fast-Pfad **stillschweigend ausgeschlossen** (der Fast-Pfad sähe Shard-Änderungen nie → veraltete Hashes → Konsumenten lesen stale Stände).
-- **Fix:** (1) Die Vier-Datei-Listen werden zu Doc-File-Sets: Kern-Konstante (project-files) als Quelle, `hashes.ts`/`commit.ts` leiten ab; der gitattributes-Test behält seine feste Methoden-Kopien-Liste und ergänzt die kanonischen Archive. (2) sync docSet: Shard-Dateien zählen als Doku-Dateien (H7-Auto-Resolution pro Datei unverändert). (3) hashes-Resource: Key-Set = kanonische vier + vorhandene Shard-Dateien (dynamisch); Resource-/Contract-Tests additiv. (4) `archivePath()`: kind bleibt `backlog|progress` (Kanonik); Shard-Lesezugriff über die Bestands-Reader statt neuer URI-Kinds (M4: kein Surface-Zuwachs).
-- **Acceptance:** RED→GRÜN: `--commit` staged kanonische vier + Shard-Dateien; H7-Auto-Resolution löst einen Shard-Append-Konflikt mechanisch; Hash-Fast-Pfad sieht Shard-Änderungen; Suite grün.
 
 
 ---
@@ -61,30 +35,6 @@
 - **Problem:** README und Website nennen Phasenstand und Item-Zahlen von Hand — genau die Prosa-Drift, die stepwell sonst überall abschafft (H6 als Präzedenz: lügende Struktur-Marker). Ein markerbasierter Export würde den Stand deterministisch halten, ohne den Rest der Datei anzufassen.
 - **Fix:** CLI-only, **kein** MCP-Tool (M4): `stepwell status --export <file>` schreibt den Aggregat-Block zwischen `<!-- stepwell:status:begin -->` / `<!-- stepwell:status:end -->`; fehlende oder doppelte Marker → strukturierter Fehler, nie blind anlegen. Dry-run default wie überall, `--apply` schreibt. Nur Aggregate (offene Items je Priorität, laufende Steps/Phasen, Done-Quote) — keine Prosa, keine Erfindung. Content-Gate: README/Website sind Prosa-Dateien → **Mittel** (Decision 9), Freigabe je Vorkommnis für den ersten Schreibzugriff im Zielrepo.
 - **Acceptance:** RED→GRÜN: Export ist idempotent (zweimal hintereinander = byte-gleich), Inhalt außerhalb der Marker unberührt, fehlende/doppelte Marker → Fehler ohne Schreiben; Dry-run zeigt den Diff; Suite + typecheck grün; README-CLI-Tabelle nachgezogen. **Erst nach Bedarfsbeleg** (Website/README will den Stand wirklich zeigen) — bis dahin bleibt das Item liegen.
-
-### [ ] L19 — Item-bewusste Suche über offen+Archiv+Done Index: Alternativprüfung dokumentieren statt Tool bauen (Reaktivierungs-Kriterium) — 🟢
-- **Location:** `packages/core/src/archive.ts`, `packages/core/src/backlog.ts`, bestehende Reads `backlog_list`/`backlog_show`; keine neue Datei. Vorlage: Backlog.md `search` (`--status`, `--priority`, `--modified-file`).
-- **Problem:** „Haben wir das schon entschieden/gebaut?" ist heute nur per grep über sechs Dateien beantwortbar; grep liefert Text, aber keinen Item-Status (offen/erledigt/entfernt) und keine Blockgrenzen. Backlog.md hat dafür eine Suche. Gleichzeitig gilt M4: kein Surface-Zuwachs ohne belegten Fund — Agenten greppen die Dateien nativ, ein Such-Tool wäre teilweise redundant.
-- **Fix (Entscheidungs-Item, Muster L5/docs_review):** Alternativprüfung dokumentieren, Ergebnis entweder (a) **kein Tool** — Begründung: grep + `backlog_show` decken den Fall, jeder Suchindex wäre eine zweite Wahrheit; Reaktivierungs-Kriterium: Feldproben zeigen wiederholtes Fehlgreifen (z. B. archivierte Treffer übersehen, falsche ID-Rekonstruktion), dann (b) minimaler Kandidat: Parameter `query` an `backlog_list` (Titel/ID/Text, optional `includeArchived: true`), Treffer als `{ id, status, file, line, snippet }` — kein Fuzzy-Ranking, keine Fremddateien, kein neues Tool.
-- **Acceptance:** dokumentierter Entscheid in README/AGENTS inkl. Reaktivierungs-Kriterium (wie L5); falls (b) gebaut wird: RED→GRÜN für offen/archiviert/entfernt und `status` im Treffer; keine neue Abhängigkeit; Suite + typecheck grün.
-
-### [ ] L22 — Doppelte Parses im Workstream-Report: foreignDocState parst BACKLOG je Branch zweimal, idCollisions berechnet den base-State doppelt — 🟢
-- **Location:** `packages/git/src/report.ts` (`foreignDocState`: `parseBacklog` wird je Branch zweimal aufgerufen — items- und doneIndex-Loop parsen denselben String; `idCollisions`/`freshSince`: der base-State wird je Vergleichsseite erneut berechnet). Fund: eigene Session 11/2026, Selbst-Review nach 30.5.
-- **Problem:** Doppelte Parses pro Worktree — funktional korrekt, aber verschwendete Arbeit in einer Read-Fläche, die Konsumenten je Status-Call mehrfach treffen (der Report wächst mit H10/M20).
-- **Fix:** `parseBacklog` einmal je Branch (items + doneIndex aus einem Parse); base-State in `idCollisions` einmal berechnen und an beide Seiten reichen. Reine Refaktorung, byte-gleiches Verhalten, bestehende Tests als Absicherung.
-- **Acceptance:** Suite grün ohne Verhaltensänderung; Refaktor-Note im Item-Close.
-
-### [ ] L24 — docs_status Dateigrößen-Report: Zeilen/Bytes je Doku-Datei im Aggregate — 🟢
-- **Location:** `packages/core/src/status.ts` (`docsStatus`), `packages/mcp/src/cli.ts` (status-Text), Status-Tests. Fund: Design-Dialog 11/2026 (Visibility vor Reaktivierung).
-- **Problem:** Wachstum ist unsichtbar, bis es wehtut — das Reaktivierungs-Kriterium der Shard-Items verlangt empirische Zahlen („Feldproben zeigen die Schmerzgrenze“), die heute niemand misst.
-- **Fix:** `docsStatus` liefert additiv `docFiles: [{file, lines, bytes}]` für die vier Doku-Dateien (+ Shard-Dateien, sobald die Shard-Items umgesetzt sind); CLI-Status rendert eine Kompakt-Zeile; JSON additiv (Schema bleibt 2).
-- **Acceptance:** RED→GRÜN: Aggregat-Feld deterministisch über project-a; CLI-Text-Zeile; JSON-Kontrakt additiv; Suite grün.
-
-### [ ] L25 — Methoden-/Doku-Sync bei Sharding-Umsetzung: PLAYBOOK §3 + QUICKSTART + README + AGENTS, Cross-Repo SHA256 — 🟢
-- **Location:** `docs/PLAYBOOK.md` §3 („Dateinamen sind Teil des Musters“, append-only), `docs/QUICKSTART.md` („The four files“), `README.md` (File requirement, Archive-Muster), `AGENTS.md` („vier Doku-Dateien“). Fund: Inventur 11/2026.
-- **Problem:** Das Shard-Modell ändert die Methoden-Oberfläche (Datei-Menge) — PLAYBOOK §3 ist Cross-Repo-Kontrakt (wortidentische Kopien, SHA256-Evidenz); ohne synchronen Sync driften die Kopien (M15-Muster).
-- **Fix:** Begleitet die Umsetzung (nicht vorher): PLAYBOOK §3-Ergänzung (Shard-Modell: p<n>-Naming, Direktschreib, gekoppelter Index, Legacy-Regel) wortidentisch in alle Kopien + SHA256-Evidenz; QUICKSTART/README/AGENTS-Zeilen nachziehen. Reihenfolge im späteren Paket: letzter Umsetzungs-Step vor dem Abschluss.
-- **Acceptance:** PLAYBOOK-Kopien textgleich (SHA256 belegt), `docs_validate` in beiden Repos clean.
 
 ### [ ] L26 — Legacy-Rename-Op (optional, verzögert): PROGRESS_ARCHIVE.md → PROGRESS_ARCHIVE.legacy.md für einen sauberen Schnitt — 🟢
 - **Location:** neuer kleiner Planner in `packages/core/src/mutations.ts` (dry-run-first, wie alle Struktur-Ops). Fund: Design-Dialog 11/2026.
@@ -200,5 +150,6 @@
 - L23 — README-CLI-Block unvollständig: repair (30.2) und sync (26.x) fehlen in der Command-Referenzliste — erledigt (fixed immediately (docs-only, §2 living document) — repair + sync lines in the CLI reference block, details delegated to the tool table / workstream section)
 - M26 — Methoden-Retro fällig (PLAYBOOK §8): 7 Phasen seit Q2/Phase 23 — Review von PLAYBOOK/LESSONS + BRAINSTORM-Bewertern — erledigt (phase 31/31.1-31.2 (protocol 6d677ab + lessons sync 2e5520f) — retro of phases 24-30 per PLAYBOOK §8: all rules stay, nothing dropped/demoted; rule changes: LESSONS section scope tags (A web/API, C frontend — user-initiated, section-level over a scope matrix) + new Lesson 32 (sync child-process stderr leak, M19 evidence); textually identical in both copies, sha256 2cdde3db48e7a20315fcb56c6adb0dab5594fd256fc305bb29748c27dc5c78eb; topology limitation documented (sync = same-machine agent ritual, accepted cost); BRAINSTORM evaluator verdicts in docs/retro-2026-11.md)
 - L27 — Website-Content-Refresh auf Post-Phase-32-Stand (Tool-Surface, Sharding, Satellit, Samples) — erledigt (Commit 1c38cce (Website-Refresh, Feldprobe via lokal gerenderter Seite: Hero/Playground/Workstreams/Quickstart verifiziert, 483 Tests + typecheck grün))
+- H11 — Shard-fähiges Archive-Lesen (core): docs/archive/*_ARCHIVE*.md glob + konkatenierter Parse — Phase → Datei über Phasennummer-Naming — erledigt (Commit `839812e` — shard-fähiges Archiv-Lesen (Glob, p<n> nach Phasennummer, kanonisch zuletzt), Provenance-Parses, ARCHIVE_WITHOUT_INDEX mit Shard-Attribution; Fixture project-m-shards)
 
 ---
