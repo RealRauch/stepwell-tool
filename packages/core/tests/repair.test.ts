@@ -133,7 +133,8 @@ describe("docsRepair — per-code isolation (H9/30.1): the fix removes exactly t
     expect(backlog).not.toContain("### [x] H1 —");
     // project-a is German: the generated done word is the locale canonical
     expect(backlog).toContain("- H1 — Upload-Endpunkt ohne Größenlimit — erledigt (repaired by docs_repair)");
-    const archive = readFileSync(join(dir, "docs", "archive", "BACKLOG_ARCHIVE.md"), "utf8");
+    // H12/32.2: Phase 2 is running in project-a → the repaired block lands on the p2 shard
+    const archive = readFileSync(join(dir, "docs", "archive", "BACKLOG_ARCHIVE.p2.md"), "utf8");
     expect(archive).toContain("### [x] H1 — Upload-Endpunkt ohne Größenlimit — 🟠");
     expect(docsValidate(dir).ok).toBe(true);
   });

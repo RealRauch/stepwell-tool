@@ -190,7 +190,7 @@ describe("tools backlog_add/update/remove (T1, 6.9)", () => {
     }
     const backlog = readFileSync(join(dir, "BACKLOG.md"), "utf8");
     expect(backlog).toContain("- T8 — Fehlverhalten bei leerer DB abdecken — entfernt (durch H3 abgedeckt)");
-    const archive = readFileSync(join(dir, "docs", "archive", "BACKLOG_ARCHIVE.md"), "utf8");
+    const archive = readFileSync(join(dir, "docs", "archive", "BACKLOG_ARCHIVE.p2.md"), "utf8");
     expect(archive).toContain("### [ ] T8");
     expect(archive).toContain("- **Entfernt:** durch H3 abgedeckt");
   });
@@ -460,12 +460,12 @@ describe("progress_update multi-step (12.4, E2/2)", () => {
       expect(data.verification.ok).toBe(true);
       expect(data.written).toHaveLength(2);
       expect(data.written.some((f: string) => f.endsWith("PROGRESS.md"))).toBe(true);
-      expect(data.written.some((f: string) => f.endsWith("PROGRESS_ARCHIVE.md"))).toBe(true);
+      expect(data.written.some((f: string) => f.endsWith("PROGRESS_ARCHIVE.p2.md"))).toBe(true);
     } finally {
       await c.close();
     }
     const progress = readFileSync(join(dir, "PROGRESS.md"), "utf8");
-    const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.md"), "utf8");
+    const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.p2.md"), "utf8");
     expect(progress).not.toContain("### Phase 2 — UI-Polish");
     expect(progress).toContain("| 2.1 | Strings-Modul | ✅ |");
     expect(archive).toContain("### Phase 2 — UI-Polish");
@@ -545,12 +545,12 @@ describe("progress_update multi-step (12.4, E2/2)", () => {
       expect(data.steps).toEqual(["2.0", "2.1", "2.2", "2.3"]);
       expect(data.written).toHaveLength(2);
       expect(data.written.some((f: string) => f.endsWith("PROGRESS.md"))).toBe(true);
-      expect(data.written.some((f: string) => f.endsWith("PROGRESS_ARCHIVE.md"))).toBe(true);
+      expect(data.written.some((f: string) => f.endsWith("PROGRESS_ARCHIVE.p2.md"))).toBe(true);
     } finally {
       await c.close();
     }
     const progress = readFileSync(join(dir, "PROGRESS.md"), "utf8");
-    const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.md"), "utf8");
+    const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.p2.md"), "utf8");
     expect(progress).not.toContain("### Phase 2 — UI-Polish");
     expect(progress).toContain("| 2.1 | Strings-Modul | ✅ |");
     expect(archive).toContain("### Phase 2 — UI-Polish");

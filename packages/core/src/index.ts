@@ -12,7 +12,9 @@ export type { ProjectDocs } from "./project.ts";
 export {
   ProjectNotInitializedError,
   REQUIRED_FILES,
+  archiveShardPaths,
   missingProjectFiles,
+  type ArchiveKind,
 } from "./project-files.ts";
 export { lineDiff } from "./diff.ts";
 export {

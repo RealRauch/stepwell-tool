@@ -82,7 +82,7 @@ describe("planArchiveItem — dry-run planning (3.1)", () => {
       backlogChange.diff.split("\n").some((l) => l.startsWith("-") && l.includes("### [ ] H1")),
     ).toBe(true);
 
-    const archiveChange = plan.changes.find((c) => c.file.endsWith("BACKLOG_ARCHIVE.md"))!;
+    const archiveChange = plan.changes.find((c) => c.file.endsWith("BACKLOG_ARCHIVE.p2.md"))!;
     expect(archiveChange.after).toContain("\n---\n\n### [x] H1 — Upload-Endpunkt ohne Größenlimit — 🟠");
     expect(archiveChange.after.trimEnd().endsWith("Oversize-Upload liefert 413; reguläre Uploads bis Limit funktionieren; Suite grün.")).toBe(true);
 
@@ -102,7 +102,7 @@ describe("planArchiveItem — dry-run planning (3.1)", () => {
     const plan = planArchiveItem(dir, "H2", { note: "Commit `a1b2c3d`, 120/120 Tests grün" });
     expect(plan.note).toBe("Commit `a1b2c3d`, 120/120 Tests grün");
 
-    const archiveChange = plan.changes.find((c) => c.file.endsWith("BACKLOG_ARCHIVE.md"))!;
+    const archiveChange = plan.changes.find((c) => c.file.endsWith("BACKLOG_ARCHIVE.p2.md"))!;
     expect(archiveChange.after).toContain("- **Erledigt:** Commit `a1b2c3d`, 120/120 Tests grün");
 
     const backlogChange = plan.changes.find((c) => c.file.endsWith("BACKLOG.md"))!;
@@ -128,7 +128,7 @@ describe("planArchiveItem — dry-run planning (3.1)", () => {
   it("keeps checked-off open-area items archivable (D2 remedy)", () => {
     const dir = tempCopy("project-b-drift");
     const plan = planArchiveItem(dir, "H9");
-    const archiveChange = plan.changes.find((c) => c.file.endsWith("BACKLOG_ARCHIVE.md"))!;
+    const archiveChange = plan.changes.find((c) => c.file.endsWith("BACKLOG_ARCHIVE.p1.md"))!;
     expect(archiveChange.after).toContain("### [x] H9 — Abgehakt, aber noch nicht archiviert (Validate-Fall) — 🟠");
     const backlogChange = plan.changes.find((c) => c.file.endsWith("BACKLOG.md"))!;
     expect(backlogChange.after).not.toContain("### [x] H9");
@@ -159,7 +159,7 @@ describe("applyArchivePlan — apply + verification (3.2)", () => {
     expect(backlog).not.toContain("### [ ] H1");
     expect(backlog).toContain("- H1 — Upload-Endpunkt ohne Größenlimit — erledigt (Commit `deadbee`)");
 
-    const archive = readFileSync(join(dir, "docs", "archive", "BACKLOG_ARCHIVE.md"), "utf8");
+    const archive = readFileSync(join(dir, "docs", "archive", "BACKLOG_ARCHIVE.p2.md"), "utf8");
     expect(archive).toContain("### [x] H1");
     expect(archive).toContain("- **Erledigt:** Commit `deadbee`");
   });
@@ -218,7 +218,7 @@ describe("planProgressUpdate — dry-run planning (3.3)", () => {
     const progressChange = plan.changes.find((c) => c.file.endsWith("PROGRESS.md"))!;
     expect(progressChange.after).toContain("| 2.1 | Strings-Modul | ✅ |");
     expect(progressChange.after).not.toContain("### Phase 2 — UI-Polish");
-    const archiveChange = plan.changes.find((c) => c.file.endsWith("PROGRESS_ARCHIVE.md"))!;
+    const archiveChange = plan.changes.find((c) => c.file.endsWith("PROGRESS_ARCHIVE.p2.md"))!;
     expect(archiveChange.after).toContain("### Phase 2 — UI-Polish");
     expect(archiveChange.after).toContain("**Verifikation:** Suite 132/132 grün");
   });
@@ -233,13 +233,14 @@ describe("planProgressUpdate — dry-run planning (3.3)", () => {
     expect(plan.completedPhase).toBe(true);
     applyProgressPlan(plan);
 
+    // H12/32.2: completions land on their own shard — Phase 2 → p2 file
+    const shard = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.p2.md"), "utf8");
+    expect(shard.indexOf("### Phase 2 — UI-Polish")).toBeGreaterThan(-1);
+    expect(shard.lastIndexOf("### Phase 2 — UI-Polish")).toBe(shard.indexOf("### Phase 2 — UI-Polish"));
+    expect(shard).toContain("**Verifikation:** nachgeholt");
+    // legacy stock in the canonical file stays untouched (append-only, frozen)
     const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.md"), "utf8");
-    const phase3 = archive.indexOf("### Phase 3 — Performance");
-    const phase2 = archive.indexOf("### Phase 2 — UI-Polish");
-    expect(phase3).toBeGreaterThan(-1);
-    expect(phase2).toBeGreaterThan(phase3);
-    expect(archive.lastIndexOf("### Phase 2 — UI-Polish")).toBe(phase2);
-    expect(archive).toContain("**Verifikation:** nachgeholt");
+    expect(archive).not.toContain("### Phase 2 — UI-Polish");
   });
 
   it("H2: accepts a phase archived earlier in the same batch — row update only, no second append", () => {
@@ -344,7 +345,7 @@ describe("title rename prefix guard (L16, 29.3)", () => {
       planProgressUpdate(dir, "Phase 2", "2.1", "✅", { dryRun: false, title: "Phase 2 — Batch done" }),
     );
     expect(result.verification.ok).toBe(true);
-    const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.md"), "utf8");
+    const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.p2.md"), "utf8");
     expect(archive).toContain("### Phase 2 — Batch done");
     expect(archive).not.toContain("Phase 2 — Phase 2");
   });
@@ -358,7 +359,7 @@ describe("locale generation (4.2)", () => {
 
     const backlogChange = plan.changes.find((c) => c.file.endsWith("BACKLOG.md"))!;
     expect(backlogChange.after).toContain("- E1 — Upload endpoint without size limit — done (Commit `f0e1d2c`)");
-    const archiveChange = plan.changes.find((c) => c.file.endsWith("BACKLOG_ARCHIVE.md"))!;
+    const archiveChange = plan.changes.find((c) => c.file.endsWith("BACKLOG_ARCHIVE.p2.md"))!;
     expect(archiveChange.after).toContain("- **Done:** Commit `f0e1d2c`");
   });
 
@@ -368,7 +369,7 @@ describe("locale generation (4.2)", () => {
 
     const backlogChange = plan.changes.find((c) => c.file.endsWith("BACKLOG.md"))!;
     expect(backlogChange.after).toContain("- H1 — Upload-Endpunkt ohne Größenlimit — done (Commit `aabbcc1`)");
-    const archiveChange = plan.changes.find((c) => c.file.endsWith("BACKLOG_ARCHIVE.md"))!;
+    const archiveChange = plan.changes.find((c) => c.file.endsWith("BACKLOG_ARCHIVE.p2.md"))!;
     expect(archiveChange.after).toContain("- **Done:** Commit `aabbcc1`");
   });
 
@@ -386,7 +387,7 @@ describe("locale generation (4.2)", () => {
       "utf8",
     );
     const plan = planProgressUpdate(dir, "Phase 2", "2.1", "✅", { note: "suite green" });
-    const archiveChange = plan.changes.find((c) => c.file.endsWith("PROGRESS_ARCHIVE.md"))!;
+    const archiveChange = plan.changes.find((c) => c.file.endsWith("PROGRESS_ARCHIVE.p2.md"))!;
     expect(archiveChange.after).toContain("**Verification:** suite green");
   });
 
@@ -425,7 +426,7 @@ describe("mutation regressions — R5 (Phase 6)", () => {
     expect(progress).not.toContain("### Phase 2 — UI-Polish");
     expect(progress).not.toContain("- **2.3 U22");
     expect(progress).not.toMatch(/\n{3,}/u);
-    const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.md"), "utf8");
+    const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.p2.md"), "utf8");
     expect(archive).toContain("### Phase 2 — UI-Polish");
     expect(archive).toContain("**Verifikation:** Suite grün");
   });
@@ -464,7 +465,7 @@ describe("mutation regressions — R5 (Phase 6)", () => {
     const plan = planArchiveItem(dir, "H1", { dryRun: false, note: "Commit `deadbee`" });
     const result = applyArchivePlan(plan);
     expect(result.verification.ok).toBe(true);
-    const archive = readFileSync(join(dir, "docs", "archive", "BACKLOG_ARCHIVE.md"), "utf8");
+    const archive = readFileSync(join(dir, "docs", "archive", "BACKLOG_ARCHIVE.p2.md"), "utf8");
     expect(archive).toContain("### [x] H1");
     expect(archive).toContain("- **Erledigt:** Commit `deadbee`");
     expect(loneLf(archive)).toBe(0);
@@ -486,7 +487,7 @@ describe("mutation regressions — R5 (Phase 6)", () => {
     const result = applyProgressPlan(plan);
     expect(result.verification.ok).toBe(true);
     expect(loneLf(readFileSync(progressPath, "utf8"))).toBe(0);
-    const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.md"), "utf8");
+    const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.p2.md"), "utf8");
     expect(archive).toContain("### Phase 2 — UI-Polish");
     expect(loneLf(archive)).toBe(0);
   });
@@ -571,7 +572,7 @@ describe("mutation regressions — R5 (Phase 6)", () => {
     const progress = readFileSync(join(dir, "PROGRESS.md"), "utf8");
     expect(progress).not.toContain("### Phase 2");
     expect(progress).toContain("| 2.1 | Strings-Modul anlegen | ✅ |");
-    const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.md"), "utf8");
+    const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.p2.md"), "utf8");
     expect(archive).toContain("### Phase 2 — UI-Polish Final");
     expect(archive).toContain("**Verifikation:** Suite grün");
   });
@@ -713,7 +714,7 @@ describe("backlog CRUD (T1, 6.9)", () => {
     expect(backlog).toContain("- S1 — Schema-Migration 001→002 abgesichert — erledigt in `a1b2c3d`");
     expect(readFileSync(join(dir, "BACKLOG.md"), "utf8")).not.toBe(before);
 
-    const archive = readFileSync(join(dir, "docs", "archive", "BACKLOG_ARCHIVE.md"), "utf8");
+    const archive = readFileSync(join(dir, "docs", "archive", "BACKLOG_ARCHIVE.p2.md"), "utf8");
     expect(archive).toContain(
       "### [ ] R4 — Feldtest auf Zielgeräten — 🟠 *(vor Pilotbetrieb zwingend)*",
     );
@@ -886,7 +887,7 @@ describe("applyProgressPlan — apply + verification (3.3)", () => {
     const progress = readFileSync(progressPath, "utf8");
     expect(progress).toContain("| 2.1 | Strings-Modul | ✅ |");
     expect(progress).not.toContain("### Phase 2 — UI-Polish");
-    const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.md"), "utf8");
+    const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.p2.md"), "utf8");
     expect(archive).toContain("### Phase 2 — UI-Polish");
     expect(archive).toContain("**Verifikation:** Suite 132/132 grün");
   });
@@ -913,7 +914,7 @@ describe("progress_update checkpoint (L2, 9.10)", () => {
 
     expect(plan.completedPhase).toBe(true);
     expect(plan.checkpoint).toBe("abc1234");
-    const archiveChange = plan.changes.find((c) => c.file.endsWith("PROGRESS_ARCHIVE.md"))!;
+    const archiveChange = plan.changes.find((c) => c.file.endsWith("PROGRESS_ARCHIVE.p2.md"))!;
     expect(archiveChange.after).toContain("**Verifikation:** (checkpoint: abc1234)");
   });
 
@@ -924,7 +925,7 @@ describe("progress_update checkpoint (L2, 9.10)", () => {
       checkpoint: "0123456789abcdef",
     });
 
-    const archiveChange = plan.changes.find((c) => c.file.endsWith("PROGRESS_ARCHIVE.md"))!;
+    const archiveChange = plan.changes.find((c) => c.file.endsWith("PROGRESS_ARCHIVE.p2.md"))!;
     expect(archiveChange.after).toContain("**Verifikation:** Suite grün (checkpoint: 0123456789abcdef)");
   });
 
@@ -937,7 +938,7 @@ describe("progress_update checkpoint (L2, 9.10)", () => {
     const result = applyProgressPlan(plan);
 
     expect(result.verification.ok).toBe(true);
-    const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.md"), "utf8");
+    const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.p2.md"), "utf8");
     expect(archive).toContain("**Verifikation:** (checkpoint: abc1234)");
   });
 
@@ -1043,7 +1044,8 @@ describe("K1: phase completion removes exactly the own block (adjacent blocks, m
     const result = applyProgressPlan(plan);
     expect(result.verification.ok).toBe(true);
 
-    const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.md"), "utf8");
+    // H12/32.2: Phase 7 completion lands on its own shard (8.1 keeps running)
+    const archive = readFileSync(join(dir, "docs", "archive", "PROGRESS_ARCHIVE.p7.md"), "utf8");
     expect(archive).toContain("### Phase 7 — Erste Phase");
     expect(archive).toContain("- **7.2 Beta**");
     expect(archive).toContain("**Verifikation:** Suite grün");

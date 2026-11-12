@@ -5,7 +5,7 @@ import { callTool, connect, git, payload, tempGitProject } from "./helper.ts";
 vi.setConfig({ testTimeout: 20000 });
 
 describe("tool commit automation (H5/26.3)", () => {
-  it("archive_item apply + commit:true commits exactly the four docs", async () => {
+  it("archive_item apply + commit:true commits the doc set (canonical four + shard, H12/32.2)", async () => {
     const dir = tempGitProject("project-a");
     const c = await connect();
     try {
@@ -18,7 +18,7 @@ describe("tool commit automation (H5/26.3)", () => {
       const subject = git(dir, ["log", "-1", "--format=%s"]).trim();
       expect(subject).toBe("docs(backlog): archive H1");
       const files = git(dir, ["show", "--name-only", "--format=", "HEAD"]).trim().split(/\r?\n/u).sort();
-      for (const file of files) expect(file.replace(/\\/gu, "/")).toMatch(/BACKLOG(_ARCHIVE)?\.md|PROGRESS(_ARCHIVE)?\.md/u);
+      for (const file of files) expect(file.replace(/\\/gu, "/")).toMatch(/BACKLOG(_ARCHIVE(\.p\d+)?)?\.md|PROGRESS(_ARCHIVE(\.p\d+)?)?\.md/u);
       expect(git(dir, ["status", "--porcelain"])).toBe("");
     } finally {
       await c.close();
@@ -83,7 +83,7 @@ describe("tool commit automation (H5/26.3)", () => {
       expect(data.commit.error.code).toBe("COMMIT_BLOCKED");
       // edits stay on disk (never a rollback): the archive move happened
       const { readFileSync } = await import("node:fs");
-      const archive = readFileSync(join(dir, "docs", "archive", "BACKLOG_ARCHIVE.md"), "utf8");
+      const archive = readFileSync(join(dir, "docs", "archive", "BACKLOG_ARCHIVE.p2.md"), "utf8");
       expect(archive).toContain("### [x] H1 —");
       const backlog = readFileSync(join(dir, "BACKLOG.md"), "utf8");
       expect(backlog).toContain("- H1 —");

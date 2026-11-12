@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { lineDiff } from "./diff.ts";
 import { allSynonyms, canonical, detectLocale, escapeRegExp, synonymPattern, type Locale } from "./profile.ts";
@@ -14,6 +14,7 @@ import type {
   BacklogUpdatePlan,
   PhaseBlock,
   PhasePlan,
+  Progress,
   PlanChange,
   Priority,
   ProgressUpdatePlan,
@@ -46,6 +47,12 @@ interface FileEdit {
   relPath: string;
   description: string;
   transform: (content: string, eol: string) => string;
+  /**
+   * H12/32.2: the edit may CREATE this file (shard target). buildChanges then
+   * plans against empty content (transform prepends the write-once header),
+   * assertFreshChanges accepts a still-missing file for such edits.
+   */
+  createIfMissing?: boolean;
 }
 
 function readText(path: string): { content: string; eol: string } {
@@ -84,9 +91,28 @@ function normalizeCheckpoint(checkpoint: string | undefined): string | undefined
 }
 
 function buildChanges(root: string, edits: FileEdit[]): PlanChange[] {
+  // H12/32.2: created shard files inherit the line ending of the sibling edit
+  // (same plan, same project) — a CRLF project gets CRLF shards (R3 roundtrip).
+  let inheritedEol: string | undefined;
+  for (const edit of edits) {
+    if (edit.createIfMissing === true) continue;
+    try {
+      inheritedEol = readText(join(root, edit.relPath)).eol;
+      break;
+    } catch {
+      // sibling unreadable — the per-edit read below surfaces the real error
+    }
+  }
   return edits.map((edit) => {
     const path = join(root, edit.relPath);
-    const { content, eol } = readText(path);
+    let content: string;
+    let eol: string;
+    if (edit.createIfMissing === true && !existsSync(path)) {
+      content = "";
+      eol = inheritedEol ?? "\n";
+    } else {
+      ({ content, eol } = readText(path));
+    }
     const after = edit.transform(content, eol);
     return {
       file: path,
@@ -122,9 +148,15 @@ export function planArchiveItem(
   }
 
   const backlogRel = "BACKLOG.md";
-  const archiveRel = join("docs", "archive", "BACKLOG_ARCHIVE.md");
+  // H12/32.2: during a running phase n the block goes to BACKLOG_ARCHIVE.p<n>.md
+  // (shard, direct write); without a running phase it stays on the canonical file.
+  const shardPhase = runningPhaseNumber(docs.progress().value);
+  const archiveRel =
+    shardPhase === undefined
+      ? join("docs", "archive", "BACKLOG_ARCHIVE.md")
+      : shardRelPath("backlog", shardPhase);
   const backlogText = readText(join(root, backlogRel)).content;
-  const archiveText = readText(join(root, archiveRel)).content;
+  const archiveText = readText(join(root, "docs", "archive", "BACKLOG_ARCHIVE.md")).content;
   const locale = options.locale ?? detectLocale(backlogText, archiveText);
   const doneWord = canonical("doneWord", locale);
   const doneLabel = canonical("doneLabel", locale);
@@ -178,8 +210,12 @@ export function planArchiveItem(
       blockLines.push(`- **${doneLabel}:** ${note}`);
     }
     const blockText = blockLines.join(eol);
-    const trimmed = content.replace(/\s+$/u, "");
-    return `${trimmed}${eol}${eol}---${eol}${eol}${blockText}${eol}`;
+    return appendWithOptionalHeader(
+      content,
+      eol,
+      blockText,
+      (eol2) => shardHeader("backlog", shardPhase ?? 0, `items archived during Phase ${shardPhase}`, eol2),
+    );
   };
 
   const changes = buildChanges(root, [
@@ -190,7 +226,8 @@ export function planArchiveItem(
     },
     {
       relPath: archiveRel,
-      description: `Item-Block "${id}" verbatim ans BACKLOG_ARCHIVE anhängen (Checkbox → [x]${note !== undefined ? ", mit Erledigt-Zeile" : ""})`,
+      createIfMissing: true,
+      description: `Item-Block "${id}" verbatim anhängen (Checkbox → [x]${note !== undefined ? ", mit Erledigt-Zeile" : ""}) — Ziel: ${archiveRel}${shardPhase !== undefined ? " (Shard der laufenden Phase)" : " (kanonisch, keine laufende Phase)"}`,
       transform: appendToArchive,
     },
   ]);
@@ -200,6 +237,10 @@ export function planArchiveItem(
 
 function assertFreshChanges(changes: PlanChange[]): void {
   for (const change of changes) {
+    if (change.before === "" && !existsSync(change.file)) {
+      // H12/32.2: edit creates this file (shard target) — nothing to be stale against
+      continue;
+    }
     let current: string;
     try {
       current = readFileSync(change.file, "utf8");
@@ -212,6 +253,63 @@ function assertFreshChanges(changes: PlanChange[]): void {
       );
     }
   }
+}
+
+// ── H12/32.2: shard rotation (direct write, one shard per phase) ──────────────
+
+/**
+ * Phase number of the RUNNING phase — the phase owning a 🔄 row. With 🔄 rows
+ * spanning multiple phases the LAST 🔄 row in table order wins (most recent
+ * work; parallel phases normally live in separate worktrees anyway, each with
+ * its own doc state). No 🔄 row → undefined → canonical file (0.1-baseline).
+ */
+function runningPhaseNumber(progress: Progress): number | undefined {
+  const wipRows = progress.rows.filter((r) => r.status === "🔄");
+  if (wipRows.length === 0) return undefined;
+  const last = wipRows[wipRows.length - 1]!;
+  const m = /^(\d+)\./u.exec(last.step);
+  return m === null ? undefined : Number(m[1]);
+}
+
+function shardRelPath(kind: "backlog" | "progress", phase: number): string {
+  const prefix = kind === "backlog" ? "BACKLOG_ARCHIVE" : "PROGRESS_ARCHIVE";
+  return join("docs", "archive", `${prefix}.p${phase}.md`);
+}
+
+/**
+ * Write-once shard header (created when the shard file is first appended to,
+ * never edited afterwards — greppable, states phase and content contract).
+ * Ends with the `---` separator so the first block appends seamlessly.
+ */
+function shardHeader(kind: "backlog" | "progress", phase: number, contains: string, eol: string): string {
+  const prefix = kind === "backlog" ? "BACKLOG_ARCHIVE" : "PROGRESS_ARCHIVE";
+  const title = `${prefix}.p${phase}.md`;
+  const purpose =
+    kind === "backlog"
+      ? `home for item blocks archived while Phase ${phase} was running.`
+      : `home for the detail block of Phase ${phase} on completion.`;
+  return (
+    `# ${title} — Shard (Phase ${phase}, append-only)${eol}${eol}` +
+    `> Created ${stampNow()} — ${purpose}${eol}` +
+    `> Contains: ${contains}. Header is write-once — never edited.${eol}${eol}` +
+    `---${eol}${eol}`
+  );
+}
+
+/**
+ * Append a block to an archive file; when the file is still missing the given
+ * header precedes the first block (creation case, H12/32.2).
+ */
+function appendWithOptionalHeader(
+  content: string,
+  eol: string,
+  blockText: string,
+  header: (eol: string) => string,
+): string {
+  const trimmed = content.replace(/\s+$/u, "");
+  const start =
+    trimmed === "" ? header(eol) : `${trimmed}${eol}${eol}---${eol}${eol}`;
+  return `${start}${blockText}${eol}`;
 }
 
 export function applyArchivePlan(plan: ArchiveItemPlan): ApplyResult {
@@ -402,9 +500,16 @@ export function planProgressUpdate(
       )
     : ["kept-open"];
   const completedPhase = status === "✅" && prefixMatch !== undefined && remainingOpen.length === 0;
+  const phaseNo = prefixMatch === null || prefixMatch === undefined ? undefined : Number(prefixMatch[1]);
 
   const progressRel = "PROGRESS.md";
-  const archiveRel = join("docs", "archive", "PROGRESS_ARCHIVE.md");
+  // H12/32.2: the block of a completed phase n always lands on its own shard
+  // PROGRESS_ARCHIVE.p<n>.md (direct write); the canonical file stays home for
+  // the legacy stock and never grows again.
+  const archiveRel =
+    phaseNo !== undefined
+      ? shardRelPath("progress", phaseNo)
+      : join("docs", "archive", "PROGRESS_ARCHIVE.md");
   const rowName = row?.name ?? (scopeEntry !== undefined ? extractScopeName(scopeEntry) : undefined) ?? step;
 
   const editProgress = (content: string, eol: string): string => {
@@ -460,7 +565,8 @@ export function planProgressUpdate(
   if (completedPhase && block !== undefined) {
     edits.push({
       relPath: archiveRel,
-      description: `Detail-Block "${block.name}" verbatim ans PROGRESS_ARCHIVE anhängen${note !== undefined || checkpoint !== undefined ? " (mit Verifikations-Zeile)" : ""}`,
+      createIfMissing: true,
+      description: `Detail-Block "${block.name}" verbatim anhängen${note !== undefined || checkpoint !== undefined ? " (mit Verifikations-Zeile)" : ""} — Ziel: ${archiveRel} (Shard je Phase)`,
       transform: (content, eol) => {
         const blockLines = block.raw.split(/\r?\n/);
         if (newTitle !== undefined) {
@@ -473,8 +579,15 @@ export function planProgressUpdate(
           ].join(" ");
           blockLines.push(`**${verificationLabel}:** ${parts}`);
         }
-        const trimmed = content.replace(/\s+$/u, "");
-        return `${trimmed}${eol}${eol}---${eol}${eol}${blockLines.join(eol)}${eol}`;
+        const phaseNum = phaseNo ?? 0;
+        // Contains line = the FINAL heading (after an optional rename), no "### "
+        const headingName = (blockLines[0] ?? block.name).replace(/^###\s+/u, "");
+        return appendWithOptionalHeader(
+          content,
+          eol,
+          blockLines.join(eol),
+          (eol2) => shardHeader("progress", phaseNum, headingName, eol2),
+        );
       },
     });
   }
@@ -1154,9 +1267,14 @@ export function planBacklogRemove(root: string, id: string, options: BacklogRemo
   const item = requireOpenItem(docs, id);
 
   const backlogRel = "BACKLOG.md";
-  const archiveRel = join("docs", "archive", "BACKLOG_ARCHIVE.md");
+  // H12/32.2: same shard targeting as archive_item — running phase → shard
+  const shardPhase = runningPhaseNumber(docs.progress().value);
+  const archiveRel =
+    shardPhase === undefined
+      ? join("docs", "archive", "BACKLOG_ARCHIVE.md")
+      : shardRelPath("backlog", shardPhase);
   const backlogText = readText(join(root, backlogRel)).content;
-  const archiveText = readText(join(root, archiveRel)).content;
+  const archiveText = readText(join(root, "docs", "archive", "BACKLOG_ARCHIVE.md")).content;
   const locale = options.locale ?? detectLocale(backlogText, archiveText);
   const removedWord = canonical("removedWord", locale);
   const removedLabel = canonical("removedLabel", locale);
@@ -1179,8 +1297,12 @@ export function planBacklogRemove(root: string, id: string, options: BacklogRemo
     if (note !== undefined) {
       blockLines.push(`- **${removedLabel}:** ${note}`);
     }
-    const trimmed = content.replace(/\s+$/u, "");
-    return `${trimmed}${eol}${eol}---${eol}${eol}${blockLines.join(eol)}${eol}`;
+    return appendWithOptionalHeader(
+      content,
+      eol,
+      blockLines.join(eol),
+      (eol2) => shardHeader("backlog", shardPhase ?? 0, `items archived during Phase ${shardPhase}`, eol2),
+    );
   };
 
   const changes = buildChanges(root, [
@@ -1191,7 +1313,8 @@ export function planBacklogRemove(root: string, id: string, options: BacklogRemo
     },
     {
       relPath: archiveRel,
-      description: `Item-Block "${id}" verbatim ans BACKLOG_ARCHIVE anhängen (Checkbox bleibt [ ])${note !== undefined ? ", mit Entfernt-Zeile" : ""}`,
+      createIfMissing: true,
+      description: `Item-Block "${id}" verbatim anhängen (Checkbox bleibt [ ])${note !== undefined ? ", mit Entfernt-Zeile" : ""} — Ziel: ${archiveRel}${shardPhase !== undefined ? " (Shard der laufenden Phase)" : " (kanonisch, keine laufende Phase)"}`,
       transform: editArchive,
     },
   ]);
