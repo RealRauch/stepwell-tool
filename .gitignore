@@ -10,5 +10,5 @@ test-results/
 docs/CONSUMERS.md
 docs/feldtest-*.md
 
-# impeccable review captures (build evidence, not repo content)
-.impeccable/review/
+# impeccable working files (design-session artifacts, not repo content)
+.impeccable/
