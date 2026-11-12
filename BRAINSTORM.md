@@ -194,88 +194,31 @@ As of 09/2026: brainstorming only, no implementation.
 
 ## Git integration & parallel phases per project — DECIDED: workstream worktrees
 
-Backlog root: `H5` (design item, decision documented 11/2026). Motivation:
-a project should be able to run phases **in parallel**, and agents must not
-disturb each other — even a foreign PROGRESS.md edit inside "their" working
-tree was observed to confuse agents. Target picture and tool role are now
-decided; implementation steps follow in `PROGRESS.md`.
+Backlog root: `H5` (design item, decision documented 11/2026). Motivation: a
+project should be able to run phases **in parallel**, and agents must not disturb
+each other — even a foreign PROGRESS.md edit inside "their" working tree was
+observed to confuse agents.
 
 ### Decision
 
-**Workstream = one parallel phase in its own git worktree + branch.** Agents
-never share a working tree; foreign changes reach the own tree only through
-the own sync step. Parallelism requires git — without git, a project stays
-single-tree sequential.
+**Workstream = one parallel phase in its own git worktree + branch.** Agents never
+share a working tree; foreign changes reach the own tree only through the own sync
+step. Parallelism requires git — without git, a project stays single-tree
+sequential.
 
-**Per-step ritual** (divergence ≤ 1 step):
-
-```
-pull (trunk→branch, fresh base) → implement → code commit (agent)
-→ doc commit (tool, four files only) → pull → verify (typecheck+test)
-→ push (branch→trunk; precondition: trunk head ∈ ancestors(branch))
-```
-
-- **WIP visibility:** the 🔄 doc commit happens at step **start**, not only at
-  completion — trunk always shows the true state (🔄 = someone is actively
-  working). Activity/liveness is derived from git itself (existing workstream
-  branches + last-commit times), never from a registry file or heartbeat.
-- **Trunk derivation, zero config:** trunk = the branch checked out in the
-  main worktree (e.g. `main`, `dev`).
-- **Race model:** races are not eliminated but shaped into visible, harmless
-  events. Push precondition (trunk head must be an ancestor of the branch)
-  makes stale pushes impossible; git's `index.lock` + atomic branch moves
-  serialize the residual TOCTOU window; conflicts surface as clean aborts
-  with structured reports — never silent lost updates. Livelock guidance:
-  on repeated push failure, pause and re-sync. Local single-machine scope;
-  cross-machine via `origin` is explicitly out of scope.
-- **Doc-conflict rule:** keep both sides; in archives, order blocks by
-  completion timestamps (one guidance line in PLAYBOOK, no tool logic).
-
-**Merge help for code (the agent keeps code semantics):** the tool never
-resolves code conflicts — but (1) the merge order forces code conflicts into
-the agent's own tree before trunk moves, (2) aborts come with a structured
-conflict list (which file, which side changed what), (3) a preventive
-overlap warning flags files touched by parallel workstreams, (4) docs_validate
-mechanically re-checks merged doc consistency.
-
-**Commit scope:** the tool commits **only the four method docs** (deterministic
-staging, no secret risk); code commits remain the agent's duty (PLAYBOOK §4).
-A failed doc commit (e.g. hooks) leaves the edits applied with a structured
-message — never a rollback (no data-loss path).
-
-**Architecture:** `core` stays git-blind (reads/writes only the four files).
-Git intelligence lives in a **transport-neutral satellite layer** (own
-workspace package, depends on core, zero transport dependency) — exposed
-**CLI-first** (skill-fed agents run `stepwell sync pull|push`, `--commit`
-flags, no MCP registration needed) and **MCP-optional** (same ops as tools,
-thin transport, Decision 1). Commit automation is a parameter on the existing
-mutation surface (`progress_update`/`archive_item --commit`), not a new tool.
-The only genuinely new surface is the **sync tool** (pull/push direction,
-dry-run mandatory like all mutations, dirty-tree and non-fast-forward guards)
-— Alternativprüfung documented in AGENTS (Decision 14). Worktree/branch
-**creation** and **cleanup** stay agent rituals (one-time setup — no tool).
-
-**Surface guardrail (M4):** no guide/meta tools; workstream count is guidance,
-not a limit ("as many as useful — each additional workstream multiplies
-per-step merge traffic; two or three are typically practical").
-
-**Related open items:** M15/M14 (PLAYBOOK/LESSONS drift sync from
-internal-pwa) run **before** the H5 PLAYBOOK edits; M12 (QUICKSTART
-discoverability) provides the distribution path for the ritual text; M13
-(neutral foreign-repo messaging) becomes more important with git tooling;
-after the mechanics ship, **M12 + M13 dogfooded as two parallel workstreams
-in this repo** (field test, minimal file overlap).
-
-**Field-test ladder (binding):** fixtures → dogfood in this repo → only
-afterwards a non-critical project, explicitly chosen. **internal-pwa is
-never a testbed for the workstream mechanics** — it receives only the
-established verbatim PLAYBOOK/LESSONS syncs (SHA256-evidenced cross-repo
-contract) and the read-only field probes (Decision 13). Adopting workstream
-mode in internal-pwa is a separate, explicit decision.
+Full ritual (per-step pull → implement → doc commit → verify → push), race model
+(push precondition, clean conflict aborts), commit scope (doc file set only, never
+a rollback), architecture (git-blind core + transport-neutral satellite,
+CLI-first + MCP-optional) and the field-test ladder are **binding elsewhere** —
+they live in PLAYBOOK §1 ("Parallel phases as workstreams"), README
+("Workstreams") and AGENTS Decision 14. This section keeps only the origin.
 
 As of 11/2026: **implemented** (Phase 26, steps 26.1–26.7 incl. the M12/M13
-dogfood workstreams; archive entry H5). Kept as the decision record — status
-lines below may be stale relative to shipped reality.
+dogfood workstreams; archive entry H5) and **dogfooded** (Phase 32 ran
+end-to-end as a workstream — the per-step ritual held, two STALE_BRANCH
+re-pull rounds against foreign trunk commits resolved cleanly). Archive
+sharding (H12/32.x) additionally removed the archive-append merge traffic the
+original design still expected.
 
 ---
 
