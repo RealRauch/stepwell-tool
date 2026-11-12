@@ -24,12 +24,6 @@
 
 > No open items.
 
-### [ ] M27 — Website-Redesign auf Logo-Welt (Papier/Navy/Teal/Amber, AI-Tells raus, Logo eingebunden) — 🟡
-- **Location:** `website/index.html`, `website/style.css`, `website/app.js`, neu `website/assets/stepwell-logo.jpg`.
-- **Problem:** Nutzer-Fund (11/2026): Die Landing-Page sieht „hart nach KI" aus — Dark-Neon-Cluster (#0a0e17 + Glow-Blobs + Grid-Overlay), Glassmorphism-Karten, Gradient-Text, Emoji-Icon-Kacheln, Pill-Badges, Inter/JetBrains-Mono-Default. Der Look trägt keine Produkt-Identität. Gleichzeitig liefert der Nutzer ein Logo (Isometrische Stufenbrunnen, Navy/Teal/Amber auf Hell), dessen Palette und Motiv ungenutzt bleiben.
-- **Fix:** Visuelle Welt auf das Logo stellen: helles Papier-Ground, Navy-Tinte (#1d3a5f-Familie), Teal-Struktur, Amber ausschließlich als Pfad-/Next-Step-Akzent (semantisch: der leuchtende Zielpunkt im Brunnen = nextStep). Terminal-Blöcke als „Brunnen-Innenraum" (dunkles Navy, Teal/Amber-Ausgabe). AI-Tells entfernen gem. Craft-Floor: keine Kicker über Headings, kein Gradient-Text, kein Glass, kein Grid-Overlay, keine Emoji-Icons (gezogene SVG-Icons stattdessen), kein Pill-Badging, Karten-Raster durch asymmetrische, regelbasierte Komposition ersetzen. Logo im Header (CSS-Crop des Marks) + Favicon. Montserrat als Display-Face (wortmarkenverwandt). Tailwind-CDN entfernen, handgeschriebenes CSS.
-- **Acceptance:** Seite rendert auf Desktop (1440) + Mobile (390) ohne Defekte; Logo-Crop sauber (Mark ohne Wordmark-Doppelung); Kontraste ≥ 4.5:1 Body / 3:1 Large; alle Inhalte des L27-Stands bleiben erhalten (keine Copy-Verluste); `impeccable detect` mechanisch clean; Screenshots in `.impeccable/review/`; Commit + Archivierung mit Hash.
-
 
 
 ---
@@ -157,5 +151,6 @@
 - M26 — Methoden-Retro fällig (PLAYBOOK §8): 7 Phasen seit Q2/Phase 23 — Review von PLAYBOOK/LESSONS + BRAINSTORM-Bewertern — erledigt (phase 31/31.1-31.2 (protocol 6d677ab + lessons sync 2e5520f) — retro of phases 24-30 per PLAYBOOK §8: all rules stay, nothing dropped/demoted; rule changes: LESSONS section scope tags (A web/API, C frontend — user-initiated, section-level over a scope matrix) + new Lesson 32 (sync child-process stderr leak, M19 evidence); textually identical in both copies, sha256 2cdde3db48e7a20315fcb56c6adb0dab5594fd256fc305bb29748c27dc5c78eb; topology limitation documented (sync = same-machine agent ritual, accepted cost); BRAINSTORM evaluator verdicts in docs/retro-2026-11.md)
 - L27 — Website-Content-Refresh auf Post-Phase-32-Stand (Tool-Surface, Sharding, Satellit, Samples) — erledigt (Commit 1c38cce (Website-Refresh, Feldprobe via lokal gerenderter Seite: Hero/Playground/Workstreams/Quickstart verifiziert, 483 Tests + typecheck grün))
 - H11 — Shard-fähiges Archive-Lesen (core): docs/archive/*_ARCHIVE*.md glob + konkatenierter Parse — Phase → Datei über Phasennummer-Naming — erledigt (Commit `839812e` — shard-fähiges Archiv-Lesen (Glob, p<n> nach Phasennummer, kanonisch zuletzt), Provenance-Parses, ARCHIVE_WITHOUT_INDEX mit Shard-Attribution; Fixture project-m-shards)
+- M27 — Website-Redesign auf Logo-Welt (Papier/Navy/Teal/Amber, AI-Tells raus, Logo eingebunden) — erledigt (Commit f9eb8aa (Redesign auf Logo-Welt; impeccable Finish-Review: fix-Runde mit 6 Material-Fixes, Verdict Pass alle resolved, disposition ship; Evidence .impeccable/review/ lokal, gitignored))
 
 ---
