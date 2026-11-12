@@ -193,7 +193,7 @@
 | 31.1 | Retro review + protocol: PLAYBOOK §§ / LESSONS sections / AGENTS decisions × 3 guiding questions → stay/demote/drop outcomes; BRAINSTORM evaluator verdicts (ADR, PR satellite, Obsidian V1/V2, ZooKeeper, HTTP, Jira); scope-model decision (section tags, closed vocabulary) + topology limitation documented — protocol docs/retro-2026-11.md [M26] | ✅ |
 | 31.2 | LESSONS changes sync: new Lesson #32 (sync child-process stderr leak, M19 evidence) + section scope tags — textually identical in both copies (stadtpfad-pwa), SHA256 evidence; verify; archive M26; phase completion [M26] | ✅ |
 | 32.1 | [H11] core: shard-fähiges Archiv-Lesen — Glob docs/archive/*_ARCHIVE*.md + konkatenierter Parse (p<n> aufsteigend, kanonisch zuletzt), Inventory hartkodierter Archiv-Pfade, RED→GRÜN Fixture | ✅ |
-| 32.2 | [H12] core: Rotation als Tool-Op — Shard je Phase (Direktschreib): Item-Appends an BACKLOG_ARCHIVE.p<n>.md, Phase-Block bei completedPhase an PROGRESS_ARCHIVE.p<n>.md, Kopfzeile je Shard-Datei | ⬜ |
+| 32.2 | [H12] core: Rotation als Tool-Op — Shard je Phase (Direktschreib): Item-Appends an BACKLOG_ARCHIVE.p<n>.md, Phase-Block bei completedPhase an PROGRESS_ARCHIVE.p<n>.md, Kopfzeile je Shard-Datei | ✅ |
 | 32.3 | [M24] core: Done-Index-Kopplung — Index-Zeile lebt dort, wo ihr Block lebt (Shard-Index-Sektionen; L13-Muster-Entscheid: strenge Lokalität vs. globale Existenz-Prüfung) | ⬜ |
 | 32.4 | [M25] core/git/mcp: Satellit/Hashes/Resources shard-fähig — Doc-File-Sets (DOC_FILES-Staging), sync docSet, hashes-Resource, archivePath() | ⬜ |
 | 32.5 | [M23] core validate: PLAN_WITHOUT_WIP transient bei Step-Übergängen — sequentieller Fortschritt → PHASE_MIDWAY-Warning, verwaist bleibt Finding | ⬜ |
