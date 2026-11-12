@@ -42,6 +42,11 @@ Plan → Package → Release → Implement → Verify → Archive
 
 All four files are mandatory: if one is missing, the project does not load.
 
+Large projects may split the archives into **shards per phase**
+(`docs/archive/*_ARCHIVE.p<n>.md`) — the tool rotates them automatically while a
+phase runs (PLAYBOOK §3 "Archive sharding"); the four canonical files above stay
+mandatory and keep the legacy stock.
+
 ## The five rules that matter most
 
 1. **Test-first (RED → GREEN) — binding.** No feature/step code without tests:

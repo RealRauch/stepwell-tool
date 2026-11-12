@@ -85,6 +85,18 @@ The structural language of the method is **English primary**: section headings, 
 - **Completed phase:** move the detail block **unchanged** into `docs/archive/PROGRESS_ARCHIVE.md`; the **progress table stays complete** in `PROGRESS.md` (permanent index).
 - Archives are **append-only history** — their content is never edited afterwards.
 
+### Archive sharding (binding, 11/2026)
+
+Large projects split the archive into **shards per phase** — the canonical files
+stay the mandatory home for the legacy stock and for appends **without a running
+phase**:
+
+- **Shard naming:** `docs/archive/BACKLOG_ARCHIVE.p<n>.md` and `docs/archive/PROGRESS_ARCHIVE.p<n>.md` — named by **phase number**, not sequence: the permanent progress table is the discovery index (phase → file visible in the name); no manifest file (that would be a second truth). The shard set is order-free; chronology lives in the completion timestamps inside the blocks.
+- **Rotation is a tool op** (`archive_item`, `backlog_remove`, `progress_update`): item blocks archived **while phase n runs** append directly to `BACKLOG_ARCHIVE.p<n>.md`; on phase completion the detail block appends to `PROGRESS_ARCHIVE.p<n>.md`. Each shard gets a **write-once header** (phase, creation stamp, contains line) — created by the tool, never edited afterwards.
+- **Coupled Done Index:** an index line lives **where its block lives** — BACKLOG's Done Index for canonical blocks, each shard's own Done-Index section for shard blocks. There is no single index of "everything completed" — the read path is the tool (concatenated view) or distributed grep.
+- **Strict locality:** an index line in a different file than its block is the `INDEX_LOCATION` finding — move the line to the file of its block.
+- **Legacy rule:** existing archives are never split retroactively (append-only, no bulk migration) — the canonical file keeps the pre-sharding stock. A clean cut is possible per project via the sanctioned rename op (`*_ARCHIVE.md` → `*_ARCHIVE.legacy.md`); it is optional and not part of the method.
+
 ### Item-ID nomenclature (binding)
 
 Item IDs follow the pattern `<series letter><number>` (e.g. `H1`, `R4`, `U21`):

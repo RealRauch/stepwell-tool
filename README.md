@@ -46,6 +46,16 @@ Current state and step history: [`PROGRESS.md`](PROGRESS.md).
 `docs/archive/PROGRESS_ARCHIVE.md`. If one is missing, the project does not
 load (hard error with a clear message).
 
+**Archive sharding (H11/H12/32.x):** large projects split the archives into
+shards per phase — `docs/archive/*_ARCHIVE.p<n>.md`, named by phase number.
+Rotation is fully tool-op: item blocks append to the running phase's shard,
+the phase block lands on its own shard at completion; each shard carries a
+write-once header. The canonical files freeze as legacy homes (pre-sharding
+stock + appends without a running phase); the Done Index is **coupled** — an
+index line lives where its block lives (`INDEX_LOCATION` finding otherwise).
+All readers (validate, status, show, hashes, commit staging, sync) see the
+concatenated view (PLAYBOOK §3 "Archive sharding").
+
 **Format legend** (canonical: [PLAYBOOK](docs/PLAYBOOK.md) §3 + §7):
 
 | Symbol | Meaning | ID series |
