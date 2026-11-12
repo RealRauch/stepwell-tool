@@ -13,6 +13,7 @@ export {
   ProjectNotInitializedError,
   REQUIRED_FILES,
   archiveShardPaths,
+  docFileSet,
   missingProjectFiles,
   type ArchiveKind,
 } from "./project-files.ts";

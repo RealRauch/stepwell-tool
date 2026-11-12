@@ -1,10 +1,37 @@
 import { existsSync, readdirSync } from "node:fs";
-import { join } from "node:path";
+import { join, sep } from "node:path";
 
 export const BACKLOG_PATH = "BACKLOG.md";
 export const PROGRESS_PATH = "PROGRESS.md";
 export const BACKLOG_ARCHIVE_PATH = join("docs", "archive", "BACKLOG_ARCHIVE.md");
 export const PROGRESS_ARCHIVE_PATH = join("docs", "archive", "PROGRESS_ARCHIVE.md");
+
+/**
+ * Die vier Pflichtdateien eines STEPWELL-Projekts (posix-style Relativpfade).
+ * M25/32.4: source constant — hashes/commit/sync DERIVE their per-root doc
+ * file sets from `docFileSet` instead of keeping separate static lists.
+ */
+export const DOC_FILES = [
+  "BACKLOG.md",
+  "PROGRESS.md",
+  "docs/archive/BACKLOG_ARCHIVE.md",
+  "docs/archive/PROGRESS_ARCHIVE.md",
+] as const;
+
+const toPosix = (p: string): string => p.split(sep).join("/");
+
+/**
+ * M25/32.4: the doc file set of THIS root — the canonical four plus every
+ * archive shard that exists on disk (posix-style rel paths, shards in
+ * p<n>-ascending order). Consumers: hash fast path, commit staging, sync docSet.
+ */
+export function docFileSet(root: string): string[] {
+  return [
+    ...DOC_FILES,
+    ...archiveShardPaths(root, "backlog").map(toPosix),
+    ...archiveShardPaths(root, "progress").map(toPosix),
+  ];
+}
 
 export type ArchiveKind = "backlog" | "progress";
 

@@ -195,11 +195,15 @@ contain `:` and `\`); the read callback decodes it. Content verbatim,
 ```
 stepwell://{root}/backlog          → BACKLOG.md
 stepwell://{root}/progress         → PROGRESS.md
-stepwell://{root}/archive/{kind}   → kind = "backlog" | "progress"
+stepwell://{root}/archive/{kind}   → kind = "backlog" | "progress" (canonical file;
+                                     shard content is served via the read tools, which
+                                     concatenate shards — no extra URI kinds, M25/32.4)
 stepwell://{root}/phase/{phase}    → phase context: phase verbatim + table rows
                                      + merged backlog item bodies in step order (G5/12.6)
 stepwell://{root}/hashes           → SHA256 per doc file (application/json;
-                                     hash short-circuit, E2/12.5 — fast-path foundation E3)
+                                     hash short-circuit, E2/12.5 — fast-path
+                                     foundation E3; keys = canonical four + existing
+                                     archive shards, M25/32.4)
 stepwell://templates/{kind}        → skeletons of the four mandatory files
                                      (kind = "backlog" | "progress" |
                                       "backlog-archive" | "progress-archive")

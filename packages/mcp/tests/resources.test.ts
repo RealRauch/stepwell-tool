@@ -3,6 +3,7 @@ import {
   connect,
   projectA,
   projectDrift,
+  projectShards,
   resourceMime,
   resourceText,
 } from "./helper.ts";
@@ -116,6 +117,30 @@ describe("resource templates (2.4)", () => {
         "PROGRESS.md",
         "docs/archive/BACKLOG_ARCHIVE.md",
         "docs/archive/PROGRESS_ARCHIVE.md",
+      ]);
+      for (const hash of Object.values(hashes)) {
+        expect(hash).toMatch(/^[0-9a-f]{64}$/u);
+      }
+    } finally {
+      await c.close();
+    }
+  });
+
+  it("hashes manifest includes existing shards (M25/32.4 — the fast path sees shard changes)", async () => {
+    const c = await connect();
+    try {
+      const result = await c.client.readResource({
+        uri: `stepwell://${enc(projectShards)}/hashes`,
+      });
+      const hashes = JSON.parse(resourceText(result)) as Record<string, string>;
+      expect(Object.keys(hashes).sort()).toEqual([
+        "BACKLOG.md",
+        "PROGRESS.md",
+        "docs/archive/BACKLOG_ARCHIVE.md",
+        "docs/archive/BACKLOG_ARCHIVE.p1.md",
+        "docs/archive/BACKLOG_ARCHIVE.p2.md",
+        "docs/archive/PROGRESS_ARCHIVE.md",
+        "docs/archive/PROGRESS_ARCHIVE.p1.md",
       ]);
       for (const hash of Object.values(hashes)) {
         expect(hash).toMatch(/^[0-9a-f]{64}$/u);

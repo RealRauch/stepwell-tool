@@ -3,7 +3,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { loadProject, backlogShow } from "../src/project.ts";
-import { archiveShardPaths } from "../src/project-files.ts";
+import { archiveShardPaths, docFileSet } from "../src/project-files.ts";
+import { fileHashes } from "../src/hashes.ts";
 import { docsValidate } from "../src/validate.ts";
 import { phaseContext } from "../src/context.ts";
 
@@ -117,5 +118,40 @@ describe("archive sharding (H11/32.1)", () => {
     expect(existsSync(join(fixtures, "project-a", "docs", "archive", "BACKLOG_ARCHIVE.p1.md"))).toBe(
       false,
     );
+  });
+
+  it("docFileSet = canonical four on a project without shards (M25/32.4)", () => {
+    expect(docFileSet(join(fixtures, "project-a"))).toEqual([
+      "BACKLOG.md",
+      "PROGRESS.md",
+      "docs/archive/BACKLOG_ARCHIVE.md",
+      "docs/archive/PROGRESS_ARCHIVE.md",
+    ]);
+  });
+
+  it("docFileSet + fileHashes include existing shards (fast path sees shard changes)", () => {
+    const root = join(fixtures, "project-m-shards");
+    expect(docFileSet(root)).toEqual([
+      "BACKLOG.md",
+      "PROGRESS.md",
+      "docs/archive/BACKLOG_ARCHIVE.md",
+      "docs/archive/PROGRESS_ARCHIVE.md",
+      "docs/archive/BACKLOG_ARCHIVE.p1.md",
+      "docs/archive/BACKLOG_ARCHIVE.p2.md",
+      "docs/archive/PROGRESS_ARCHIVE.p1.md",
+    ]);
+    const hashes = fileHashes(root);
+    expect(Object.keys(hashes).sort()).toEqual([
+      "BACKLOG.md",
+      "PROGRESS.md",
+      "docs/archive/BACKLOG_ARCHIVE.md",
+      "docs/archive/BACKLOG_ARCHIVE.p1.md",
+      "docs/archive/BACKLOG_ARCHIVE.p2.md",
+      "docs/archive/PROGRESS_ARCHIVE.md",
+      "docs/archive/PROGRESS_ARCHIVE.p1.md",
+    ]);
+    for (const hash of Object.values(hashes)) {
+      expect(hash).toMatch(/^[0-9a-f]{64}$/u);
+    }
   });
 });

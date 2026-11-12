@@ -10,6 +10,7 @@ import { createDocsServer } from "../src/server.ts";
 export const fixtures = join(import.meta.dirname, "..", "..", "core", "tests", "fixtures");
 export const projectA = join(fixtures, "project-a");
 export const projectDrift = join(fixtures, "project-b-drift");
+export const projectShards = join(fixtures, "project-m-shards");
 
 const tempDirs: string[] = [];
 

@@ -1,20 +1,6 @@
-import { DOC_FILES, archiveShardPaths } from "stepwell-core";
+import { docFileSet } from "stepwell-core";
 import { runGit, splitLines } from "./git.ts";
 import type { CommitDocsOk, CommitDocsResult } from "./types.ts";
-
-/**
- * H12/32.2: the doc set of THIS root — the canonical four plus every archive
- * shard that exists on disk (rotation writes BACKLOG/PROGRESS_ARCHIVE.p<n>.md;
- * a commit that skipped them would leave a dirty tree). The full doc-file-set
- * derivation (hashes, sync docSet, resources) follows in M25/32.4.
- */
-function docPathsFor(root: string): string[] {
-  return [
-    ...DOC_FILES,
-    ...archiveShardPaths(root, "backlog"),
-    ...archiveShardPaths(root, "progress"),
-  ];
-}
 
 /**
  * Deterministic default subjects shared by CLI and MCP (PLAYBOOK §4 style:
@@ -64,7 +50,7 @@ export function commitDocs(root: string, options: { message: string }): CommitDo
     };
   }
 
-  runGit(root, ["add", "--", ...docPathsFor(root)]);
+  runGit(root, ["add", "--", ...docFileSet(root)]);
   if (runGit(root, ["diff", "--cached", "--quiet"]).status === 0) {
     // the apply did not change any of the four docs (e.g. idempotent re-run)
     return { ok: true, committed: false, files: [] };

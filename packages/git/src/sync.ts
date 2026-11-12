@@ -3,7 +3,7 @@ import { join } from "node:path";
 import {
   appendChunkOrder,
   docsValidate,
-  DOC_FILES,
+  docFileSet,
   EMPTY_MARKER_CANONICAL,
   latestStampKey,
 } from "stepwell-core";
@@ -36,6 +36,8 @@ function regionBaseSlice(
   above: string | undefined,
   below: string | undefined,
 ): string[] | undefined {
+  // M25/32.4: empty base (both-added shard) — the whole file is parallel appends
+  if (base.every((l) => l.trim() === "")) return [];
   let start = 0;
   let end = base.length - 1;
   if (above !== undefined) {
@@ -71,6 +73,12 @@ export function resolveAppendConflict(content: string, baseContent: string | und
   if (open !== -1 || regions.length === 0) return undefined;
 
   const resolvedSides: Array<string[]> = [];
+  // M25/32.4: regions resolved via the "parallel appends into an empty insertion
+  // point" path are positional (append semantics) — allowed only at the file end
+  // when the base carries content (the classic archive/index append); a both-added
+  // file (entirely blank base, e.g. a fresh shard) is appends throughout.
+  const appendPath: boolean[] = [];
+  const baseHasContent = base.some((l) => l.trim() !== "");
   for (const region of regions) {
     const headSide = lines.slice(region.open + 1, region.mid);
     const trunkSide = lines.slice(region.mid + 1, region.close);
@@ -103,6 +111,7 @@ export function resolveAppendConflict(content: string, baseContent: string | und
 
     if (baseSet.size === 0) {
       // parallel appends into an empty insertion point (archives, empty sections)
+      appendPath.push(true);
       resolvedSides.push(orderedSides);
       continue;
     }
@@ -111,6 +120,7 @@ export function resolveAppendConflict(content: string, baseContent: string | und
     // of one section, for instance); an emptied section restores the H6 marker
     const sideLines = new Set([...headSide, ...trunkSide].map((l) => l.trim()));
     if ([...sideLines].every((l) => l === "" || baseSet.has(l))) {
+      appendPath.push(false);
       const kept = slice.filter((l) => l.trim() === "" || sideLines.has(l.trim()));
       const keptNonBlank = kept.filter((l) => l.trim() !== "");
       if (keptNonBlank.length > 0) {
@@ -129,6 +139,7 @@ export function resolveAppendConflict(content: string, baseContent: string | und
       const keyHead = latestStampKey(headSide[0]!);
       const keyTrunk = latestStampKey(trunkSide[0]!);
       if (keyHead !== undefined && keyTrunk !== undefined) {
+        appendPath.push(false);
         resolvedSides.push(keyHead >= keyTrunk ? [...headSide] : [...trunkSide]);
         continue;
       }
@@ -144,11 +155,20 @@ export function resolveAppendConflict(content: string, baseContent: string | und
     if (ctx.length > 0) out.push(...ctx, "");
     out.push(...resolvedSides[i]!);
     cursor = region.close + 1;
-    if (i === regions.length - 1) {
+    // M25/32.4: the tail is PRESERVED (not refused) — mid-file regions are
+    // legitimate (parallel block removals in one BACKLOG section land mid-file
+    // once the Done Index lives in the shards, M24). Positional append-path
+    // regions (empty insertion point in a non-empty base) still require the
+    // file-end position: a mid-file parallel INSERT of real content must abort.
+    const isLast = i === regions.length - 1;
+    if (isLast) {
       const tail = lines.slice(cursor);
-      if (tail.some((l) => l.trim() !== "")) return undefined;
-      out.push("");
+      const tailHasContent = tail.some((l) => l.trim() !== "");
+      if (appendPath[i]! && baseHasContent && tailHasContent) return undefined;
+      while (tail.length > 0 && tail[0]!.trim() === "") tail.shift();
+      out.push("", ...tail);
     } else {
+      if (appendPath[i]! && baseHasContent) return undefined;
       out.push("");
     }
   }
@@ -163,15 +183,22 @@ const EMPTY_MARKER_LINE = /^>\s*(?:No open items\.|Keine offenen Punkte\.?)\s*$/
  * (merge-base slice empty) or an As-of stamp pair; one unresolvable file aborts
  * the whole attempt (returns undefined → caller aborts the merge cleanly).
  */
+const SHARD_PATH = /docs[\\/]archive[\\/](?:BACKLOG|PROGRESS)_ARCHIVE\.p\d+\.md$/u;
+
 function resolveDocAppends(root: string, conflicted: string[], baseSha: string): string[] | undefined {
-  const docSet = new Set(DOC_FILES.map((f) => f.replaceAll("/", "\\")));
+  // M25/32.4: derived doc file set — shards count as doc files (H7 per file unchanged)
+  const docSet = new Set(docFileSet(root).map((f) => f.replaceAll("/", "\\")));
   const files: string[] = [];
   const contents = new Map<string, string>();
   for (const rel of conflicted) {
     const native = rel.replaceAll("/", "\\");
     if (!docSet.has(native)) return undefined;
     const show = runGit(root, ["show", `${baseSha}:${rel.replace(/\\/gu, "/")}`]);
-    const baseContent = show.status === 0 ? show.stdout : undefined;
+    // both-added shard (each worktree created it during its running phase) has no
+    // merge base — resolve against an empty base (parallel appends only; a shard
+    // is append-only, so this stays deterministic). Canonical files keep the
+    // strict no-base abort.
+    const baseContent = show.status === 0 ? show.stdout : SHARD_PATH.test(rel) ? "" : undefined;
     if (baseContent === undefined) return undefined;
     const abs = join(root, rel);
     const content = readFileSync(abs, "utf8");
