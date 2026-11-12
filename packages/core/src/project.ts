@@ -11,6 +11,8 @@ import {
   REQUIRED_FILES,
   missingProjectFiles,
   ProjectNotInitializedError,
+  archiveShardPaths,
+  type ArchiveKind,
 } from "./project-files.ts";
 import type {
   ArchiveItem,
@@ -48,6 +50,12 @@ export interface ProjectDocs {
   progress(): ParseResult<Progress>;
   backlogArchive(): ParseResult<ArchiveItem[]>;
   progressArchive(): ParseResult<PhaseBlock[]>;
+  /**
+   * H11/32.1: per-file archive parses (shards p<n>-ascending, canonical last).
+   * Values concat to backlogArchive().value; warnings carry per-file attribution.
+   */
+  backlogArchiveFiles(): ReadonlyArray<{ file: string; result: ParseResult<ArchiveItem[]> }>;
+  progressArchiveFiles(): ReadonlyArray<{ file: string; result: ParseResult<PhaseBlock[]> }>;
 }
 
 export function loadProject(root: string): ProjectDocs {
@@ -58,20 +66,41 @@ export function loadProject(root: string): ProjectDocs {
   if (missing.length > 0) {
     throw new Error(`missing required file(s) under ${root}: ${missing.join(", ")}`);
   }
+  const backlogArchiveFiles = memo(() =>
+    archiveFiles(root, "backlog", BACKLOG_ARCHIVE_PATH, parseBacklogArchive),
+  );
+  const progressArchiveFiles = memo(() =>
+    archiveFiles(root, "progress", PROGRESS_ARCHIVE_PATH, parseProgressArchive),
+  );
   return {
     root,
     backlog: memo(() => parseBacklog(readRequired(root, BACKLOG_PATH), join(root, BACKLOG_PATH))),
     progress: memo(() => parseProgress(readRequired(root, PROGRESS_PATH), join(root, PROGRESS_PATH))),
-    backlogArchive: memo(() =>
-      parseBacklogArchive(readRequired(root, BACKLOG_ARCHIVE_PATH), join(root, BACKLOG_ARCHIVE_PATH)),
-    ),
-    progressArchive: memo(() =>
-      parseProgressArchive(
-        readRequired(root, PROGRESS_ARCHIVE_PATH),
-        join(root, PROGRESS_ARCHIVE_PATH),
-      ),
-    ),
+    backlogArchive: memo(() => concatArchive(backlogArchiveFiles())),
+    progressArchive: memo(() => concatArchive(progressArchiveFiles())),
+    backlogArchiveFiles,
+    progressArchiveFiles,
   };
+}
+
+/** Parse every shard (p<n>-ascending) plus the canonical file last (H11/32.1). */
+function archiveFiles<T>(
+  root: string,
+  kind: ArchiveKind,
+  canonicalPath: string,
+  parse: (content: string, file: string) => ParseResult<T[]>,
+): Array<{ file: string; result: ParseResult<T[]> }> {
+  const files = [...archiveShardPaths(root, kind), canonicalPath];
+  return files.map((rel) => {
+    const file = join(root, rel);
+    return { file, result: parse(readRequired(root, rel), file) };
+  });
+}
+
+function concatArchive<T>(files: ReadonlyArray<{ result: ParseResult<T[]> }>): ParseResult<T[]> {
+  const value = files.flatMap((f) => f.result.value);
+  const warnings = files.flatMap((f) => f.result.warnings);
+  return { value, warnings };
 }
 
 export function backlogShow(root: string, id: string): BacklogEntry | undefined {

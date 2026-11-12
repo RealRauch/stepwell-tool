@@ -108,7 +108,6 @@ export function docsValidate(root: string): {
   }
   const backlogPath = join(root, "BACKLOG.md");
   const progressPath = join(root, "PROGRESS.md");
-  const backlogArchivePath = join(root, "docs", "archive", "BACKLOG_ARCHIVE.md");
 
   const backlog = docs.backlog();
   const progress = docs.progress();
@@ -177,15 +176,19 @@ export function docsValidate(root: string): {
   }
 
   const doneIds = new Set(backlog.value.doneIndex.map((done) => done.id));
-  for (const item of backlogArchive.value) {
-    if (item.open) continue;
-    if (!doneIds.has(item.id)) {
-      findings.push({
-        code: "ARCHIVE_WITHOUT_INDEX",
-        file: backlogArchivePath,
-        line: item.span.start,
-        message: `Archive block "${item.id}" is missing from the Done Index of BACKLOG.md.`,
-      });
+  // H11/32.1: attribute the finding to the file the block actually lives in
+  // (canonical or shard) — provenance comes with the per-file parses.
+  for (const { file, result } of docs.backlogArchiveFiles()) {
+    for (const item of result.value) {
+      if (item.open) continue;
+      if (!doneIds.has(item.id)) {
+        findings.push({
+          code: "ARCHIVE_WITHOUT_INDEX",
+          file,
+          line: item.span.start,
+          message: `Archive block "${item.id}" is missing from the Done Index of BACKLOG.md.`,
+        });
+      }
     }
   }
 
