@@ -366,9 +366,9 @@
     <section id="architecture" class="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center max-w-3xl mx-auto mb-16">
         <h2 class="text-xs font-mono uppercase tracking-widest text-cyan-400 font-semibold mb-2">Structure & Schema</h2>
-        <p class="text-3xl sm:text-4xl font-bold text-white tracking-tight">The 4-File Architecture (+ Archive Shards)</p>
+        <p class="text-3xl sm:text-4xl font-bold text-white tracking-tight">The 4 Core Files + Phase Shards</p>
         <p class="mt-4 text-slate-400">
-          Stepwell standardizes project management into four deterministic Markdown files. Once archives grow, completed history shards into per-phase files — rotation is a tool operation, never a hand edit.
+          Four mandatory Markdown files — every project starts with exactly these. The default archive write, though, is <strong>sharded by phase</strong>: while a phase runs, completed history appends to per-phase shard files, never to the canonical archives. Rotation is a tool operation, never a hand edit.
         </p>
       </div>
 
@@ -412,7 +412,7 @@
             <span class="pill-badge text-xs border-emerald-500/30 text-emerald-300">Append-Only</span>
           </div>
           <p class="text-sm text-slate-400 mb-4">
-            Completed items move verbatim with `[x]` and a done line — <strong>plus phase shards</strong>: while phase <em>n</em> runs, appends land in `BACKLOG_ARCHIVE.p&lt;n&gt;.md` (with the Done-Index line living where the block lives). The canonical file keeps the legacy stock and appends made outside a running phase.
+            Completed items move verbatim with `[x]` and a done line. <strong>While phase <em>n</em> runs — the normal case — the block and its Done-Index line land in the phase shard `BACKLOG_ARCHIVE.p&lt;n&gt;.md`</strong>, created with a greppable header line. The canonical file only receives appends made outside a running phase and holds the legacy stock.
           </p>
           <div class="code-font text-xs bg-[#090d16] p-3 rounded-lg border border-white/5 text-slate-400">
             ### [x] H9 — Mechanical repair path *(🟢 Low)*<br>
@@ -428,7 +428,7 @@
             <span class="pill-badge text-xs border-purple-500/30 text-purple-300">Append-Only</span>
           </div>
           <p class="text-sm text-slate-400 mb-4">
-            Completed phase blocks append verbatim, <strong>chronologically by completion time</strong> — phase numbers may stay non-monotonic (M10). With sharding, each completed phase gets its own `PROGRESS_ARCHIVE.p&lt;n&gt;.md` with a greppable header line; the progress table remains the permanent index.
+            On phase completion the detail block moves verbatim into its own shard `PROGRESS_ARCHIVE.p&lt;n&gt;.md` (header line included). Appends stay <strong>chronological by completion time</strong> — phase numbers across shards may stay non-monotonic (M10). The progress table remains the permanent index.
           </p>
           <div class="code-font text-xs bg-[#090d16] p-3 rounded-lg border border-white/5 text-slate-400">
             ### Phase 33 — Field Test (Completed: 2026-11-12T21:30)<br>
