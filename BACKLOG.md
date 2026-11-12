@@ -1,4 +1,4 @@
-# BACKLOG.md — Open items (As of: 2026-11-12T00:58
+# BACKLOG.md — Open items (As of: 2026-11-12T21:21
 
 > **This file contains only OPEN items.** Completed items are moved to `docs/archive/BACKLOG_ARCHIVE.md` unchanged after completion; this file keeps only a one-liner per item in the Done Index (below). Findings/fix-ideas/decisions are not deleted — moved to the archive.
 > Legend: 🔴 critical · 🟠 high · 🟡 medium · 🟢 low · 🔵 test gap
@@ -199,5 +199,6 @@
 - F1 — H6-Marker-Toleranz-Lücke: „Keine offenen Items." wurde nicht erfasst (drop/restore/EMPTY_MARKER_STALE) — inline gefixt in 30.7 — erledigt (inline-fix lane (Decision 8) — found+fixed in phase 30/30.7 (feat commit above): 'Keine offenen Items.' tolerance in both marker regexes; retro item per lane rule)
 - L23 — README-CLI-Block unvollständig: repair (30.2) und sync (26.x) fehlen in der Command-Referenzliste — erledigt (fixed immediately (docs-only, §2 living document) — repair + sync lines in the CLI reference block, details delegated to the tool table / workstream section)
 - M26 — Methoden-Retro fällig (PLAYBOOK §8): 7 Phasen seit Q2/Phase 23 — Review von PLAYBOOK/LESSONS + BRAINSTORM-Bewertern — erledigt (phase 31/31.1-31.2 (protocol 6d677ab + lessons sync 2e5520f) — retro of phases 24-30 per PLAYBOOK §8: all rules stay, nothing dropped/demoted; rule changes: LESSONS section scope tags (A web/API, C frontend — user-initiated, section-level over a scope matrix) + new Lesson 32 (sync child-process stderr leak, M19 evidence); textually identical in both copies, sha256 2cdde3db48e7a20315fcb56c6adb0dab5594fd256fc305bb29748c27dc5c78eb; topology limitation documented (sync = same-machine agent ritual, accepted cost); BRAINSTORM evaluator verdicts in docs/retro-2026-11.md)
+- L27 — Website-Content-Refresh auf Post-Phase-32-Stand (Tool-Surface, Sharding, Satellit, Samples) — erledigt (Commit 1c38cce (Website-Refresh, Feldprobe via lokal gerenderter Seite: Hero/Playground/Workstreams/Quickstart verifiziert, 483 Tests + typecheck grün))
 
 ---
