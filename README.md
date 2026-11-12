@@ -401,6 +401,18 @@ PLAYBOOK.md, SKILL.md and the resources. Every new tool (or new parameter surfac
 justifies the surface growth via the **alternative check** (parameter on an existing
 tool/resource instead of a new tool) — documented like the docs_review decision (L5).
 
+**Item-aware search — no tool (L19/32.8, alternative check like L5):** the question
+"have we already decided/built this?" is answered today by grep over the doc files
+plus `backlog_show` for the block context — grep returns text, `backlog_show` returns
+the item status (open/done/removed) and block boundaries. A search tool would build a
+second source of truth over files that are already the truth (M4). **Decision: no
+tool.** Reactivation criterion: field probes repeatedly miss archived hits or
+reconstruct IDs wrongly — then the minimal candidate is a `query` parameter on
+`backlog_list` (title/ID/text, optional `includeArchived: true`), hits as
+`{ id, status, file, line, snippet }` — no fuzzy ranking, no external files, no new
+tool. The workstream report's `predictedOverlap`/`overlap` (H10/30.4) already serve
+the file-collision variant of the same question.
+
 ```
 packages/
 ├── core/                 stepwell-core — zero dependencies, no MCP dependency
