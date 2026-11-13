@@ -197,5 +197,5 @@
 | 32.9 | [L25] Methoden-/Doku-Sync Sharding: PLAYBOOK §3 wortidentisch in alle Kopien + SHA256-Evidenz, QUICKSTART/README/AGENTS nachziehen | ✅ |
 | 32.10 | Verification: typecheck + full suite + docs_validate clean; offene Items archivieren; Phasen-Abschluss | ✅ |
 | 33.1 | [H13] Protokoll docs/fieldtest-finland.md — Beobachtungsfelder (Rotation, gekoppelter Index, PHASE_MIDWAY-Fenster, validate-Signale), Fund-Klassen (Bug/Methoden-Drift/UX-Friktion), Abnahmekriterium; Verlinkung im Konsumer vor Umbau-Start | ✅ |
-| 33.2 | [H13] Begleit-Feldproben während des Umbaus — Fund-Log im Protokoll, Funde als BACKLOG-Items hier (Muster T6/M16) | ⬜ |
+| 33.2 | [H13] Begleit-Feldproben während des Umbaus — Fund-Log im Protokoll, Funde als BACKLOG-Items hier (Muster T6/M16) | 🔄 |
 | 33.3 | [H13] Auswertung — 1.0.0-Entscheidvorlage (freigeben / weiter 0.x; npm-Publish-Frage), Feldtest-Eintrag in README/CHANGELOG | ⬜ |

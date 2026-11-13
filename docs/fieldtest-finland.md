@@ -66,3 +66,4 @@ not from planning) — the already-logged pre-protocol evidence is the template:
 | Date | Entry |
 |------|-------|
 | 2026-11-13 | Protocol created; pre-protocol evidence logged (T6, M16, vintage-session artifacts). Baseline: `docs_validate` clean on the field project after the M16 reconstruction. |
+| 2026-11-13 | **Umbau started** (owner report). Snapshot at start: HEAD `4a5173f`, tree clean, 1 open item (🟡), 118/118 done, 4 doc files (no shards yet — the first phase packaging will create them), `docs_validate` clean. Observation field 33.2 flipped 🔄 in this repo via the **new MCP surface** (flip itself ran clean — first live observation). |
