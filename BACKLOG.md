@@ -1,4 +1,4 @@
-# BACKLOG.md — Open items (As of: 2026-11-12T22:09
+# BACKLOG.md — Open items (As of: 2026-11-13T22:41
 
 > **This file contains only OPEN items.** Completed items are moved to `docs/archive/BACKLOG_ARCHIVE.md` unchanged after completion; this file keeps only a one-liner per item in the Done Index (below). Findings/fix-ideas/decisions are not deleted — moved to the archive.
 > Legend: 🔴 critical · 🟠 high · 🟡 medium · 🟢 low · 🔵 test gap
@@ -41,6 +41,12 @@
 - **Problem:** Bestandsprojekte, die das Shard-Regime adoptieren, behalten ihren Legacy-Bestand in der kanonischen Datei (**Belassen — Strangler**, bewusst: PLAYBOOK §3 „no bulk migration“, Append-only macht Inhalts-Migration verboten, Item→Phase ist im Bestand nicht rekonstruierbar — nur Commit-Hash). Wer trotzdem einen sauberen Schnitt will, braucht eine Op.
 - **Fix:** **Rename-only**: `PROGRESS_ARCHIVE.md` → `PROGRESS_ARCHIVE.legacy.md` (+ BACKLOG-Variante), Inhalt byte-identisch — die eine sanktionierte Dateisystem-Op; danach gehört der kanonische Name exklusiv dem No-Phase-Heim. **Verworfen und begründet:** Inhalts-Split (bricht Append-only + Archäologie) und Copy-Migration (doppelte Wahrheit, ID-Kollisionen).
 - **Acceptance (bei Umsetzung):** Rename erhält Inhalte byte-identisch; Reader/Validates ergebnisgleich; kein Inhalt wird verschoben oder editiert. **Bewusst ohne Umsetzungsdruck** — Entscheid je Projekt zur Reaktivierung; Item bleibt offen, bis ein Projekt ihn zieht.
+
+### [ ] L28 — B1-Guard-Sweep um packages/git erweitern: tsconfig paths/baseUrl-Prüfung deckt den Satelliten nicht ab — 🟢
+- **Location:** `packages/mcp/tests/packaging.test.ts` (B1/17.1-Guard `cross-workspace tsconfig resolution`, Sweep-Liste `["core", "mcp"]`), `packages/git/tsconfig.json` (paths-Mapping `stepwell-core` → `../core/src/index.ts`). Fund: Release-CI-Marathon 11/2026 — der Guard lieferte die Vorlage für den core-tsconfig-Selbst-Mapping-Fix (5f029ca), aber er sweeped `packages/git` nicht.
+- **Problem:** Der Guard prüft nur core+MCP-tsconfigs auf „paths ohne baseUrl"; das git-Satelliten-tsconfig hat dasselbe Mapping-Muster und wäre von derselben TS2307-Klasse betroffen, ohne vom Guard erfasst zu werden.
+- **Fix:** Sweep-Liste um `"git"` erweitern (Ein-Zeiler, Guard-Test bleibt ansonsten unverändert); falls git `tsconfig.build.json` hat, deckt die bestehende Schleife das ab.
+- **Acceptance:** Guard-Test grün mit erweiterter Liste; byte-gleiches Verhalten sonst; Note im Item-Close.
 
 ## 🔵 TEST GAPS
 
