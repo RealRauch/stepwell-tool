@@ -24,6 +24,12 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      # Build before test: the suite spawns the real CLI as a subprocess
+      # (L15/27.8 defaultRoot), which resolves stepwell-core via dist —
+      # without a build, node_modules has no dist to resolve to.
+      - name: Build
+        run: npm run build
+
       # One suite run: console + JUnit report + coverage in one pass.
       - name: Test (console + junit + coverage)
         run: >
