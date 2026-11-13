@@ -16,7 +16,7 @@
 
 > No open items.
 
-### [ ] H12 — Feldtest Sprocke 3: Umbau finnland-reiseapp mit stepwell 0.2.1 formalisieren — Protokoll, Begleitproben, 1.0.0-Entscheidvorlage — 🟠
+### [ ] H13 — Feldtest Sprocke 3: Umbau finnland-reiseapp mit stepwell 0.2.1 formalisieren — Protokoll, Begleitproben, 1.0.0-Entscheidvorlage — 🟠
 - **Location:** `docs/fieldtest-finland.md` (neu, Protokoll), `packages/mcp/src/cli.ts` (Probe-Kommandos, read-only), Konsumer: `D:\Development\finnland-reiseapp` (Umbau-Kontext: Nutzer-Entscheid 11/2026 — „unkritischer als ZooKeeper, da steht ein Umbau an"). Fund: Feldtest-Leiter (Decision 14) — Sprocke 3 nach dem Phase-32-Dogfood der letzte Schritt vor dem 1.0.0-Entscheid (Decision 10).
 - **Problem:** Die Leiter verlangt einen Feldtest in einem explizit gewählten unkritischen Dritprojekt — finnland-reiseapp läuft seit 29 Phasen mit der Methode, ist unkritisch und hat einen anstehenden Umbau; der Feldtest ist aber nie formalisiert worden (Beobachtungskriterien, Fund-Klassen, Abnahme).
 - **Fix:** (1) Protokoll `docs/fieldtest-finland.md`: Beobachtungsfelder (Tool-Verhalten 0.2.1 am realen Umbau: Rotation in Shards, gekoppelter Index, PHASE_MIDWAY-Fenster, docs_validate-Signale), Fund-Klassen (Bug / Methoden-Drift / UX-Friktion) mit Rückfluss als BACKLOG-Items hier, Abnahmekriterium (Umbau abgeschlossen ohne Datenverlust, docs_validate am Ende clean, Funde dokumentiert). (2) Begleit-Feldproben während des Umbaus (Fund-Log im Protokoll). (3) Auswertung → 1.0.0-Entscheidvorlage (npm-Publish-Frage inklusive). Erster Fund bereits geloggt: M16-Rekonstruktion (Pre-Adoption-Tracking-Fall, 4a5173f).
