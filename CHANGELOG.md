@@ -13,6 +13,19 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
 
 ## [Unreleased]
 
+## [0.2.2] — 2026-11-14
+
+**Packages:** `stepwell` · `stepwell-core` · `stepwell-git` — 0.2.2 (Lockstep, Decision 10)
+
+### Fixed
+- **Shard rotation follows the real agent workflow (H14, field finding F1 — finnland-reiseapp Phase 30):**
+  item rotation anchored to the 🔄 window only — but the real workflow is "flip step ✅ →
+  archive items → flip next 🔄", so every archive in that window went CANONICAL (field
+  evidence: N5–N8 in the canonical archive despite Phase 30 running). The active phase is
+  now derived from the LAST 🔄 or ✅ row in table order (planned ⬜ / blocked ⛔ phases never
+  hijack; no active rows → canonical 0.1-baseline). Shard header wording updated for new
+  shards ("in the context of Phase n").
+
 ## [0.2.1] — 2026-11-13
 
 **Packages:** `stepwell` · `stepwell-core` · `stepwell-git` — 0.2.1 (Lockstep, Decision 10)
