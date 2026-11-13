@@ -8,7 +8,10 @@ import {
   applyProgressPlan,
   planProgressUpdate,
   planPhase,
+  applyBacklogAddPlan,
+  planBacklogAdd,
 } from "../src/mutations.ts";
+import { parseBacklog } from "../src/backlog.ts";
 import { docsValidate } from "../src/validate.ts";
 
 const fixtures = join(import.meta.dirname, "fixtures");
@@ -47,14 +50,29 @@ describe("shard rotation (H12/32.2)", () => {
     expect(canonical).not.toContain("H1");
   });
 
-  it("archive_item without a running phase stays on the canonical file", () => {
+  it("archive_item right after phase completion lands on the finished phase's shard (H14/34.2 — real agent workflow)", () => {
     const root = tempProject();
-    flip(root, "Phase 2", "2.1", "✅"); // careful: completes the phase (see below tests) —
-    // after completion NO row is 🔄 anymore → next archive goes canonical (0.1-Baseline)
+    flip(root, "Phase 2", "2.1", "✅"); // completes the phase — the REAL agent workflow
+    // archives items right here, in the ✅-window (field finding F1, finnland-reiseapp
+    // Phase 30): the just-finished phase is the last ACTIVE one → its shard
     applyArchivePlan(planArchiveItem(root, "L3", { dryRun: false }));
-    expect(existsSync(join(root, "docs", "archive", "BACKLOG_ARCHIVE.p2.md"))).toBe(false);
+    // H14/34.1: the block MUST land on the finished phase's shard, NOT canonical
+    expect(existsSync(join(root, "docs", "archive", "BACKLOG_ARCHIVE.p2.md"))).toBe(true);
+    const shard = readFileSync(join(root, "docs", "archive", "BACKLOG_ARCHIVE.p2.md"), "utf8");
+    expect(shard).toContain("### [x] L3");
     const canonical = readFileSync(join(root, "docs", "archive", "BACKLOG_ARCHIVE.md"), "utf8");
-    expect(canonical).toContain("### [x] L3");
+    expect(canonical).not.toContain("### [x] L3");
+  });
+
+  it("archiving with NO active rows at all (purely planned phase) stays canonical (0.1-baseline)", () => {
+    // purely planned phases never hijack: archive while nothing is 🔄/✅ → canonical
+    const fresh = tempProject("project-k-planned"); // Phase 9 all ⬜, full block
+    applyBacklogAddPlan(planBacklogAdd(fresh, { section: "LOW", title: "Stray item", priority: "🟢", dryRun: false }));
+    const id = parseBacklog(readFileSync(join(fresh, "BACKLOG.md"), "utf8")).value.items[0]!.id;
+    applyArchivePlan(planArchiveItem(fresh, id, { dryRun: false }));
+    expect(existsSync(join(fresh, "docs", "archive", "BACKLOG_ARCHIVE.p9.md"))).toBe(false);
+    const canonical = readFileSync(join(fresh, "docs", "archive", "BACKLOG_ARCHIVE.md"), "utf8");
+    expect(canonical).toContain("### [x]");
   });
 
   it("archive_item appends to an existing shard without duplicating the header", () => {

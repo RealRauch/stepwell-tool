@@ -114,12 +114,15 @@ describe("Done-Index coupling (M24/32.3)", () => {
     expect(report.ok).toBe(true);
   });
 
-  it("canonical archive keeps the index line in BACKLOG (unchanged behavior)", () => {
+  it("archive right after completion lands on the finished phase's shard WITH its index section (H14/34.2)", () => {
     const root = tempProject("project-m-shards");
-    // flip the running step to ✅ so no phase runs → canonical target
+    // flip the running step to ✅ — phase 2 completes; archiving in that window
+    // targets the finished phase's shard (F1 semantics), line in the shard section
     applyProgressPlan(planProgressUpdate(root, "Phase 2", "2.1", "✅", { dryRun: false }));
     applyArchivePlan(planArchiveItem(root, "H1", { dryRun: false }));
     const backlog = readFileSync(join(root, "BACKLOG.md"), "utf8");
-    expect(backlog).toContain("- H1 — Upload-Endpunkt ohne Größenlimit — erledigt");
+    expect(backlog).not.toContain("- H1 —");
+    const shard = readFileSync(join(root, "docs", "archive", "BACKLOG_ARCHIVE.p2.md"), "utf8");
+    expect(shard).toContain("- H1 — Upload-Endpunkt ohne Größenlimit — erledigt");
   });
 });

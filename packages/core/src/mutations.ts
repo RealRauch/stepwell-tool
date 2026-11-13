@@ -276,15 +276,18 @@ function assertFreshChanges(changes: PlanChange[]): void {
 // ── H12/32.2: shard rotation (direct write, one shard per phase) ──────────────
 
 /**
- * Phase number of the RUNNING phase — the phase owning a 🔄 row. With 🔄 rows
- * spanning multiple phases the LAST 🔄 row in table order wins (most recent
- * work; parallel phases normally live in separate worktrees anyway, each with
- * its own doc state). No 🔄 row → undefined → canonical file (0.1-baseline).
+ * Phase number of the ACTIVE phase — the phase owning the LAST 🔄 or ✅ row in
+ * table order. H14/34.2 (field finding F1, finnland-reiseapp Phase 30): the real
+ * agent workflow is "flip step ✅ → archive items → flip next 🔄" — anchoring to
+ * the 🔄 window alone sends every item archive in that window to the CANONICAL
+ * file, defeating the shard purpose. The just-finished phase is the last active
+ * one. Planned (⬜) and blocked (⛔) phases never hijack; no active rows at all
+ * → undefined → canonical file (0.1-baseline).
  */
 function runningPhaseNumber(progress: Progress): number | undefined {
-  const wipRows = progress.rows.filter((r) => r.status === "🔄");
-  if (wipRows.length === 0) return undefined;
-  const last = wipRows[wipRows.length - 1]!;
+  const activeRows = progress.rows.filter((r) => r.status === "🔄" || r.status === "✅");
+  if (activeRows.length === 0) return undefined;
+  const last = activeRows[activeRows.length - 1]!;
   const m = /^(\d+)\./u.exec(last.step);
   return m === null ? undefined : Number(m[1]);
 }
@@ -304,7 +307,7 @@ function shardHeader(kind: "backlog" | "progress", phase: number, contains: stri
   const title = `${prefix}.p${phase}.md`;
   const purpose =
     kind === "backlog"
-      ? `home for item blocks archived while Phase ${phase} was running.`
+      ? `home for item blocks archived in the context of Phase ${phase} (rotation: last active phase, H14/34.2).`
       : `home for the detail block of Phase ${phase} on completion.`;
   return (
     `# ${title} — Shard (Phase ${phase}, append-only)${eol}${eol}` +
