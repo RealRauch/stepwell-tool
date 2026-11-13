@@ -1,4 +1,4 @@
-# BACKLOG.md — Open items (As of: 2026-11-13T22:58
+# BACKLOG.md — Open items (As of: 2026-11-14T00:16
 
 > **This file contains only OPEN items.** Completed items are moved to `docs/archive/BACKLOG_ARCHIVE.md` unchanged after completion; this file keeps only a one-liner per item in the Done Index (below). Findings/fix-ideas/decisions are not deleted — moved to the archive.
 > Legend: 🔴 critical · 🟠 high · 🟡 medium · 🟢 low · 🔵 test gap
@@ -19,6 +19,12 @@
 - **Problem:** Die Leiter verlangt einen Feldtest in einem explizit gewählten unkritischen Dritprojekt — finnland-reiseapp läuft seit 29 Phasen mit der Methode, ist unkritisch und hat einen anstehenden Umbau; der Feldtest ist aber nie formalisiert worden (Beobachtungskriterien, Fund-Klassen, Abnahme).
 - **Fix:** (1) Protokoll `docs/fieldtest-finland.md`: Beobachtungsfelder (Tool-Verhalten 0.2.1 am realen Umbau: Rotation in Shards, gekoppelter Index, PHASE_MIDWAY-Fenster, docs_validate-Signale), Fund-Klassen (Bug / Methoden-Drift / UX-Friktion) mit Rückfluss als BACKLOG-Items hier, Abnahmekriterium (Umbau abgeschlossen ohne Datenverlust, docs_validate am Ende clean, Funde dokumentiert). (2) Begleit-Feldproben während des Umbaus (Fund-Log im Protokoll). (3) Auswertung → 1.0.0-Entscheidvorlage (npm-Publish-Frage inklusive). Erster Fund bereits geloggt: M16-Rekonstruktion (Pre-Adoption-Tracking-Fall, 4a5173f).
 - **Acceptance:** Protokoll existiert und ist vor Umbau-Start im Konsumer verlinkt; Funde laufen als Items hier ein; Auswertung endet in einer begründeten 1.0.0-Empfehlung (freigeben / weiter 0.x).
+
+### [ ] H14 — Shard-Rotation verfehlt den Agenten-Standard-Workflow — Item-Appends landen kanonisch, weil die Rotation am 🔄-Fenster hängt (Feldfund F1) — 🟠
+- **Location:** `packages/core/src/mutations.ts` (`runningPhaseNumber` — H12/32.2-Rotation hängt an der Phase mit 🔄-Zeile), Standard-Agenten-Workflow im Konsumer. Fund: Feldtest Sprocke 3, Umbau-Phase 30 in finnland-reiseapp (11/2026, Protokoll docs/fieldtest-finland.md, Feld 1) — N5–N8 wurden im kanonischen BACKLOG_ARCHIVE archiviert (86 Blöcke, gewachsen), obwohl Phase 30 lief.
+- **Problem:** Der reale Agenten-Workflow ist „Step auf ✅ abschließen → Items archivieren → nächsten Step auf 🔄 drehen". Im Archivierungs-Moment existiert kein 🔄 (sequentieller Zwischenzustand) → `runningPhaseNumber` = undefined → kanonische Datei. Die Shard-Rotation verfehlt damit ihren Zweck (kanonisch einfrieren, Merge-Traffic) im häufigsten Fall — der Phasen-Block selbst landet korrekt im Shard, die Items nicht.
+- **Fix (Design-Entscheid bei Implementierung):** Rotation an die „aktive Phase" statt an das 🔄-Fenster koppeln — Kandidaten: (a) letzte Zeile ≠ ⬜ in Tabellen-Ordnung der Phase (sequentieller Fortschritt als Aktivitätssignal, M23-Konzept rückwärts gelesen); (b) Detail-Block-basiert (Phase mit Block unter Active Phases und nicht-rein-geplant); (c) explizites Phase-Argument auf `archive_item`/`backlog_remove`. Nachweis im Protokoll-Log (finnland-reiseapp 2026-11-14).
+- **Acceptance:** RED→GRÜN mit Fixture, die den realen Workflow abbildet (Step ✅ → archive_item im ✅-Fenster → Block im p<n>-Shard); kanonische Datei im Feldprojekt-Fall friert; Standard-Flows byte-gleich sonst.
 
 
 
@@ -51,6 +57,12 @@
 - **Problem:** Der Guard prüft nur core+MCP-tsconfigs auf „paths ohne baseUrl"; das git-Satelliten-tsconfig hat dasselbe Mapping-Muster und wäre von derselben TS2307-Klasse betroffen, ohne vom Guard erfasst zu werden.
 - **Fix:** Sweep-Liste um `"git"` erweitern (Ein-Zeiler, Guard-Test bleibt ansonsten unverändert); falls git `tsconfig.build.json` hat, deckt die bestehende Schleife das ab.
 - **Acceptance:** Guard-Test grün mit erweiterter Liste; byte-gleiches Verhalten sonst; Note im Item-Close.
+
+### [ ] L29 — backlog_add: Titel mit ID-Präfix erzeugt doppelt präfixierte Done-Index-Zeilen — Normalisieren/Warnung (Feldfund F2) — 🟢
+- **Location:** `packages/core/src/mutations.ts` (`planBacklogAdd`), `backlog_add`-Surface. Fund: Feldtest Sprocke 3 (finnland-reiseapp 11/2026) — Done-Index-Zeilen der Form `- N5 — N5 — Karten-Overlay … — done (done in ace6d94)`.
+- **Problem:** Der Konsumer-Agent lieferte beim `backlog_add` den Titel MIT ID-Präfix („N5 — Karten-Overlay…") — die generierte Index-Zeile dupliziert die ID sichtbar („N5 — N5 — …"), ebenso die doppelte „done (done in …)"-Konstruktion durch `note: "done in <sha>"` (Note enthält das done-Wort).
+- **Fix (leichtgewichtig, UX-Friktion nicht Korruption):** (a) `backlog_add` warnt (Warning im Plan) wenn der Titel mit `<id> —` beginnt und stript den Präfix als Vorschlag; (b) Dokumentations-Hinweis im SKILL/README: Note soll die Commit-Referenz tragen, nicht das done-Wort. Kein Breaking, additive Warning.
+- **Acceptance:** RED→GRÜN: Titel mit ID-Präfix → Warning im Plan + unverändertes Verhalten ohne Warning im Normalfall; Suite grün.
 
 ## 🔵 TEST GAPS
 
