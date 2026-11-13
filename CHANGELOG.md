@@ -13,6 +13,19 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
 
 ## [Unreleased]
 
+## [0.2.1] — 2026-11-13
+
+**Packages:** `stepwell` · `stepwell-core` · `stepwell-git` — 0.2.1 (Lockstep, Decision 10)
+
+### Fixed
+- **INDEX_WITHOUT_ARCHIVE regression (promotion field probe, stadtpfad-pwa T6):** the
+  32.3 union check skipped `[ ]`-removed archive blocks when resolving Done-Index
+  entries — removed blocks are deliberately indexless in the ARCHIVE direction but
+  their removed tail IS a valid index target (pre-32 semantics). Regression test
+  added (project-e-tableindex with a flipped checkbox); the fixture path could not
+  catch it because removed bullet tails are not parsed as index entries by design —
+  the real-world trigger was a Done-Index **table** row (W1/8.1).
+
 ## [0.2.0] — 2026-11-13
 
 **Packages:** `stepwell` · `stepwell-core` · `stepwell-git` — 0.2.0 (Lockstep, Decision 10; npm-publish vertagt bis 1.0.0-Feldtest)

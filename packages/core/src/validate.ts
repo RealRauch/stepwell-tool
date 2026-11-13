@@ -178,10 +178,14 @@ export function docsValidate(root: string): {
   const shortName = (path: string): string => path.replace(root + sep, "");
   const indexFileOf = (archiveFile: string): string =>
     archiveFile === canonicalArchivePath ? backlogPath : archiveFile;
+  // A `[x]`-completed block must carry an index line (ARCHIVE_WITHOUT_INDEX below);
+  // a `[ ]`-removed block is deliberately INDEXLESS in the ARCHIVE direction but its
+  // removed tail IS a valid index entry — INDEX_WITHOUT_ARCHIVE must accept it as a
+  // target (promotion field probe 2026-11-13, stadtpfad-pwa T6: pre-32 semantics
+  // counted every archive block, the 32.3 union must not regress that).
   const blockIndexFileById = new Map<string, string>();
   for (const { file, result } of archiveFiles) {
     for (const item of result.value) {
-      if (item.open) continue;
       if (!blockIndexFileById.has(item.id)) blockIndexFileById.set(item.id, indexFileOf(file));
     }
   }

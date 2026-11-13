@@ -291,6 +291,26 @@ describe("docsValidate — SCOPE_ROW_MISSING (M17/27.5)", () => {
   });
 });
 
+describe("docsValidate — removed block satisfies INDEX_WITHOUT_ARCHIVE (0.2.1 regression)", () => {
+  it("keeps a table Done-Index entry valid whose archive block is removed ([ ], promotion field probe 2026-11-13, stadtpfad-pwa T6)", () => {
+    const dir = tempCopy("project-e-tableindex");
+    // K5 was REMOVED (checkbox stays [ ]) while its table Done-Index row remains —
+    // pre-32 semantics counted every archive block as a valid target; the 32.3
+    // union check must not regress that (it wrongly fired INDEX_WITHOUT_ARCHIVE)
+    const archivePath = join(dir, "docs", "archive", "BACKLOG_ARCHIVE.md");
+    writeFileSync(
+      archivePath,
+      readFileSync(archivePath, "utf8").replace(
+        "### [x] K5 — SQL-Injection Column-Whitelist",
+        "### [ ] K5 — SQL-Injection Column-Whitelist",
+      ),
+      "utf8",
+    );
+    const result = docsValidate(dir);
+    expect(result.findings.filter((f) => f.code === "INDEX_WITHOUT_ARCHIVE")).toEqual([]);
+  });
+});
+
 describe("docsValidate — PHASE_PLANNED vs PLAN_WITHOUT_WIP (M18/27.9)", () => {
   it("reports a purely planned phase as a warning without flipping ok", () => {
     const result = docsValidate(join(fixtures, "project-k-planned"));
