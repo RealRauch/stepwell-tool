@@ -124,11 +124,19 @@ describe("doku-prosa sync (N1/13.3)", () => {
     expect(readme, "negative: no methoddocs://").not.toContain("methoddocs://");
   });
 
-  it("CHANGELOG.md [Unreleased] entry names N1 + stepwell naming", () => {
+  it("CHANGELOG.md latest release declares the stepwell packages (N1 guard, release-proof since 0.2.0)", () => {
     const changelog = readFileSync(join(repoRoot, "CHANGELOG.md"), "utf8");
-    const unreleased = changelog.split("## [Unreleased]")[1]?.split("## [")[0] ?? "";
-    expect(unreleased, "Unreleased mentions N1").toContain("N1");
-    expect(unreleased, "Unreleased mentions stepwell naming").toMatch(/stepwell/i);
+    // the LATEST released version = first "## [<version>]" after [Unreleased]; the
+    // naming guard scopes to its heading + Packages line (the changelog tail below
+    // keeps the historical rename mentions — they are history, not drift)
+    const tail = changelog.split("## [Unreleased]")[1] ?? "";
+    const latest = tail.slice(tail.indexOf("## ["));
+    const lines = latest.split("\n");
+    const versionLine = lines[0] ?? "";
+    const packagesLine = lines.find((l) => l.startsWith("**Packages:**")) ?? "";
+    expect(versionLine, "a released version section exists").toMatch(/^## \[\d+\.\d+\.\d+\]/u);
+    expect(packagesLine, "Packages line names stepwell").toContain("`stepwell`");
+    expect(packagesLine, "Packages line keeps the renamed names").not.toContain("@method-docs/");
   });
 
   it("AGENTS.md SemVer decision + relocated naming history reference stepwell packages", () => {

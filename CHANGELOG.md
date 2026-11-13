@@ -13,6 +13,10 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-11-13
+
+**Packages:** `stepwell` · `stepwell-core` · `stepwell-git` — 0.2.0 (Lockstep, Decision 10; npm-publish vertagt bis 1.0.0-Feldtest)
+
 ### Phase 32 — Archive sharding (completed 2026-11-12)
 
 #### Added
