@@ -9,6 +9,14 @@
 > are moved to `docs/archive/PROGRESS_ARCHIVE.md` unchanged after completion.
 
 ## Active Phases
+### Phase 33 — Field test rung 3 (finnland-reiseapp Umbau)
+
+**Umfang (Steps):**
+
+- **33.1 [H12] Protokoll docs/fieldtest-finland.md — Beobachtungsfelder (Rotation, gekoppelter Index, PHASE_MIDWAY-Fenster, validate-Signale), Fund-Klassen (Bug/Methoden-Drift/UX-Friktion), Abnahmekriterium; Verlinkung im Konsumer vor Umbau-Start**
+- **33.2 [H12] Begleit-Feldproben während des Umbaus — Fund-Log im Protokoll, Funde als BACKLOG-Items hier (Muster T6/M16)**
+- **33.3 [H12] Auswertung — 1.0.0-Entscheidvorlage (freigeben / weiter 0.x; npm-Publish-Frage), Feldtest-Eintrag in README/CHANGELOG**
+
 
 
 
@@ -188,3 +196,6 @@
 | 32.8 | [L19] Item-bewusste Suche über offen+Archiv+Done Index: Alternativprüfung dokumentieren statt Tool bauen (Muster L5, Reaktivierungs-Kriterium) | ✅ |
 | 32.9 | [L25] Methoden-/Doku-Sync Sharding: PLAYBOOK §3 wortidentisch in alle Kopien + SHA256-Evidenz, QUICKSTART/README/AGENTS nachziehen | ✅ |
 | 32.10 | Verification: typecheck + full suite + docs_validate clean; offene Items archivieren; Phasen-Abschluss | ✅ |
+| 33.1 | [H12] Protokoll docs/fieldtest-finland.md — Beobachtungsfelder (Rotation, gekoppelter Index, PHASE_MIDWAY-Fenster, validate-Signale), Fund-Klassen (Bug/Methoden-Drift/UX-Friktion), Abnahmekriterium; Verlinkung im Konsumer vor Umbau-Start | ⬜ |
+| 33.2 | [H12] Begleit-Feldproben während des Umbaus — Fund-Log im Protokoll, Funde als BACKLOG-Items hier (Muster T6/M16) | ⬜ |
+| 33.3 | [H12] Auswertung — 1.0.0-Entscheidvorlage (freigeben / weiter 0.x; npm-Publish-Frage), Feldtest-Eintrag in README/CHANGELOG | ⬜ |
