@@ -207,6 +207,6 @@
 | 33.1 | [H13] Protokoll docs/fieldtest-finland.md — Beobachtungsfelder (Rotation, gekoppelter Index, PHASE_MIDWAY-Fenster, validate-Signale), Fund-Klassen (Bug/Methoden-Drift/UX-Friktion), Abnahmekriterium; Verlinkung im Konsumer vor Umbau-Start | ✅ |
 | 33.2 | [H13] Begleit-Feldproben während des Umbaus — Fund-Log im Protokoll, Funde als BACKLOG-Items hier (Muster T6/M16) | 🔄 |
 | 33.3 | [H13] Auswertung — 1.0.0-Entscheidvorlage (freigeben / weiter 0.x; npm-Publish-Frage), Feldtest-Eintrag in README/CHANGELOG | ⬜ |
-| 34.1 | [H14] RED: Fixture-Test für den realen Workflow — Step auf ✅ geflippt (Phase abgeschlossen) → archive_item im ✅-Fenster → Block muss in p<n>-Shard landen (aktuell: kanonisch) | ⬜ |
-| 34.2 | [H14] GRÜN: Aktivitäts-basierte Phase-Ableitung — letzte 🔄/✅-Zeile in Tabellen-Ordnung statt 🔄-Fenster; bestehende Testerwartungen auf die neue Semantik umstellen; Header-Wording anpassen; Suite grün | ⬜ |
+| 34.1 | [H14] RED: Fixture-Test für den realen Workflow — Step auf ✅ geflippt (Phase abgeschlossen) → archive_item im ✅-Fenster → Block muss in p<n>-Shard landen (aktuell: kanonisch) | ✅ |
+| 34.2 | [H14] GRÜN: Aktivitäts-basierte Phase-Ableitung — letzte 🔄/✅-Zeile in Tabellen-Ordnung statt 🔄-Fenster; bestehende Testerwartungen auf die neue Semantik umstellen; Header-Wording anpassen; Suite grün | ✅ |
 | 34.3 | Release 0.2.2 (Patch) + Promotion: Lockstep-Bump, Tag, Push, CI grün, frozen dir, Feldprobe; Live-Verifikation folgt mit reiseapp Phase 31 im Feldtest-Log (33.2) | ⬜ |
