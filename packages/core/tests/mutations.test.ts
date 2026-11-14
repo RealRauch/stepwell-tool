@@ -639,11 +639,11 @@ describe("backlog CRUD (T1, 6.9)", () => {
     // block heading and Done Index line doubled the id ("H5 — H5 — …")
     const plan = planBacklogAdd(dir, {
       dryRun: false,
-      section: "HIGH",
-      title: "H5 — Rate-Limit for login",
+      section: "HOCH",
+      title: "H3 — Rate-Limit for login",
       priority: "🟠",
     });
-    expect(plan.id).toBe("H5");
+    expect(plan.id).toBe("H3");
     // warning in the plan, title stripped in the block
     expect(plan.warnings).toHaveLength(1);
     expect(plan.warnings[0]!.code).toBe("TITLE_ID_PREFIX");
@@ -652,37 +652,41 @@ describe("backlog CRUD (T1, 6.9)", () => {
     expect(result.verification.ok).toBe(true);
     expect(result.warnings).toEqual(plan.warnings);
     const backlog = readFileSync(join(dir, "BACKLOG.md"), "utf8");
-    expect(backlog).toContain("### [ ] H5 — Rate-Limit for login — 🟠");
-    expect(backlog).not.toContain("H5 — H5");
+    expect(backlog).toContain("### [ ] H3 — Rate-Limit for login — 🟠");
+    expect(backlog).not.toContain("H3 — H3");
   });
 
   it("add keeps titles without an id prefix untouched (L29 — unchanged normal flow)", () => {
     const dir = tempCopy("project-a");
     const plan = planBacklogAdd(dir, {
       dryRun: false,
-      section: "HIGH",
+      section: "HOCH",
       title: "Rate-Limit — throttle repeated logins",
       priority: "🟠",
     });
-    expect(plan.id).toBe("H5");
+    expect(plan.id).toBe("H3");
     expect(plan.warnings).toEqual([]);
+    const result = applyBacklogAddPlan(plan);
+    expect(result.verification.ok).toBe(true);
     const backlog = readFileSync(join(dir, "BACKLOG.md"), "utf8");
-    expect(backlog).toContain("### [ ] H5 — Rate-Limit — throttle repeated logins — 🟠");
+    expect(backlog).toContain("### [ ] H3 — Rate-Limit — throttle repeated logins — 🟠");
   });
 
   it("add keeps a foreign id prefix in the title (L29 — only the assigned id strips)", () => {
     const dir = tempCopy("project-a");
     const plan = planBacklogAdd(dir, {
       dryRun: false,
-      section: "HIGH",
+      section: "HOCH",
       title: "N9 — Rate-Limit for login",
       priority: "🟠",
-      id: "H5",
+      id: "H3",
     });
-    expect(plan.id).toBe("H5");
+    expect(plan.id).toBe("H3");
     expect(plan.warnings).toEqual([]);
+    const result = applyBacklogAddPlan(plan);
+    expect(result.verification.ok).toBe(true);
     const backlog = readFileSync(join(dir, "BACKLOG.md"), "utf8");
-    expect(backlog).toContain("### [ ] H5 — N9 — Rate-Limit for login — 🟠");
+    expect(backlog).toContain("### [ ] H3 — N9 — Rate-Limit for login — 🟠");
   });
 
   it("add refreshes the Stand timestamp in the heading", () => {
