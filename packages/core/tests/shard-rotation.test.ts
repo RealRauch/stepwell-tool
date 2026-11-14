@@ -34,6 +34,17 @@ function flip(root: string, phase: string, step: string, status: "🔄" | "✅" 
   applyProgressPlan(planProgressUpdate(root, phase, step, status, { dryRun: false }));
 }
 
+/** H14/F4: em-dash retrofit rows (step column "—") appended at table end, like the
+ * field project's post-adoption history rows (finnland-reiseapp, table lines 169–172). */
+function appendRetrofitRows(root: string, rows: string[]): void {
+  const progressPath = join(root, "PROGRESS.md");
+  const text = readFileSync(progressPath, "utf8");
+  const lines = text.split(/\r?\n/);
+  const lastRow = lines.map((l) => /^\|/.test(l)).lastIndexOf(true);
+  lines.splice(lastRow + 1, 0, ...rows);
+  writeFileSync(progressPath, lines.join("\n"), "utf8");
+}
+
 describe("shard rotation (H12/32.2)", () => {
   it("archive_item during a running phase creates BACKLOG_ARCHIVE.p<n>.md with header", () => {
     const root = tempProject();
@@ -57,6 +68,26 @@ describe("shard rotation (H12/32.2)", () => {
     // Phase 30): the just-finished phase is the last ACTIVE one → its shard
     applyArchivePlan(planArchiveItem(root, "L3", { dryRun: false }));
     // H14/34.1: the block MUST land on the finished phase's shard, NOT canonical
+    expect(existsSync(join(root, "docs", "archive", "BACKLOG_ARCHIVE.p2.md"))).toBe(true);
+    const shard = readFileSync(join(root, "docs", "archive", "BACKLOG_ARCHIVE.p2.md"), "utf8");
+    expect(shard).toContain("### [x] L3");
+    const canonical = readFileSync(join(root, "docs", "archive", "BACKLOG_ARCHIVE.md"), "utf8");
+    expect(canonical).not.toContain("### [x] L3");
+  });
+
+  it("archive_item walks back over non-numbered retrofit rows (H14/F4 recurrence — finnland-reiseapp Phase 31)", () => {
+    const root = tempProject();
+    // field reality: retrofit rows with an em-dash step column, all ✅, appended
+    // AFTER the numbered rows — the 34.2 anchor "last 🔄/✅ row" hits one of these,
+    // fails its ^\d+\. match → undefined → canonical (F4: every Phase 31 archive
+    // landed canonical despite an active numbered phase)
+    appendRetrofitRows(root, [
+      "| — | F4 Leaflet Ein-Kachel-Bug | ✅ |",
+      "| — | M16 FI-Abdeckung entlang der Route — nachgetragen in 26.1 | ✅ |",
+    ]);
+    flip(root, "Phase 2", "2.1", "✅");
+    applyArchivePlan(planArchiveItem(root, "L3", { dryRun: false }));
+    // the anchor must walk back to the last NUMBERED active row (2.1) → p2 shard
     expect(existsSync(join(root, "docs", "archive", "BACKLOG_ARCHIVE.p2.md"))).toBe(true);
     const shard = readFileSync(join(root, "docs", "archive", "BACKLOG_ARCHIVE.p2.md"), "utf8");
     expect(shard).toContain("### [x] L3");
