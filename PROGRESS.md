@@ -227,4 +227,4 @@
 | 40.1 | bin-Wert normalisieren (./dist/cli.js → dist/cli.js) + npm pkg fix diff-los | ✅ |
 | 41.1 | Decision 13 neu (AGENTS + History-Archiv) + CONSUMERS-Runbook neu | ✅ |
 | 41.2 | 4 Registrierungen → dist/serve.js + je Handshake-Probe | ✅ |
-| 41.3 | dev-Repo schließen: Backup-Push + ff-Merge → main (CI) + Verzeichnis löschen | ⬜ |
+| 41.3 | dev-Repo schließen: Backup-Push + ff-Merge → main (CI) + Verzeichnis löschen | 🔄 |
