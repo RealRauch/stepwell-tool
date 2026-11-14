@@ -61,6 +61,7 @@ describe("tool progress_show (2.3)", () => {
       const result = await callTool(c, "progress_show", { root: projectA, phase: "Phase 99" });
       expect(result.isError).toBe(true);
       expect(result.content[0]?.text).toContain("Phase 99");
+      expect(result.content[0]?.text).toContain("neither a running phase nor in the archive");
     } finally {
       await c.close();
     }

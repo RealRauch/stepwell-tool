@@ -158,6 +158,7 @@ describe("tool backlog_show (2.2)", () => {
       const result = await callTool(c, "backlog_show", { root: projectA, id: "NOPE" });
       expect(result.isError).toBe(true);
       expect(result.content[0]?.text).toContain("NOPE");
+      expect(result.content[0]?.text).toContain("not in the open BACKLOG");
     } finally {
       await c.close();
     }

@@ -33,6 +33,8 @@ describe("createDocsServer — 2.1 grundserver", () => {
       expect(echo?.title).toBe("Echo");
       expect(echo?.description).toContain("Echo");
       expect(echo?.inputSchema.type).toBe("object");
+      const echoProps = echo?.inputSchema.properties as { text?: { description?: string } } | undefined;
+      expect(echoProps?.text?.description).toBe("The text to return.");
     } finally {
       await close();
     }
