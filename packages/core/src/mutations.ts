@@ -276,20 +276,26 @@ function assertFreshChanges(changes: PlanChange[]): void {
 // ── H12/32.2: shard rotation (direct write, one shard per phase) ──────────────
 
 /**
- * Phase number of the ACTIVE phase — the phase owning the LAST 🔄 or ✅ row in
- * table order. H14/34.2 (field finding F1, finnland-reiseapp Phase 30): the real
- * agent workflow is "flip step ✅ → archive items → flip next 🔄" — anchoring to
- * the 🔄 window alone sends every item archive in that window to the CANONICAL
+ * Phase number of the ACTIVE phase — the phase owning the LAST NUMBERED 🔄 or ✅
+ * row in table order. H14/34.2 (field finding F1, finnland-reiseapp Phase 30): the
+ * real agent workflow is "flip step ✅ → archive items → flip next 🔄" — anchoring
+ * to the 🔄 window alone sends every item archive in that window to the CANONICAL
  * file, defeating the shard purpose. The just-finished phase is the last active
- * one. Planned (⬜) and blocked (⛔) phases never hijack; no active rows at all
- * → undefined → canonical file (0.1-baseline).
+ * one. Planned (⬜) and blocked (⛔) phases never hijack.
+ * H14/F4 (field finding F4, finnland-reiseapp Phase 31): the LAST active row may be
+ * a non-numbered retrofit row (step column `—`, e.g. the field project's F4/H22/U1/
+ * M16 addenda, table lines 169–172) — taking it verbatim failed the `^\d+\.` match
+ * → undefined → canonical for EVERY archive in the phase. The anchor therefore
+ * walks back to the last NUMBERED active row; undefined only when no numbered
+ * active row exists at all → canonical file (0.1-baseline).
  */
 function runningPhaseNumber(progress: Progress): number | undefined {
   const activeRows = progress.rows.filter((r) => r.status === "🔄" || r.status === "✅");
-  if (activeRows.length === 0) return undefined;
-  const last = activeRows[activeRows.length - 1]!;
-  const m = /^(\d+)\./u.exec(last.step);
-  return m === null ? undefined : Number(m[1]);
+  for (let i = activeRows.length - 1; i >= 0; i -= 1) {
+    const m = /^(\d+)\./u.exec(activeRows[i]!.step);
+    if (m !== null) return Number(m[1]);
+  }
+  return undefined;
 }
 
 function shardRelPath(kind: "backlog" | "progress", phase: number): string {

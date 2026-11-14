@@ -13,6 +13,17 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
 
 ## [Unreleased]
 
+### Fixed
+
+- **Shard-rotation anchor walks back over non-numbered retrofit rows (H14/F4, Phase 43):**
+  field recurrence in finnland-reiseapp Phase 31 (protocol `docs/fieldtest-finland.md`):
+  the H14/34.2 anchor "last 🔄/✅ row" was defeated by trailing retrofit rows with an
+  em-dash step column (all ✅, e.g. F4/H22/U1/M16 addenda) — the `^\d+\.` match failed →
+  `undefined` → every item archive of the phase landed canonical despite an active
+  numbered phase. `runningPhaseNumber` now walks back to the last **numbered** active
+  row; `undefined` (canonical, 0.1-baseline) only when no numbered active row exists.
+  RED→GREEN fixture reproduces the field state; standard flows byte-identical.
+
 ## [0.2.5] — 2026-11-14
 
 **Packages:** `stepwell` · `stepwell-core` · `stepwell-git` — 0.2.5 (Lockstep, Decision 10)
