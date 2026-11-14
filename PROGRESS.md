@@ -16,6 +16,12 @@
 - **33.1 [H13] Protokoll docs/fieldtest-finland.md — Beobachtungsfelder (Rotation, gekoppelter Index, PHASE_MIDWAY-Fenster, validate-Signale), Fund-Klassen (Bug/Methoden-Drift/UX-Friktion), Abnahmekriterium; Verlinkung im Konsumer vor Umbau-Start**
 - **33.2 [H13] Begleit-Feldproben während des Umbaus — Fund-Log im Protokoll, Funde als BACKLOG-Items hier (Muster T6/M16)**
 - **33.3 [H13] Auswertung — 1.0.0-Entscheidvorlage (freigeben / weiter 0.x; npm-Publish-Frage), Feldtest-Eintrag in README/CHANGELOG**
+### Phase 36 — Coverage-gate harness timeout (M29)
+
+**Umfang (Steps):**
+
+- **36.1 Harness-Timeout des coverage-gate-Tests 180s→300s (Gate-Assertions unverändert) + Vollverifikation**
+
 
 
 
@@ -206,3 +212,4 @@
 | 34.3 | Release 0.2.2 (Patch) + Promotion: Lockstep-Bump, Tag, Push, CI grün, frozen dir, Feldprobe; Live-Verifikation folgt mit reiseapp Phase 31 im Feldtest-Log (33.2) | ✅ |
 | 35.1 | Core: deutsche Output-Strings → EN (mutations.ts, context.ts; Test-First) | ✅ |
 | 35.2 | MCP: echo-Schema + Error-Strings → EN (server.ts, tools.ts; Test-First) + CHANGELOG + Verifikation | ✅ |
+| 36.1 | Harness-Timeout des coverage-gate-Tests 180s→300s (Gate-Assertions unverändert) + Vollverifikation | 🔄 |
