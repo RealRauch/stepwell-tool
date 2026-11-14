@@ -16,13 +16,6 @@
 - **33.1 [H13] Protokoll docs/fieldtest-finland.md — Beobachtungsfelder (Rotation, gekoppelter Index, PHASE_MIDWAY-Fenster, validate-Signale), Fund-Klassen (Bug/Methoden-Drift/UX-Friktion), Abnahmekriterium; Verlinkung im Konsumer vor Umbau-Start**
 - **33.2 [H13] Begleit-Feldproben während des Umbaus — Fund-Log im Protokoll, Funde als BACKLOG-Items hier (Muster T6/M16)**
 - **33.3 [H13] Auswertung — 1.0.0-Entscheidvorlage (freigeben / weiter 0.x; npm-Publish-Frage), Feldtest-Eintrag in README/CHANGELOG**
-### Phase 41 — End freeze-split: single repo, build-gated consumers (H15)
-
-**Umfang (Steps):**
-
-- **41.1 Decision 13 neu (AGENTS + History-Archiv) + CONSUMERS-Runbook neu**
-- **41.2 4 Registrierungen → dist/serve.js + je Handshake-Probe**
-- **41.3 dev-Repo schließen: Backup-Push + ff-Merge → main (CI) + Verzeichnis löschen**
 
 
 
@@ -228,5 +221,5 @@
 | 40.1 | bin-Wert normalisieren (./dist/cli.js → dist/cli.js) + npm pkg fix diff-los | ✅ |
 | 41.1 | Decision 13 neu (AGENTS + History-Archiv) + CONSUMERS-Runbook neu | ✅ |
 | 41.2 | 4 Registrierungen → dist/serve.js + je Handshake-Probe | ✅ |
-| 41.3 | dev-Repo schließen: Backup-Push + ff-Merge → main (CI) + Verzeichnis löschen | 🔄 |
+| 41.3 | dev-Repo schließen: Backup-Push + ff-Merge → main (CI) + Verzeichnis löschen | ✅ |
 | 42.1 | 3 Erwartungsstellen auf dist/cli.js + Vollverifikation + Merge mit CI-grün-Nachweis | ✅ |
