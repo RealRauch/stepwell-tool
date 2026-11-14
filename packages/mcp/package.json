@@ -14,7 +14,7 @@
     }
   },
   "bin": {
-    "stepwell": "./dist/cli.js"
+    "stepwell": "dist/cli.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
