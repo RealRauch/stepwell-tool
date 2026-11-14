@@ -566,3 +566,36 @@ describe("progress_update multi-step (12.4, E2/2)", () => {
     );
   });
 });
+
+describe("applied/planOnly response marker (L33/44.2 — field finding F3)", () => {
+  it("plan-only responses carry applied:false and a loud planOnly message", async () => {
+    const c = await connect();
+    try {
+      const result = await callTool(c, "archive_item", { root: projectA, id: "H1" });
+      expect(result.isError).toBeFalsy();
+      const data = payload(result);
+      expect(data.dryRun).toBe(true);
+      expect(data.applied).toBe(false);
+      expect(data.planOnly).toContain("nothing was written");
+      expect(data.planOnly).toContain("dryRun: false");
+    } finally {
+      await c.close();
+    }
+  });
+
+  it("applied responses carry applied:true and no planOnly message", async () => {
+    const dir = tempProject("project-a");
+    const c = await connect();
+    try {
+      const result = await callTool(c, "archive_item", { root: dir, id: "H1", dryRun: false });
+      expect(result.isError).toBeFalsy();
+      const data = payload(result);
+      expect(data.dryRun).toBe(false);
+      expect(data.applied).toBe(true);
+      expect(data.planOnly).toBeUndefined();
+      expect(data.verification.ok).toBe(true);
+    } finally {
+      await c.close();
+    }
+  });
+});
