@@ -210,5 +210,5 @@
 | 34.1 | [H14] RED: Fixture-Test für den realen Workflow — Step auf ✅ geflippt (Phase abgeschlossen) → archive_item im ✅-Fenster → Block muss in p<n>-Shard landen (aktuell: kanonisch) | ✅ |
 | 34.2 | [H14] GRÜN: Aktivitäts-basierte Phase-Ableitung — letzte 🔄/✅-Zeile in Tabellen-Ordnung statt 🔄-Fenster; bestehende Testerwartungen auf die neue Semantik umstellen; Header-Wording anpassen; Suite grün | ✅ |
 | 34.3 | Release 0.2.2 (Patch) + Promotion: Lockstep-Bump, Tag, Push, CI grün, frozen dir, Feldprobe; Live-Verifikation folgt mit reiseapp Phase 31 im Feldtest-Log (33.2) | ✅ |
-| 35.1 | Core: deutsche Output-Strings → EN (mutations.ts, context.ts; Test-First) | 🔄 |
+| 35.1 | Core: deutsche Output-Strings → EN (mutations.ts, context.ts; Test-First) | ✅ |
 | 35.2 | MCP: echo-Schema + Error-Strings → EN (server.ts, tools.ts; Test-First) + CHANGELOG + Verifikation | ⬜ |
