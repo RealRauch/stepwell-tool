@@ -1,4 +1,4 @@
-# BACKLOG.md — Open items (As of: 2026-11-14T14:04
+# BACKLOG.md — Open items (As of: 2026-11-14T15:03
 
 > **This file contains only OPEN items.** Completed items are moved to `docs/archive/BACKLOG_ARCHIVE.md` unchanged after completion; this file keeps only a one-liner per item in the Done Index (below). Findings/fix-ideas/decisions are not deleted — moved to the archive.
 > Legend: 🔴 critical · 🟠 high · 🟡 medium · 🟢 low · 🔵 test gap
@@ -64,6 +64,12 @@
 - **Problem:** Der Konsumer-Agent lieferte beim `backlog_add` den Titel MIT ID-Präfix („N5 — Karten-Overlay…") — die generierte Index-Zeile dupliziert die ID sichtbar („N5 — N5 — …"), ebenso die doppelte „done (done in …)"-Konstruktion durch `note: "done in <sha>"` (Note enthält das done-Wort).
 - **Fix (leichtgewichtig, UX-Friktion nicht Korruption):** (a) `backlog_add` warnt (Warning im Plan) wenn der Titel mit `<id> —` beginnt und stript den Präfix als Vorschlag; (b) Dokumentations-Hinweis im SKILL/README: Note soll die Commit-Referenz tragen, nicht das done-Wort. Kein Breaking, additive Warning.
 - **Acceptance:** RED→GRÜN: Titel mit ID-Präfix → Warning im Plan + unverändertes Verhalten ohne Warning im Normalfall; Suite grün.
+
+### [ ] L30 — progress_plan_phase-Message nennt veralteten Code-Namen — „PLAN_WITHOUT_WIP resolves with the first 🔄" → PHASE_PLANNED — 🟢
+- **Location:** `packages/core/src/mutations.ts:892` (`applyPhasePlan` — Verifikations-Message des Phasen-Plans)
+- **Problem:** Die Message sagt „phase is planned but not started yet (**PLAN_WITHOUT_WIP** resolves with the first 🔄)" — veralteter Code-Name: seit M18/27.9 ist der Signalzustand einer rein geplanten Phase das Warning **PHASE_PLANNED**; `PLAN_WITHOUT_WIP` ist nur noch das Orphaned-Finding. Kosmetischer Prosa-Rest in der Tool-Fläche, erstmals beobachtet bei Datacraft-Rückmeldung 11/2026 (Agent meldete korrekt „PHASE_PLANNED-Hinweis", die Tool-Message nannte den falschen Namen).
+- **Acceptance:** Message nennt `PHASE_PLANNED`; ggf. Test-Assertion angepasst; `npm run typecheck` + `npm run test` grün; kontraktneutral (Messages/Prosa frei, Decision 13).
+- **Packaging:** als Phase 37 (37.1) paketiert — Freigabe durch Nutzer 11/2026 im Zug der Promotion-Planung („erst diese mini phase, dev-push + CI, dann promotion"); Content-Gate: Niedrig (Prosa-String + ggf. Test-Assertion im Step-Scope).
 
 ## 🔵 TEST GAPS
 
