@@ -1,6 +1,6 @@
 {
   "name": "stepwell",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "type": "module",
   "license": "MIT",
   "files": [
@@ -17,14 +17,18 @@
     "stepwell": "./dist/cli.js"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "stepwell-core": "*",
     "stepwell-git": "*",
-    "@modelcontextprotocol/sdk": "^1.30.0",
     "zod": "^3.25.0"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "build": "tsc -p tsconfig.build.json",
     "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RealRauch/stepwell-tool.git"
   }
 }

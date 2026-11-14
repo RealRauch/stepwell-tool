@@ -13,6 +13,19 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
 
 ## [Unreleased]
 
+## [0.2.5] — 2026-11-14
+
+**Packages:** `stepwell` · `stepwell-core` · `stepwell-git` — 0.2.5 (Lockstep, Decision 10)
+
+### Documentation
+
+- **Package READMEs (M30/Phase 39):** all three npm packages ship compact
+  READMEs (install, CLI quick start, MCP stdio config, library/satellite
+  profiles) — the package pages no longer show "No README data found".
+  `repository` metadata added to the three package.jsons so the npm pages link
+  the tool repo; the tool-repo README gained an Install section (registry links
+  + npx examples).
+
 ## [0.2.4] — 2026-11-14
 
 **Packages:** `stepwell` · `stepwell-core` · `stepwell-git` — 0.2.4 (Lockstep, Decision 10)

@@ -22,6 +22,27 @@ line endings (K1), Quick-Start guide, ISO 8601 timestamps, method retrospective 
 decision consolidation, PLAYBOOK §2 tolerance fix.
 Current state and step history: [`PROGRESS.md`](PROGRESS.md).
 
+## Install (npm)
+
+The packages are published on npm — the CLI works against any STEPWELL project
+by `--root`, no checkout of this repo needed:
+
+```bash
+npm install -g stepwell            # CLI + MCP server (stepwell-core/-git included)
+npx stepwell status --root .       # aggregate of the current repo's four docs files
+npx stepwell validate --root .     # cross-consistency check (exit 1 on findings)
+```
+
+| npm package | purpose |
+|---|---|
+| [`stepwell`](https://www.npmjs.com/package/stepwell) | CLI + MCP server (thin transport) |
+| [`stepwell-core`](https://www.npmjs.com/package/stepwell-core) | parser + reports + validation (library) |
+| [`stepwell-git`](https://www.npmjs.com/package/stepwell-git) | git satellite (workstream sync, commit automation) |
+
+MCP registration (stdio): `node <npm-root>/stepwell/dist/serve.js` — resolve
+`<npm-root>` via `npm root -g`; details in
+[`packages/mcp/README.md`](packages/mcp/README.md).
+
 ---
 
 ## Principles
