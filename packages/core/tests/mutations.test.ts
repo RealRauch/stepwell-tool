@@ -315,6 +315,14 @@ describe("phase matching + phantom skeleton guard (H8, 29.1)", () => {
     expect(change.after).not.toMatch(/### 7\b/u);
   });
 
+  it("plan verification names the PHASE_PLANNED warning (L30) — not the stale PLAN_WITHOUT_WIP code", () => {
+    const dir = tempCopy("project-a");
+    const result = applyPhasePlan(planPhase(dir, "Phase 7 — Rundung", planned, { dryRun: false }));
+    const message = result.verification.messages.find((m) => m.includes("planned but not started"))!;
+    expect(message).toContain("PHASE_PLANNED");
+    expect(message).not.toContain("PLAN_WITHOUT_WIP");
+  });
+
   it("refuses to create a phantom skeleton when the step has a table row but no block matches (H8)", () => {
     const dir = tempCopy("project-a");
     applyPhasePlan(planPhase(dir, "Phase 7 — Rundung", planned, { dryRun: false }));
