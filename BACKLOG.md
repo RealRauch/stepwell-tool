@@ -66,12 +66,6 @@
 - **Fix (leichtgewichtig, UX-Friktion nicht Korruption):** (a) `backlog_add` warnt (Warning im Plan) wenn der Titel mit `<id> —` beginnt und stript den Präfix als Vorschlag; (b) Dokumentations-Hinweis im SKILL/README: Note soll die Commit-Referenz tragen, nicht das done-Wort. Kein Breaking, additive Warning.
 - **Acceptance:** RED→GRÜN: Titel mit ID-Präfix → Warning im Plan + unverändertes Verhalten ohne Warning im Normalfall; Suite grün.
 
-### [ ] L32 — bin-`./`-Präfix triggert npm-Publish-Warnung — normalisieren (bin: „dist/cli.js") — 🟢
-- **Location:** `packages/mcp/package.json` — `"bin": { "stepwell": "./dist/cli.js" }`
-- **Problem:** npm 12 (12.2.1) meldet bei JEDEM Publish von `stepwell`: „bin[stepwell] script name dist/cli.js was invalid and removed" — der `./`-Präfix im bin-Wert löst den Publish-Fixer aus (`npm pkg fix` normalisiert zu `dist/cli.js`, diff beweist es). Funkenneutral: der Fixer korrigiert im Speicher, die published Artefakte (0.2.4/0.2.5) haben den bin-Eintrag und sind funktionstüchtig (Shim + Boot + Live-Validierung gegen datacraft verifiziert) — aber die Warnung feuert warnhygienisch bei jedem Publish.
-- **Acceptance:** bin-Wert normalisiert (`dist/cli.js`), `npm pkg fix` in packages/mcp diff-los, `npm pack --dry-run` warn-frei; kontraktneutral (Metadatum). Fährt mit dem nächsten regulären Release mit — kein Extra-Release.
-- **Packaging:** als Phase 40 (40.1) paketiert — Freigabe implizit durch Fund-Meldung des Nutzers 11/2026 (Warnung gepostet); Content-Gate: Niedrig (Manifest-Metadatum, kein Dependency-Change).
-
 ## 🔵 TEST GAPS
 
 ---
