@@ -1,6 +1,9 @@
 import { spawn } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {describe, expect, it, vi } from "vitest";
+
+const mcpPkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as { version: string };
 
 const servePath = join(import.meta.dirname, "..", "src", "serve.ts");
 
@@ -51,6 +54,6 @@ describe("serve.ts — stdio transport (real process)", () => {
       result: { serverInfo: { name: string; version: string } };
     };
     expect(parsed.result.serverInfo.name).toBe("stepwell");
-    expect(parsed.result.serverInfo.version).toBe("0.1.0");
+    expect(parsed.result.serverInfo.version).toBe(mcpPkg.version);
   });
 });

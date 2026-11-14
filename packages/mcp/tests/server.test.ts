@@ -1,7 +1,10 @@
+import { readFileSync } from "node:fs";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { describe, expect, it } from "vitest";
 import { createDocsServer, SERVER_NAME, SERVER_VERSION } from "../src/server.ts";
+
+const mcpPkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as { version: string };
 
 async function connect(): Promise<{ client: Client; close: () => Promise<void> }> {
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
@@ -21,7 +24,7 @@ async function connect(): Promise<{ client: Client; close: () => Promise<void> }
 describe("createDocsServer — 2.1 grundserver", () => {
   it("exposes SERVER_NAME/VERSION", () => {
     expect(SERVER_NAME).toBe("stepwell");
-    expect(SERVER_VERSION).toBe("0.1.0");
+    expect(SERVER_VERSION).toBe(mcpPkg.version);
   });
 
   it("lists the echo tool with metadata", async () => {
