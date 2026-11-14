@@ -13,6 +13,15 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
 
 ## [Unreleased]
 
+### Fixed
+
+- Tool-surface language (M28/Phase 35): remaining German output strings now emit English —
+  mutation plan descriptions, error messages, the phase-completion doc-sync reminder and the
+  echo tool's parameter schema; the archive shard Done-Index placeholder follows the heading
+  locale (DE heading keeps its DE placeholder). Contract unchanged (no tool names, parameters,
+  JSON shapes, resource URIs or warning codes touched); the deliberate `--locale de|en` feature
+  for generated archive texts is untouched.
+
 ## [0.2.2] — 2026-11-14
 
 **Packages:** `stepwell` · `stepwell-core` · `stepwell-git` — 0.2.2 (Lockstep, Decision 10)

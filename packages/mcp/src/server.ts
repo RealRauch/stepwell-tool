@@ -26,7 +26,7 @@ export function createDocsServer(): McpServer {
       title: "Echo",
       description: "Echo tool for server verification (step 2.1).",
       annotations: { ...READ_ONLY_ANNOTATIONS },
-      inputSchema: { text: z.string().describe("Der zurückzugebende Text.") },
+      inputSchema: { text: z.string().describe("The text to return.") },
     },
     async ({ text }) => ({
       content: [{ type: "text", text }],

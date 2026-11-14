@@ -254,7 +254,7 @@ export function registerDocsTools(server: McpServer): void {
       asResult(() => {
         const entry = backlogShow(root, id);
         if (entry === undefined) {
-          throw new Error(`unknown item id: ${id} (nicht im offenen BACKLOG, Erledigt-Index oder Archiv)`);
+          throw new Error(`unknown item id: ${id} (not in the open BACKLOG, Done Index or archive)`);
         }
         return entry;
       }),
@@ -311,7 +311,7 @@ export function registerDocsTools(server: McpServer): void {
           docs.progress().value.phases.find((p) => matchesPhase(p, phase)) ??
           docs.progressArchive().value.find((p) => matchesPhase(p, phase));
         if (block === undefined) {
-          throw new Error(`unknown phase: ${phase} (weder laufende Phase noch Archiv)`);
+          throw new Error(`unknown phase: ${phase} (neither a running phase nor in the archive)`);
         }
         return block;
       }),
@@ -655,7 +655,7 @@ export function registerDocsTools(server: McpServer): void {
         "dryRun is false.",
       inputSchema: {
         root: ROOT_FIELD,
-        phase: z.string().describe('New phase in the pattern "Phase <Nr>[ — Title]", e.g. "Phase 7 — Polish".'),
+        phase: z.string().describe('New phase in the pattern "Phase <N>[ — Title]", e.g. "Phase 7 — Polish".'),
         steps: z
           .array(z.object({ step: z.string(), name: z.string() }))
           .describe("Steps of the phase in order (e.g. [{ step: \"7.1\", name: \"Setup\" }])."),
