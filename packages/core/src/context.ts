@@ -77,7 +77,7 @@ export function phaseContext(root: string, phase: string): PhaseContext {
   const docs = loadProject(root);
   const block = findBlock(docs, phase);
   if (block === undefined) {
-    throw new Error(`unknown phase: ${phase} (weder laufende Phase noch Archiv)`);
+    throw new Error(`unknown phase: ${phase} (neither a running phase nor in the archive)`);
   }
   const steps = new Set(scopeSteps(block));
   const rows = docs.progress().value.rows.filter((r) => steps.has(r.step));

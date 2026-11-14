@@ -79,13 +79,13 @@ function normalizeNote(note: string | undefined): string | undefined {
 const CHECKPOINT_RE = /^[0-9a-f]{7,40}$/iu;
 
 /** Statischer Textbaustein (L4): Erinnerung an den Doku-Sync nach Phasen-Abschluss. */
-export const DOC_SYNC_REMINDER = "Doku-Sync prüfen: AGENTS-Kickoff, README, PLAYBOOK-Kopien";
+export const DOC_SYNC_REMINDER = "Check doc sync: AGENTS kickoff, README, PLAYBOOK copies";
 
 function normalizeCheckpoint(checkpoint: string | undefined): string | undefined {
   const trimmed = normalizeNote(checkpoint);
   if (trimmed === undefined) return undefined;
   if (!CHECKPOINT_RE.test(trimmed)) {
-    throw new Error(`invalid checkpoint: "${trimmed}" — erwartet ist ein Commit-SHA mit 7–40 Hex-Zeichen`);
+    throw new Error(`invalid checkpoint: "${trimmed}" — expected a commit SHA with 7–40 hex characters`);
   }
   return trimmed.toLowerCase();
 }
@@ -144,7 +144,7 @@ export function planArchiveItem(
     if (archived) {
       throw new Error(`item "${id}" is already archived`);
     }
-    throw new Error(`unknown open item id: ${id} (nicht im offenen BACKLOG)`);
+    throw new Error(`unknown open item id: ${id} (not in the open BACKLOG)`);
   }
 
   const backlogRel = "BACKLOG.md";
@@ -187,7 +187,7 @@ export function planArchiveItem(
       }
     }
     if (sectionStart === -1) {
-      throw new Error(`missing Erledigt-Index section in ${backlogRel}`);
+      throw new Error(`missing Done Index section in ${backlogRel}`);
     }
     let end = sectionStart + 1;
     while (end < lines.length && !SECTION_HEADING.test(lines[end]!) && !RULE_LINE.test(lines[end]!)) {
@@ -235,8 +235,8 @@ export function planArchiveItem(
       relPath: backlogRel,
       description:
         shardPhase === undefined
-          ? `Item "${id}" aus dem offenen BACKLOG entfernen (span ${item.span.start}–${item.span.end}, verbatim)`
-          : `Item "${id}" aus dem offenen BACKLOG entfernen (Index-Zeile lebt gekoppelt im Shard, M24/32.3)`,
+          ? `Remove item "${id}" from the open BACKLOG (span ${item.span.start}–${item.span.end}, verbatim)`
+          : `Remove item "${id}" from the open BACKLOG (index line lives coupled in the shard, M24/32.3)`,
       transform: (content, eol) =>
         shardPhase === undefined
           ? appendIndexLine(removeBlock(content, eol), eol)
@@ -245,7 +245,7 @@ export function planArchiveItem(
     {
       relPath: archiveRel,
       createIfMissing: true,
-      description: `Item-Block "${id}" verbatim anhängen (Checkbox → [x]${note !== undefined ? ", mit Erledigt-Zeile" : ""})${shardPhase !== undefined ? " + Index-Zeile in der Shard-Sektion (M24/32.3)" : ""} — Ziel: ${archiveRel}${shardPhase !== undefined ? " (Shard der laufenden Phase)" : " (kanonisch, keine laufende Phase)"}`,
+      description: `Append item block "${id}" verbatim (checkbox → [x]${note !== undefined ? ", with Done line" : ""})${shardPhase !== undefined ? " + index line in the shard section (M24/32.3)" : ""} — target: ${archiveRel}${shardPhase !== undefined ? " (shard of the running phase)" : " (canonical, no running phase)"}`,
       transform: appendToArchive,
     },
   ]);
@@ -382,7 +382,11 @@ export function appendIndexLineToSection(
   if (sectionStart === -1) {
     // create the section at the file end
     const trimmed = content.replace(/\s+$/u, "");
-    return `${trimmed}${eol}${eol}${heading}${eol}${eol}> Einzeiler je abgeschlossenem Item (Details oben).${eol}${eol}${line}${eol}`;
+    // Generated-text locale follows the heading (DE heading → DE placeholder); EN canonical otherwise (M28/35.1).
+    const placeholder = /Erledigt/iu.test(heading)
+      ? "> Einzeiler je abgeschlossenem Item (Details oben)."
+      : "> One-liner per completed item (details above).";
+    return `${trimmed}${eol}${eol}${heading}${eol}${eol}${placeholder}${eol}${eol}${line}${eol}`;
   }
   let end = sectionStart + 1;
   while (end < lines.length && !SECTION_HEADING.test(lines[end]!) && !RULE_LINE.test(lines[end]!)) {
@@ -419,8 +423,8 @@ export function applyArchivePlan(plan: ArchiveItemPlan): ApplyResult {
   else messages.push(`item "${plan.id}" is STILL in the open BACKLOG`);
   if (inArchive) messages.push(`item "${plan.id}" present in BACKLOG_ARCHIVE`);
   else messages.push(`item "${plan.id}" MISSING from BACKLOG_ARCHIVE`);
-  if (inIndex) messages.push(`item "${plan.id}" present in the Erledigt-Index`);
-  else messages.push(`item "${plan.id}" MISSING from the Erledigt-Index`);
+  if (inIndex) messages.push(`item "${plan.id}" present in the Done Index`);
+  else messages.push(`item "${plan.id}" MISSING from the Done Index`);
 
   const findings = docsValidate(plan.root)
     .findings
@@ -524,7 +528,7 @@ function appendScopeBullets(
     }
   }
   if (scopeIdx === -1) {
-    throw new Error(`scope section ("${scopeHeading}") im Block "${block.name}" nicht gefunden`);
+    throw new Error(`scope section ("${scopeHeading}") not found in block "${block.name}"`);
   }
   lines.splice((lastBullet === -1 ? scopeIdx : lastBullet) + 1, 0, ...bullets);
 }
@@ -553,17 +557,17 @@ export function planProgressUpdate(
   const alreadyArchived = options.phaseAlreadyArchived === true;
 
   if (block === undefined && status !== "🔄" && !alreadyArchived) {
-    throw new Error(`unknown phase: ${phase} (nur 🔄-Phasen können neu angelegt werden)`);
+    throw new Error(`unknown phase: ${phase} (only 🔄 creates a new phase)`);
   }
   if (block === undefined && row !== undefined) {
     const paramPrefix = /^Phase\s+(\d+)/u.exec(phase);
     if (paramPrefix && !row.step.startsWith(`${paramPrefix[1]!}.`)) {
-      throw new Error(`unknown step: ${step} (gehört nicht zur neu anzulegenden Phase ${phase})`);
+      throw new Error(`unknown step: ${step} (does not belong to the phase being created, ${phase})`);
     }
   }
   const scopeEntry = block === undefined ? undefined : scopeEntryFor(block, step);
   if (block !== undefined && row === undefined && scopeEntry === undefined) {
-    throw new Error(`unknown step: ${step} (weder in der Tabelle noch im Scope der Phase)`);
+    throw new Error(`unknown step: ${step} (neither in the table nor in the phase scope)`);
   }
   // H8/29.1: a 🔄 flip whose step already sits in the table must NEVER fall into the
   // skeleton path — that silently inserted a phantom block ("### 27" + scope) while the
@@ -641,8 +645,8 @@ export function planProgressUpdate(
     {
       relPath: progressRel,
       description: completedPhase
-        ? `Step ${step} auf ${status} setzen und Detail-Block "${block?.name}" ins Archiv verschieben`
-        : `Step ${step} in der Fortschrittstabelle auf ${status} setzen`,
+        ? `Set step ${step} to ${status} and move the detail block "${block?.name}" to the archive`
+        : `Set step ${step} to ${status} in the progress table`,
       transform: editProgress,
     },
   ];
@@ -650,7 +654,7 @@ export function planProgressUpdate(
     edits.push({
       relPath: archiveRel,
       createIfMissing: true,
-      description: `Detail-Block "${block.name}" verbatim anhängen${note !== undefined || checkpoint !== undefined ? " (mit Verifikations-Zeile)" : ""} — Ziel: ${archiveRel} (Shard je Phase)`,
+      description: `Append detail block "${block.name}" verbatim${note !== undefined || checkpoint !== undefined ? " (with verification line)" : ""} — target: ${archiveRel} (shard per phase)`,
       transform: (content, eol) => {
         const blockLines = block.raw.split(/\r?\n/);
         if (newTitle !== undefined) {
@@ -770,7 +774,7 @@ export function planPhase(
 
   const prefixMatch = /^Phase\s+(\d+)(\s+—\s+(.+))?$/u.exec(phase.trim());
   if (prefixMatch === null) {
-    throw new Error(`phase "${phase}" entspricht nicht dem Muster "Phase <Nr>[ — Titel]"`);
+    throw new Error(`phase "${phase}" does not match the pattern "Phase <N>[ — Title]"`);
   }
   const phaseNumber = prefixMatch[1]!;
   const phaseHeading = `### ${phase.trim()}`;
@@ -780,25 +784,25 @@ export function planPhase(
   }
 
   if (steps.length === 0) {
-    throw new Error("missing steps: eine Phase braucht mindestens einen Step");
+    throw new Error("missing steps: a phase needs at least one step");
   }
   const seen = new Set<string>();
   for (const entry of steps) {
     const step = entry.step.trim();
     if (!/^\d+(?:\.\d+)?$/u.test(step) || !step.startsWith(`${phaseNumber}.`)) {
       throw new Error(
-        `step "${entry.step}" gehört nicht zur Phase ${phaseNumber} (Muster: ${phaseNumber}.<Nr>)`,
+        `step "${entry.step}" does not belong to phase ${phaseNumber} (pattern: ${phaseNumber}.<N>)`,
       );
     }
     if (seen.has(step)) {
-      throw new Error(`duplicate step: "${step}" ist mehrfach in der Steps-Liste`);
+      throw new Error(`duplicate step: "${step}" appears more than once in the steps list`);
     }
     seen.add(step);
     if (entry.name.trim() === "") {
       throw new Error(`missing name for step ${step}`);
     }
     if (progress.rows.some((r) => r.step === step)) {
-      throw new Error(`step "${step}" existiert bereits in der Fortschrittstabelle`);
+      throw new Error(`step "${step}" already exists in the progress table`);
     }
     if ((options.excludeSteps ?? []).includes(step)) {
       throw new Error(`step "${step}" is already planned in a foreign worktree (considerWorktrees) — pick the next free number`);
@@ -810,14 +814,14 @@ export function planPhase(
       const step = entry.step.trim();
       if (scopeEntryFor(running, step) !== undefined) {
         throw new Error(
-          `step "${step}" ist bereits im Scope der laufenden Phase "${running.name}"`,
+          `step "${step}" is already in the scope of the running phase "${running.name}"`,
         );
       }
     }
   }
   const archived = docs.progressArchive().value.find((p) => phaseMatches(p, phase.trim()));
   if (archived !== undefined) {
-    throw new Error(`phase "${phase}" liegt bereits im PROGRESS_ARCHIVE (Step-Nummern nie wiederverwenden)`);
+    throw new Error(`phase "${phase}" is already in the PROGRESS_ARCHIVE (never reuse step numbers)`);
   }
 
   const locale = detectLocale(
@@ -851,8 +855,8 @@ export function planPhase(
     {
       relPath: "PROGRESS.md",
       description: running !== undefined
-        ? `Laufende Phase "${running.name}" um ${steps.length} Steps erweitern (Tabellen-Zeilen ⬜ + Scope-Bullets)`
-        : `Phase "${phase.trim()}" mit ${steps.length} Steps vorausplanen (Tabellen-Zeilen ⬜ + Detail-Block-Skelett)`,
+        ? `Extend running phase "${running.name}" by ${steps.length} steps (table rows ⬜ + scope bullets)`
+        : `Plan phase "${phase.trim()}" ahead with ${steps.length} steps (table rows ⬜ + detail block skeleton)`,
       transform: edit,
     },
   ]);
@@ -1035,7 +1039,7 @@ function restoreEmptyMarker(lines: string[], headingIdx: number): void {
 function insertIntoSection(lines: string[], section: string, blockLines: string[]): void {
   const headingIdx = sectionHeadingLineAt(lines, section);
   if (headingIdx === -1) {
-    throw new Error(`unknown section: ${section} (Sektions-Titel ohne Emoji, z. B. "HOCH")`);
+    throw new Error(`unknown section: ${section} (section title without emoji, e.g. "HIGH")`);
   }
   dropEmptyMarker(lines, headingIdx);
   const insertAt = sectionInsertAt(lines, headingIdx);
@@ -1056,7 +1060,7 @@ function insertAtPosition(
 ): void {
   const headingIdx = sectionHeadingLineAt(lines, section);
   if (headingIdx === -1) {
-    throw new Error(`unknown section: ${section} (Sektions-Titel ohne Emoji, z. B. "HOCH")`);
+    throw new Error(`unknown section: ${section} (section title without emoji, e.g. "HIGH")`);
   }
   dropEmptyMarker(lines, headingIdx);
   if (position === "bottom") {
@@ -1138,7 +1142,7 @@ function requireOpenItem(docs: ReturnType<typeof loadProject>, id: string): Back
   if (item !== undefined) return item;
   const archived = docs.backlogArchive().value.some((i) => i.id === id);
   if (archived) throw new Error(`item "${id}" is already archived`);
-  throw new Error(`unknown open item id: ${id} (nicht im offenen BACKLOG)`);
+  throw new Error(`unknown open item id: ${id} (not in the open BACKLOG)`);
 }
 
 function appendIndexTail(
@@ -1154,7 +1158,7 @@ function appendIndexTail(
     }
   }
   if (sectionStart === -1) {
-    throw new Error(`missing Erledigt-Index section in ${file}`);
+    throw new Error(`missing Done Index section in ${file}`);
   }
   let end = sectionStart + 1;
   while (end < lines.length && !SECTION_HEADING.test(lines[end]!) && !RULE_LINE.test(lines[end]!)) {
@@ -1170,9 +1174,9 @@ function appendIndexTail(
 export function planBacklogAdd(root: string, options: BacklogAddOptions): BacklogAddPlan {
   const dryRun = options.dryRun ?? true;
   const title = options.title.trim();
-  if (title === "") throw new Error("missing title: ein Item braucht einen Titel nach der ID");
+  if (title === "") throw new Error("missing title: an item needs a title after the id");
   if (!KNOWN_PRIORITIES.includes(options.priority)) {
-    throw new Error(`unknown priority: ${options.priority} (erlaubt sind ${KNOWN_PRIORITIES.join(" ")})`);
+    throw new Error(`unknown priority: ${options.priority} (allowed: ${KNOWN_PRIORITIES.join(" ")})`);
   }
   const docs = loadProject(root);
   const backlogRel = "BACKLOG.md";
@@ -1182,7 +1186,7 @@ export function planBacklogAdd(root: string, options: BacklogAddOptions): Backlo
     const series = PRIORITY_SERIES[options.priority];
     if (series === undefined) {
       throw new Error(
-        `priority ${options.priority} has no id series — provide an explicit id (Konvention ^[A-Z][0-9]+$)`,
+        `priority ${options.priority} has no id series — provide an explicit id (convention ^[A-Z][0-9]+$)`,
       );
     }
     id = nextSeriesId(
@@ -1192,10 +1196,10 @@ export function planBacklogAdd(root: string, options: BacklogAddOptions): Backlo
     );
   } else {
     if (!ID_PATTERN.test(id)) {
-      throw new Error(`id "${id}" verletzt die Nomenklatur ^[A-Z][0-9]+$`);
+      throw new Error(`id "${id}" violates the naming convention ^[A-Z][0-9]+$`);
     }
     if (collectKnownIds(docs).has(id)) {
-      throw new Error(`id "${id}" ist bereits vergeben (offen, Erledigt-Index oder Archiv)`);
+      throw new Error(`id "${id}" is already taken (open, Done Index or archive)`);
     }
   }
 
@@ -1212,7 +1216,7 @@ export function planBacklogAdd(root: string, options: BacklogAddOptions): Backlo
   const changes = buildChanges(root, [
     {
       relPath: backlogRel,
-      description: `Item "${id}" in Sektion "${section}" anlegen (Ende der Sektion, Priorität ${options.priority})`,
+      description: `Create item "${id}" in section "${section}" (end of section, priority ${options.priority})`,
       transform: edit,
     },
   ]);
@@ -1257,7 +1261,7 @@ export function planBacklogUpdate(root: string, id: string, options: BacklogUpda
   const newTitle = normalizeNote(options.title) ?? item.title;
   const newPriority = options.priority ?? item.priority;
   if (options.priority !== undefined && !KNOWN_PRIORITIES.includes(options.priority)) {
-    throw new Error(`unknown priority: ${options.priority} (erlaubt sind ${KNOWN_PRIORITIES.join(" ")})`);
+    throw new Error(`unknown priority: ${options.priority} (allowed: ${KNOWN_PRIORITIES.join(" ")})`);
   }
   const headingLine = item.raw.split(/\r?\n/)[0] ?? "";
   const suffixMatch = /\s+\*[^*]+\*\s*$/u.exec(headingLine);
@@ -1302,10 +1306,10 @@ export function planBacklogUpdate(root: string, id: string, options: BacklogUpda
       relPath: "BACKLOG.md",
       description:
         targetSection !== item.section
-          ? `Item "${item.id}" aktualisieren und in Sektion "${targetSection}" verschieben${options.position !== undefined ? ` (position: ${options.position})` : ""}`
+          ? `Update item "${item.id}" and move it to section "${targetSection}"${options.position !== undefined ? ` (position: ${options.position})` : ""}`
           : options.position !== undefined
-            ? `Item "${item.id}" aktualisieren und innerhalb der Sektion verschieben (position: ${options.position})`
-            : `Item "${item.id}" aktualisieren (Titel/Priorität/Text in-place)`,
+            ? `Update item "${item.id}" and move it within the section (position: ${options.position})`
+            : `Update item "${item.id}" (title/priority/text in-place)`,
       transform: edit,
     },
   ]);
@@ -1403,13 +1407,13 @@ export function planBacklogRemove(root: string, id: string, options: BacklogRemo
   const changes = buildChanges(root, [
     {
       relPath: backlogRel,
-      description: `Item "${id}" aus dem offenen BACKLOG entfernen (verbatim-Verschub ins Archiv, Index-Tail ohne Erledigt-Marker${shardPhase !== undefined ? " — lebt gekoppelt im Shard, M24/32.3" : ""})`,
+      description: `Remove item "${id}" from the open BACKLOG (verbatim move to the archive, index tail without Done marker${shardPhase !== undefined ? " — lives coupled in the shard, M24/32.3" : ""})`,
       transform: editBacklog,
     },
     {
       relPath: archiveRel,
       createIfMissing: true,
-      description: `Item-Block "${id}" verbatim anhängen (Checkbox bleibt [ ])${note !== undefined ? ", mit Entfernt-Zeile" : ""}${shardPhase !== undefined ? " + Index-Zeile in der Shard-Sektion (M24/32.3)" : ""} — Ziel: ${archiveRel}${shardPhase !== undefined ? " (Shard der laufenden Phase)" : " (kanonisch, keine laufende Phase)"}`,
+      description: `Append item block "${id}" verbatim (checkbox stays [ ])${note !== undefined ? ", with Removed line" : ""}${shardPhase !== undefined ? " + index line in the shard section (M24/32.3)" : ""} — target: ${archiveRel}${shardPhase !== undefined ? " (shard of the running phase)" : " (canonical, no running phase)"}`,
       transform: editArchive,
     },
   ]);
@@ -1437,7 +1441,7 @@ export function applyBacklogRemovePlan(plan: BacklogRemovePlan): ApplyResult {
   );
   messages.push(
     inArchive
-      ? `item "${plan.id}" present in BACKLOG_ARCHIVE (Checkbox [ ], bewusst ohne Erledigt-Marker)`
+      ? `item "${plan.id}" present in BACKLOG_ARCHIVE (checkbox [ ], deliberately without Done marker)`
       : `item "${plan.id}" MISSING from BACKLOG_ARCHIVE`,
   );
 
