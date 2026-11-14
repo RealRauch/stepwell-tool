@@ -1,10 +1,16 @@
+import { createRequire } from "node:module";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { registerDocsResources } from "./resources.ts";
 import { READ_ONLY_ANNOTATIONS, registerDocsTools } from "./tools.ts";
 
 export const SERVER_NAME = "stepwell";
-export const SERVER_VERSION = "0.1.0";
+
+// L31/38.1: derived from the workspace package.json — the release bump is the
+// package.json edit alone; the handshake version can never decouple again.
+const require = createRequire(import.meta.url);
+const { version } = require("../package.json") as { version: string };
+export const SERVER_VERSION = version;
 
 export function createDocsServer(): McpServer {
   const server = new McpServer(

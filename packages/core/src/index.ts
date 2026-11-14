@@ -1,3 +1,7 @@
+// L31/38.1: derived from the workspace package.json — same rationale as
+// SERVER_VERSION (packages/mcp/src/server.ts); never decouples from the release.
+import { createRequire } from "node:module";
+
 export { parseBacklog, readBacklog } from "./backlog.ts";
 export {
   parseProgress,
@@ -95,4 +99,4 @@ export type {
 } from "./types.ts";
 
 export const TOOL_NAME = "stepwell";
-export const TOOL_VERSION = "0.1.0";
+export const TOOL_VERSION = createRequire(import.meta.url)("../package.json").version as string;
