@@ -1,4 +1,4 @@
-# BACKLOG.md — Open items (As of: 2026-11-14T16:49
+# BACKLOG.md — Open items (As of: 2026-11-14T21:28
 
 > **This file contains only OPEN items.** Completed items are moved to `docs/archive/BACKLOG_ARCHIVE.md` unchanged after completion; this file keeps only a one-liner per item in the Done Index (below). Findings/fix-ideas/decisions are not deleted — moved to the archive.
 > Legend: 🔴 critical · 🟠 high · 🟡 medium · 🟢 low · 🔵 test gap
@@ -21,10 +21,12 @@
 - **Acceptance:** Protokoll existiert und ist vor Umbau-Start im Konsumer verlinkt; Funde laufen als Items hier ein; Auswertung endet in einer begründeten 1.0.0-Empfehlung (freigeben / weiter 0.x).
 
 ### [ ] H14 — Shard-Rotation verfehlt den Agenten-Standard-Workflow — Item-Appends landen kanonisch, weil die Rotation am 🔄-Fenster hängt (Feldfund F1) — 🟠
-- **Location:** `packages/core/src/mutations.ts` (`runningPhaseNumber` — H12/32.2-Rotation hängt an der Phase mit 🔄-Zeile), Standard-Agenten-Workflow im Konsumer. Fund: Feldtest Sprocke 3, Umbau-Phase 30 in finnland-reiseapp (11/2026, Protokoll docs/fieldtest-finland.md, Feld 1) — N5–N8 wurden im kanonischen BACKLOG_ARCHIVE archiviert (86 Blöcke, gewachsen), obwohl Phase 30 lief.
-- **Problem:** Der reale Agenten-Workflow ist „Step auf ✅ abschließen → Items archivieren → nächsten Step auf 🔄 drehen". Im Archivierungs-Moment existiert kein 🔄 (sequentieller Zwischenzustand) → `runningPhaseNumber` = undefined → kanonische Datei. Die Shard-Rotation verfehlt damit ihren Zweck (kanonisch einfrieren, Merge-Traffic) im häufigsten Fall — der Phasen-Block selbst landet korrekt im Shard, die Items nicht.
+- **Location:** `packages/core/src/mutations.ts` (`runningPhaseNumber` — H12/32.2-Rotation), Standard-Agenten-Workflow im Konsumer. Fund: Feldtest Sprocke 3, Umbau-Phase 30 in finnland-reiseapp (11/2026, Protokoll docs/fieldtest-finland.md, Feld 1) — N5–N8 wurden im kanonischen BACKLOG_ARCHIVE archiviert (86 Blöcke, gewachsen), obwohl Phase 30 lief.
+- **Problem (ursprünglich, F1):** Der reale Agenten-Workflow ist „Step auf ✅ abschließen → Items archivieren → nächsten Step auf 🔄 drehen". Im Archivierungs-Moment existiert kein 🔄 (sequentieller Zwischenzustand) → kanonische Datei. Die Shard-Rotation verfehlt damit ihren Zweck (kanonisch einfrieren, Merge-Traffic) im häufigsten Fall — der Phasen-Block selbst landet korrekt im Shard, die Items nicht.
 - **Fix (Design-Entscheid bei Implementierung):** Rotation an die „aktive Phase" statt an das 🔄-Fenster koppeln — Kandidaten: (a) letzte Zeile ≠ ⬜ in Tabellen-Ordnung der Phase (sequentieller Fortschritt als Aktivitätssignal, M23-Konzept rückwärts gelesen); (b) Detail-Block-basiert (Phase mit Block unter Active Phases und nicht-rein-geplant); (c) explizites Phase-Argument auf `archive_item`/`backlog_remove`. Nachweis im Protokoll-Log (finnland-reiseapp 2026-11-14).
-- **Acceptance:** RED→GRÜN mit Fixture, die den realen Workflow abbildet (Step ✅ → archive_item im ✅-Fenster → Block im p<n>-Shard); kanonische Datei im Feldprojekt-Fall friert; Standard-Flows byte-gleich sonst.
+- **Rezidiv F4 (11/2026, implementierter 34.2-Anker besiegt):** Phase 31 im Feldprojekt (Session lief auf 0.2.5-Dist, Build-Gate-Modell) — ALLE Item-Appends (N9–N15, F8) landeten erneut kanonisch, das ganze Phase-Fenster über. Ursache per Sandbox-Repro lokalisiert (Doc-Snapshot des Feldprojekts + Probe-Item gegen `packages/core/dist`, Plan: „canonical, no running phase"): das Feld-Table endet auf **nicht nummerierten Nachtrags-Zeilen** (Step-Spalte `—`: F4/H22/U1/M16-Nachträge, alle ✅, Zeilen 169–172); der 34.2-Anker „letzte 🔄/✅-Zeile" matcht `^(\d+)\.` nicht → `undefined` → kanonisch. Das eigene Repo hat keine solchen Zeilen — der Defekt ist dort unsichtbar.
+- **Fix-Erweiterung:** Der Anker wandert rückwärts über die aktiven Zeilen zur letzten **nummerierten** aktiven Zeile (nicht nummerierte Zeilen überspringen statt `undefined` liefern); Acceptance-Fixture um ein Table mit Nachtrags-Zeilen am Ende erweitern (Feldprojekt-Snapshot als Vorlage).
+- **Acceptance:** RED→GRÜN mit Fixtures, die den realen Workflow abbilden: (1) Step ✅ → archive_item im ✅-Fenster → Block im p<n>-Shard; (2) Table mit trailing `—`-Nachtrags-Zeilen (✅) → Anker springt zur letzten nummerierten Zeile; kanonische Datei im Feldprojekt-Fall friert; Standard-Flows byte-gleich sonst.
 
 
 
@@ -64,8 +66,15 @@
 ### [ ] L29 — backlog_add: Titel mit ID-Präfix erzeugt doppelt präfixierte Done-Index-Zeilen — Normalisieren/Warnung (Feldfund F2) — 🟢
 - **Location:** `packages/core/src/mutations.ts` (`planBacklogAdd`), `backlog_add`-Surface. Fund: Feldtest Sprocke 3 (finnland-reiseapp 11/2026) — Done-Index-Zeilen der Form `- N5 — N5 — Karten-Overlay … — done (done in ace6d94)`.
 - **Problem:** Der Konsumer-Agent lieferte beim `backlog_add` den Titel MIT ID-Präfix („N5 — Karten-Overlay…") — die generierte Index-Zeile dupliziert die ID sichtbar („N5 — N5 — …"), ebenso die doppelte „done (done in …)"-Konstruktion durch `note: "done in <sha>"` (Note enthält das done-Wort).
+- **Rezidiv-Beleg (11/2026, Phase 31 im Feldprojekt):** Das Muster trat unverändert wieder auf — Done-Index-Zeilen „N9 — N9 — …", „F8 — F8 — …", „N15 — N15 — …" inkl. „done (done in 70390dc)"-Dopplung; der Konsumer-Agent lieferte die Titel erneut mit ID-Präfix. Ohne Tool-Unterstützung reproduziert der Fehler sich bei jedem Agenten — die Warnung/Normalisierung ist der wirksame Hebel, nicht Agentenschulung.
 - **Fix (leichtgewichtig, UX-Friktion nicht Korruption):** (a) `backlog_add` warnt (Warning im Plan) wenn der Titel mit `<id> —` beginnt und stript den Präfix als Vorschlag; (b) Dokumentations-Hinweis im SKILL/README: Note soll die Commit-Referenz tragen, nicht das done-Wort. Kein Breaking, additive Warning.
 - **Acceptance:** RED→GRÜN: Titel mit ID-Präfix → Warning im Plan + unverändertes Verhalten ohne Warning im Normalfall; Suite grün.
+
+### [ ] L33 — archive_item: transienter dryRun-echo-Bug (Feldfund F3) — Response muss Plan-vs-Apply eindeutig erkennbar machen — 🟢
+- **Location:** Tool-Oberfläche `archive_item` (MCP/CLI-Response-Vertrag), Feldfund F3: finnland-reiseapp Phase 31 (11/2026, Protokoll docs/fieldtest-finland.md).
+- **Problem:** Der erste `archive_item`-Aufruf für N9 antwortete mit `"dryRun":true` (Plan-only-Echo) trotz `dryRun:false` in der Anfrage und schrieb nichts; der identische Retry lief korrekt, alle weiteren Aufrufe des Fieldtest unauffällig. Transient und bisher nicht reproduzierbar — aber ein Plan-only-Echo unterscheidet sich im Response nur am Echo-Feld: Ein Agent kann „Plan gelesen" als „angewandt" missdeuten und weiterarbeiten, ohne es zu merken.
+- **Fix (Design-Entscheid bei Implementierung):** (a) Echo gegen den Request validieren — Mismatch zwischen angefordertem und geantwortetem `dryRun` ist eine klare Warnung/ein Fehler im Response; (b) Plan-only-Antworten makroskopisch kennzeichnen (z. B. `applied: false` plus eindeutige Textmarkierung), damit „nur geplant" nicht überlesen werden kann; (c) Ursache des Transients suchen (Argument-Pfad MCP→core, Zod-Defaults).
+- **Acceptance:** Der Response-Vertrag macht „angewandt" vs. „nur geplant" eindeutig erkennbar; Robustheitstest für die Echo-Validierung; Feldfund-F3-Szenario (dryRun-Mismatch) wird als Warnung gemeldet.
 
 ## 🔵 TEST GAPS
 
