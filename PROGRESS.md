@@ -220,4 +220,4 @@
 | 37.1 | applyPhasePlan-Message: PLAN_WITHOUT_WIP → PHASE_PLANNED (Test-First) + Vollverifikation | ✅ |
 | 38.1 | SERVER_VERSION aus packages/mcp/package.json ableiten (Test-First) + pack-smoke + Vollverifikation | ✅ |
 | 39.1 | Package-READMEs ×3 (stepwell/core/git, kompakt EN) | ✅ |
-| 39.2 | Root-README Install-Abschnitt + Release 0.2.5 + Promotion + publish-Handoff | ⬜ |
+| 39.2 | Root-README Install-Abschnitt + Release 0.2.5 + Promotion + publish-Handoff | 🔄 |
