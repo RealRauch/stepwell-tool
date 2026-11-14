@@ -23,11 +23,6 @@
 - **41.1 Decision 13 neu (AGENTS + History-Archiv) + CONSUMERS-Runbook neu**
 - **41.2 4 Registrierungen → dist/serve.js + je Handshake-Probe**
 - **41.3 dev-Repo schließen: Backup-Push + ff-Merge → main (CI) + Verzeichnis löschen**
-### Phase 42 — bin expectation flip (M31)
-
-**Umfang (Steps):**
-
-- **42.1 3 Erwartungsstellen auf dist/cli.js + Vollverifikation + Merge mit CI-grün-Nachweis**
 
 
 
@@ -234,4 +229,4 @@
 | 41.1 | Decision 13 neu (AGENTS + History-Archiv) + CONSUMERS-Runbook neu | ✅ |
 | 41.2 | 4 Registrierungen → dist/serve.js + je Handshake-Probe | ✅ |
 | 41.3 | dev-Repo schließen: Backup-Push + ff-Merge → main (CI) + Verzeichnis löschen | 🔄 |
-| 42.1 | 3 Erwartungsstellen auf dist/cli.js + Vollverifikation + Merge mit CI-grün-Nachweis | 🔄 |
+| 42.1 | 3 Erwartungsstellen auf dist/cli.js + Vollverifikation + Merge mit CI-grün-Nachweis | ✅ |
