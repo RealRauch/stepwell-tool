@@ -633,6 +633,58 @@ describe("backlog CRUD (T1, 6.9)", () => {
     expect(h1?.raw).toContain("Kein `limits.fileSize` gesetzt");
   });
 
+  it("add warns and strips an id-prefixed title (L29/44.1 — field finding F2, finnland-reiseapp)", () => {
+    const dir = tempCopy("project-a");
+    // field reality: the consumer agent passed the title WITH the id prefix — the
+    // block heading and Done Index line doubled the id ("H5 — H5 — …")
+    const plan = planBacklogAdd(dir, {
+      dryRun: false,
+      section: "HIGH",
+      title: "H5 — Rate-Limit for login",
+      priority: "🟠",
+    });
+    expect(plan.id).toBe("H5");
+    // warning in the plan, title stripped in the block
+    expect(plan.warnings).toHaveLength(1);
+    expect(plan.warnings[0]!.code).toBe("TITLE_ID_PREFIX");
+    expect(plan.warnings[0]!.file).toBe("BACKLOG.md");
+    const result = applyBacklogAddPlan(plan);
+    expect(result.verification.ok).toBe(true);
+    expect(result.warnings).toEqual(plan.warnings);
+    const backlog = readFileSync(join(dir, "BACKLOG.md"), "utf8");
+    expect(backlog).toContain("### [ ] H5 — Rate-Limit for login — 🟠");
+    expect(backlog).not.toContain("H5 — H5");
+  });
+
+  it("add keeps titles without an id prefix untouched (L29 — unchanged normal flow)", () => {
+    const dir = tempCopy("project-a");
+    const plan = planBacklogAdd(dir, {
+      dryRun: false,
+      section: "HIGH",
+      title: "Rate-Limit — throttle repeated logins",
+      priority: "🟠",
+    });
+    expect(plan.id).toBe("H5");
+    expect(plan.warnings).toEqual([]);
+    const backlog = readFileSync(join(dir, "BACKLOG.md"), "utf8");
+    expect(backlog).toContain("### [ ] H5 — Rate-Limit — throttle repeated logins — 🟠");
+  });
+
+  it("add keeps a foreign id prefix in the title (L29 — only the assigned id strips)", () => {
+    const dir = tempCopy("project-a");
+    const plan = planBacklogAdd(dir, {
+      dryRun: false,
+      section: "HIGH",
+      title: "N9 — Rate-Limit for login",
+      priority: "🟠",
+      id: "H5",
+    });
+    expect(plan.id).toBe("H5");
+    expect(plan.warnings).toEqual([]);
+    const backlog = readFileSync(join(dir, "BACKLOG.md"), "utf8");
+    expect(backlog).toContain("### [ ] H5 — N9 — Rate-Limit for login — 🟠");
+  });
+
   it("add refreshes the Stand timestamp in the heading", () => {
     const dir = tempCopy("project-a");
     const plan = planBacklogAdd(dir, {
