@@ -13,6 +13,21 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
 
 ## [Unreleased]
 
+### Added
+
+- **Response contract `applied`/`planOnly` (L33/44.2, field finding F3):** every mutating
+  tool response carries `applied` (`true` after a real write, `false` on plan-only runs);
+  plan-only responses additionally carry the loud `planOnly` message — a plan echo can no
+  longer be misread as an applied write (F3: `archive_item` once answered `"dryRun":true`
+  despite `dryRun:false`; plan-only answers were distinguishable only via the echo field).
+  Additive fields (Decision 10: minor).
+- **`backlog_add` strips assigned-id title prefixes (L29/44.1, field finding F2):** a title
+  like `"H5 — Idea"` doubled the id in the block heading and Done Index (`"H5 — H5 — …"`;
+  the pattern recurred in the field across Phase 31). The assigned-id prefix is now
+  stripped and reported as a `TITLE_ID_PREFIX` warning (plan **and** apply result); a
+  foreign prefix is content and stays untouched. Tool description + README document the
+  no-prefix convention and the note-is-a-commit-reference rule.
+
 ### Fixed
 
 - **Shard-rotation anchor walks back over non-numbered retrofit rows (H14/F4, Phase 43):**

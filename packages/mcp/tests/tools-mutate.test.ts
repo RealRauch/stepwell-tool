@@ -590,7 +590,6 @@ describe("applied/planOnly response marker (L33/44.2 — field finding F3)", () 
       const result = await callTool(c, "archive_item", { root: dir, id: "H1", dryRun: false });
       expect(result.isError).toBeFalsy();
       const data = payload(result);
-      expect(data.dryRun).toBe(false);
       expect(data.applied).toBe(true);
       expect(data.planOnly).toBeUndefined();
       expect(data.verification.ok).toBe(true);

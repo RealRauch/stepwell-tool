@@ -137,6 +137,20 @@ function summarizePlan<T extends object>(plan: T): T {
 
 const ROOT_FIELD = z.string().describe("Absolute path to the project root (containing BACKLOG.md/PROGRESS.md).");
 
+// L33/44.2 (field finding F3, finnland-reiseapp Phase 31): a plan-only response was
+// distinguishable only via the dryRun echo field — an agent can misread "plan read"
+// as "applied" and work on. Every mutating tool response therefore carries `applied`,
+// and plan-only responses add a loud `planOnly` message. Additive response fields
+// (Decision 10: minor — no existing field removed or changed).
+const PLAN_ONLY_MESSAGE =
+  "PLAN ONLY — nothing was written (dryRun: true); re-run with dryRun: false to apply";
+function markApplied<T extends object>(
+  result: T,
+  applied: boolean,
+): T & { applied: boolean; planOnly?: string } {
+  return applied ? { ...result, applied: true } : { ...result, applied: false, planOnly: PLAN_ONLY_MESSAGE };
+}
+
 // MCP-Annotations je Tool-Klasse (Step 9.2/M2): explizit gesetzt, auch wo der
 // Spec-Default passen würde — Clients sollen nicht auf Defaults raten müssen.
 export const READ_ONLY_ANNOTATIONS = {
@@ -371,7 +385,7 @@ export function registerDocsTools(server: McpServer): void {
           .describe("true (default): report planned/skipped without writing; false: apply the mechanical repairs."),
       },
     },
-    ({ root, structured, dryRun }) => asStructuredResult(() => docsRepair(root, { dryRun }), structured),
+    ({ root, structured, dryRun }) => asStructuredResult(() => markApplied(docsRepair(root, { dryRun }), !dryRun), structured),
   );
 
   server.registerTool(
@@ -405,7 +419,7 @@ export function registerDocsTools(server: McpServer): void {
           ...(note !== undefined ? { note } : {}),
           ...(locale !== undefined ? { locale: locale as Locale } : {}),
         });
-        const result = plan.dryRun ? plan : applyArchivePlan(plan);
+        const result = markApplied(plan.dryRun ? plan : applyArchivePlan(plan), !plan.dryRun);
         if (!plan.dryRun && commit) {
           attachCommit(
             result as unknown as Record<string, unknown>,
@@ -475,7 +489,7 @@ export function registerDocsTools(server: McpServer): void {
             ...(archivedThisBatch.has(phase) ? { phaseAlreadyArchived: true } : {}),
           });
           if (plan.completedPhase) archivedThisBatch.add(phase);
-          const result = plan.dryRun ? plan : applyProgressPlan(plan);
+          const result = markApplied(plan.dryRun ? plan : applyProgressPlan(plan), !plan.dryRun);
           return detail === "summary" ? summarizePlan(result) : result;
         };
         if (steps.length === 1) {
@@ -564,7 +578,7 @@ export function registerDocsTools(server: McpServer): void {
           ...(text !== undefined ? { text } : {}),
           ...(excludeIds !== undefined ? { excludeIds } : {}),
         });
-        const result = plan.dryRun ? plan : applyBacklogAddPlan(plan);
+        const result = markApplied(plan.dryRun ? plan : applyBacklogAddPlan(plan), !plan.dryRun);
         const withWarnings = worktreeWarnings.length > 0 ? { ...result, worktreeWarnings } : result;
         return detail === "summary" ? summarizePlan(withWarnings) : withWarnings;
       }),
@@ -606,7 +620,7 @@ export function registerDocsTools(server: McpServer): void {
           ...(position !== undefined ? { position } : {}),
           ...(text !== undefined ? { text } : {}),
         });
-        const result = plan.dryRun ? plan : applyBacklogUpdatePlan(plan);
+        const result = markApplied(plan.dryRun ? plan : applyBacklogUpdatePlan(plan), !plan.dryRun);
         return detail === "summary" ? summarizePlan(result) : result;
       }),
   );
@@ -638,7 +652,7 @@ export function registerDocsTools(server: McpServer): void {
           ...(note !== undefined ? { note } : {}),
           ...(locale !== undefined ? { locale: locale as Locale } : {}),
         });
-        const result = plan.dryRun ? plan : applyBacklogRemovePlan(plan);
+        const result = markApplied(plan.dryRun ? plan : applyBacklogRemovePlan(plan), !plan.dryRun);
         return detail === "summary" ? summarizePlan(result) : result;
       }),
   );
@@ -684,7 +698,7 @@ export function registerDocsTools(server: McpServer): void {
           ...(excludePhases !== undefined ? { excludePhases } : {}),
           ...(excludeSteps !== undefined ? { excludeSteps } : {}),
         });
-        const result = plan.dryRun ? plan : applyPhasePlan(plan);
+        const result = markApplied(plan.dryRun ? plan : applyPhasePlan(plan), !plan.dryRun);
         const withWarnings = worktreeWarnings.length > 0 ? { ...result, worktreeWarnings } : result;
         return detail === "summary" ? summarizePlan(withWarnings) : withWarnings;
       }),
