@@ -13,14 +13,25 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
 
 ## [Unreleased]
 
+## [0.2.3] — 2026-11-14
+
+**Packages:** `stepwell` · `stepwell-core` · `stepwell-git` — 0.2.3 (Lockstep, Decision 10)
+
 ### Fixed
 
-- Tool-surface language (M28/Phase 35): remaining German output strings now emit English —
+- **Tool-surface language (M28/Phase 35):** remaining German output strings now emit English —
   mutation plan descriptions, error messages, the phase-completion doc-sync reminder and the
   echo tool's parameter schema; the archive shard Done-Index placeholder follows the heading
   locale (DE heading keeps its DE placeholder). Contract unchanged (no tool names, parameters,
   JSON shapes, resource URIs or warning codes touched); the deliberate `--locale de|en` feature
   for generated archive texts is untouched.
+- **Coverage-gate harness budget (M29/Phase 36):** the nested full-suite coverage run exceeded
+  its own 180 s test budget under parallel load on slower machines (measured margin flake:
+  ~153 s isolated, >180 s under load — never a real gate failure). Budget raised to 300 s;
+  gate assertions (exit code + threshold message) untouched.
+- **Plan-phase verification wording (L30/Phase 37):** the "planned but not started" verification
+  message names the current `PHASE_PLANNED` warning instead of the stale `PLAN_WITHOUT_WIP`
+  finding code (M18/27.9).
 
 ## [0.2.2] — 2026-11-14
 
