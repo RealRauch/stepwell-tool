@@ -16,6 +16,12 @@
 - **33.1 [H13] Protokoll docs/fieldtest-finland.md — Beobachtungsfelder (Rotation, gekoppelter Index, PHASE_MIDWAY-Fenster, validate-Signale), Fund-Klassen (Bug/Methoden-Drift/UX-Friktion), Abnahmekriterium; Verlinkung im Konsumer vor Umbau-Start**
 - **33.2 [H13] Begleit-Feldproben während des Umbaus — Fund-Log im Protokoll, Funde als BACKLOG-Items hier (Muster T6/M16)**
 - **33.3 [H13] Auswertung — 1.0.0-Entscheidvorlage (freigeben / weiter 0.x; npm-Publish-Frage), Feldtest-Eintrag in README/CHANGELOG**
+### Phase 40 — bin path normalization (L32)
+
+**Umfang (Steps):**
+
+- **40.1 bin-Wert normalisieren (./dist/cli.js → dist/cli.js) + npm pkg fix diff-los**
+
 
 
 
@@ -215,3 +221,4 @@
 | 38.1 | SERVER_VERSION aus packages/mcp/package.json ableiten (Test-First) + pack-smoke + Vollverifikation | ✅ |
 | 39.1 | Package-READMEs ×3 (stepwell/core/git, kompakt EN) | ✅ |
 | 39.2 | Root-README Install-Abschnitt + Release 0.2.5 + Promotion + publish-Handoff | ✅ |
+| 40.1 | bin-Wert normalisieren (./dist/cli.js → dist/cli.js) + npm pkg fix diff-los | 🔄 |
