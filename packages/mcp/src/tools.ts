@@ -527,8 +527,11 @@ export function registerDocsTools(server: McpServer): void {
       description:
         "Creates an open backlog item at the end of the target section: conforming id " +
         "(series convention, auto-assigned K/H/M/L per priority or explicit), correct " +
-        "block format, As of: timestamp updated. Returns the plan with a diff preview; " +
-        "nothing is written unless dryRun is false.",
+        "block format, As of: timestamp updated. Pass the title WITHOUT the id prefix " +
+        "('Idea …' not 'H5 — Idea …') — an assigned-id prefix is stripped and reported " +
+        "as a TITLE_ID_PREFIX warning (L29, field finding F2). Notes for archive_item " +
+        "carry the commit reference, not the done word. Returns the plan with a diff " +
+        "preview; nothing is written unless dryRun is false.",
       inputSchema: {
         root: ROOT_FIELD,
         section: z.string().describe("Target section (title without emoji, e.g. \"HIGH\")."),

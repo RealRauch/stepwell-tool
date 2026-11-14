@@ -18,6 +18,7 @@ import type {
   PlanChange,
   Priority,
   ProgressUpdatePlan,
+  Warning,
   Status,
 } from "./types.ts";
 
@@ -1179,8 +1180,8 @@ function appendIndexTail(
 
 export function planBacklogAdd(root: string, options: BacklogAddOptions): BacklogAddPlan {
   const dryRun = options.dryRun ?? true;
-  const title = options.title.trim();
-  if (title === "") throw new Error("missing title: an item needs a title after the id");
+  const rawTitle = options.title.trim();
+  if (rawTitle === "") throw new Error("missing title: an item needs a title after the id");
   if (!KNOWN_PRIORITIES.includes(options.priority)) {
     throw new Error(`unknown priority: ${options.priority} (allowed: ${KNOWN_PRIORITIES.join(" ")})`);
   }
@@ -1210,6 +1211,20 @@ export function planBacklogAdd(root: string, options: BacklogAddOptions): Backlo
   }
 
   const section = options.section.trim();
+  // L29/44.1 (field finding F2, finnland-reiseapp): a title that repeats the assigned
+  // id doubles it in the block heading and Done Index ("N9 — N9 — …"). Strip the
+  // assigned-id prefix and warn; a foreign prefix is content and stays untouched.
+  const warnings: Warning[] = [];
+  let title = rawTitle;
+  const prefixMatch = new RegExp(`^${escapeRegExp(id)}\\s*—\\s*`, "u").exec(title);
+  if (prefixMatch !== null && title.slice(prefixMatch[0].length).trim() !== "") {
+    title = title.slice(prefixMatch[0].length).trim();
+    warnings.push({
+      code: "TITLE_ID_PREFIX",
+      file: "BACKLOG.md",
+      message: `title starts with the assigned id "${id}" — prefix stripped (doubled ids in block heading and Done Index, field finding F2/L29)`,
+    });
+  }
   const blockLines = buildItemBlock(id, title, options.priority, options.text);
 
   const edit = (content: string, eol: string): string => {
@@ -1226,7 +1241,7 @@ export function planBacklogAdd(root: string, options: BacklogAddOptions): Backlo
       transform: edit,
     },
   ]);
-  return { root, id, section, dryRun, changes };
+  return { root, id, section, dryRun, warnings, changes };
 }
 
 export function applyBacklogAddPlan(plan: BacklogAddPlan): ApplyResult {
@@ -1256,7 +1271,11 @@ export function applyBacklogAddPlan(plan: BacklogAddPlan): ApplyResult {
   else for (const f of findings) messages.push(`${f.code}: ${f.message}`);
 
   const ok = added && findings.length === 0;
-  return { written, verification: { ok, messages } };
+  // L29/44.1: plan warnings surface on the apply path too (same parity as the plan echo).
+  for (const w of plan.warnings) messages.push(`${w.code}: ${w.message}`);
+  return plan.warnings.length > 0
+    ? { written, verification: { ok, messages }, warnings: plan.warnings }
+    : { written, verification: { ok, messages } };
 }
 
 export function planBacklogUpdate(root: string, id: string, options: BacklogUpdateOptions): BacklogUpdatePlan {

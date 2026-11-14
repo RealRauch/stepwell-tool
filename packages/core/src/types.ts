@@ -176,6 +176,8 @@ export interface BacklogAddPlan {
   id: string;
   section: string;
   dryRun: boolean;
+  /** L29/44.1: structured warnings (e.g. TITLE_ID_PREFIX when the title carried the id prefix). */
+  warnings: Warning[];
   changes: PlanChange[];
 }
 
@@ -204,6 +206,8 @@ export interface PhasePlan {
 export interface ApplyResult {
   written: string[];
   verification: { ok: boolean; messages: string[] };
+  /** L29/44.1: plan warnings carried through the apply path (surface parity with the plan echo). */
+  warnings?: Warning[];
 }
 
 /** One mechanical repair docs_repair performs or plans (H9/30.1). */
