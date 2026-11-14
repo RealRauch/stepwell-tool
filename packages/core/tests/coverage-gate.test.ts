@@ -84,5 +84,8 @@ describe("coverage gate enforcement (T6 Abnahme)", () => {
     // (Format: `Coverage for lines (96.23%) does not meet "<glob>" threshold (99%)`).
     expect(exitCode).not.toBe(0);
     expect(output).toMatch(/does not meet .+ threshold/iu);
-  }, 180_000);
+    // Harness-Budget (M29/36.1): der nested Run misst ~153 s isoliert und kann
+    // unter Volllast über 180 s laufen — der Timeout begrenzt nur den nested Run,
+    // die Gate-Assertions (Exit-Code + Threshold-Meldung) bleiben unverändert.
+  }, 300_000);
 });
