@@ -837,7 +837,7 @@ describe("phase extension — steps to a running phase (D5, 8.3)", () => {
   it("rejects steps already present in the table or in the block scope", () => {
     const dir = tempCopy("project-a");
     expect(() => planPhase(dir, "Phase 2", [{ step: "2.1", name: "X" }])).toThrow(
-      /existiert bereits in der Fortschrittstabelle/,
+      /already exists in the progress table/,
     );
 
     const progressPath = join(dir, "PROGRESS.md");
@@ -974,10 +974,10 @@ describe("doc-sync reminder on phase completion (L4, 9.11)", () => {
     const plan = planProgressUpdate(dir, "Phase 2", "2.1", "✅", { checkpoint: "abc1234" });
 
     expect(plan.completedPhase).toBe(true);
-    expect(plan.docSyncReminder).toContain("Doku-Sync prüfen");
-    expect(plan.docSyncReminder).toContain("AGENTS-Kickoff");
+    expect(plan.docSyncReminder).toContain("Check doc sync");
+    expect(plan.docSyncReminder).toContain("AGENTS kickoff");
     expect(plan.docSyncReminder).toContain("README");
-    expect(plan.docSyncReminder).toContain("PLAYBOOK-Kopien");
+    expect(plan.docSyncReminder).toContain("PLAYBOOK copies");
   });
 
   it("non-completion answers stay unchanged", () => {
@@ -993,7 +993,7 @@ describe("doc-sync reminder on phase completion (L4, 9.11)", () => {
     const result = applyProgressPlan(plan);
 
     expect(result.verification.ok).toBe(true);
-    expect(result.verification.messages.some((m) => m.includes("Doku-Sync prüfen"))).toBe(true);
+    expect(result.verification.messages.some((m) => m.includes("Check doc sync"))).toBe(true);
   });
 });
 
