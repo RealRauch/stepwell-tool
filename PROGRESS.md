@@ -233,4 +233,4 @@
 | 42.1 | 3 Erwartungsstellen auf dist/cli.js + Vollverifikation + Merge mit CI-grün-Nachweis | ✅ |
 | 43.1 | [H14] RED — Fixture mit trailing nicht nummerierten Nachtrags-Zeilen (✅) am Table-Ende + Test: Anker wandert zur letzten nummerierten aktiven Zeile | ✅ |
 | 43.2 | [H14] GREEN — runningPhaseNumber: rückwärts zur letzten nummerierten aktiven Zeile; Standard-Flows byte-gleich | ✅ |
-| 43.3 | [H14] Verifikation + Feld-Sandbox-Repro — typecheck/test/docs_validate grün; Feldprojekt-Snapshot plant jetzt p31-Shard | ⬜ |
+| 43.3 | [H14] Verifikation + Feld-Sandbox-Repro — typecheck/test/docs_validate grün; Feldprojekt-Snapshot plant jetzt p31-Shard | 🔄 |
