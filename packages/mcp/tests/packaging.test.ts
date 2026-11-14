@@ -44,7 +44,7 @@ describe("packaging manifests (D3, 7.3; dist since 10.4/H1)", () => {
     const mcpExports = mcp.exports?.["."] as Record<string, string>;
 expect(mcpExports.import).toBe("./dist/index.js");
     expect(mcpExports.types).toBe("./dist/index.d.ts");
-    expect(mcp.bin?.["stepwell"]).toBe("./dist/cli.js");
+    expect(mcp.bin?.["stepwell"]).toBe("dist/cli.js");
     expect(mcp.scripts?.prepublishOnly).toContain("build");
   });
 });
@@ -67,7 +67,7 @@ describe("stepwell naming + lockstep versions (N1/13.1)", () => {
   });
 
   it("mcp bin key is 'stepwell' (nicht 'method-docs')", () => {
-    expect(manifest("mcp").bin?.["stepwell"]).toBe("./dist/cli.js");
+    expect(manifest("mcp").bin?.["stepwell"]).toBe("dist/cli.js");
     expect(manifest("mcp").bin?.["method-docs"]).toBeUndefined();
   });
 

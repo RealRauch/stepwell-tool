@@ -64,7 +64,7 @@ for (const path of [
   assertExists(path);
 }
 const mcpManifest = JSON.parse(readFileSync(join(mcpRoot, "package.json"), "utf8"));
-if (mcpManifest.bin?.["stepwell"] !== "./dist/cli.js") {
+if (mcpManifest.bin?.["stepwell"] !== "dist/cli.js") {
   fail(`unexpected bin mapping: ${JSON.stringify(mcpManifest.bin)}`);
 }
 if (mcpManifest.dependencies?.["stepwell-core"] === undefined) {
