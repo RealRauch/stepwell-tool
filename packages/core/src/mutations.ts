@@ -889,7 +889,7 @@ export function applyPhasePlan(plan: PhasePlan): ApplyResult {
     .findings
     .filter((f) => f.message.includes(`"${plan.phase}"`) && f.code !== "PLAN_WITHOUT_WIP");
   if (blockOk) {
-    messages.push("phase is planned but not started yet (PLAN_WITHOUT_WIP resolves with the first 🔄)");
+    messages.push("phase is planned but not started yet (PHASE_PLANNED resolves with the first 🔄)");
   }
   if (findings.length === 0) messages.push("docs_validate reports no other findings for this phase");
   else for (const f of findings) messages.push(`${f.code}: ${f.message}`);
