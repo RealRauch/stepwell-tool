@@ -55,12 +55,6 @@
 - **Fix:** Sweep-Liste um `"git"` erweitern (Ein-Zeiler, Guard-Test bleibt ansonsten unverändert); falls git `tsconfig.build.json` hat, deckt die bestehende Schleife das ab.
 - **Acceptance:** Guard-Test grün mit erweiterter Liste; byte-gleiches Verhalten sonst; Note im Item-Close.
 
-### [ ] L33 — archive_item: transienter dryRun-echo-Bug (Feldfund F3) — Response muss Plan-vs-Apply eindeutig erkennbar machen — 🟢
-- **Location:** Tool-Oberfläche `archive_item` (MCP/CLI-Response-Vertrag), Feldfund F3: finnland-reiseapp Phase 31 (11/2026, Protokoll docs/fieldtest-finland.md).
-- **Problem:** Der erste `archive_item`-Aufruf für N9 antwortete mit `"dryRun":true` (Plan-only-Echo) trotz `dryRun:false` in der Anfrage und schrieb nichts; der identische Retry lief korrekt, alle weiteren Aufrufe des Fieldtest unauffällig. Transient und bisher nicht reproduzierbar — aber ein Plan-only-Echo unterscheidet sich im Response nur am Echo-Feld: Ein Agent kann „Plan gelesen" als „angewandt" missdeuten und weiterarbeiten, ohne es zu merken.
-- **Fix (Design-Entscheid bei Implementierung):** (a) Echo gegen den Request validieren — Mismatch zwischen angefordertem und geantwortetem `dryRun` ist eine klare Warnung/ein Fehler im Response; (b) Plan-only-Antworten makroskopisch kennzeichnen (z. B. `applied: false` plus eindeutige Textmarkierung), damit „nur geplant" nicht überlesen werden kann; (c) Ursache des Transients suchen (Argument-Pfad MCP→core, Zod-Defaults).
-- **Acceptance:** Der Response-Vertrag macht „angewandt" vs. „nur geplant" eindeutig erkennbar; Robustheitstest für die Echo-Validierung; Feldfund-F3-Szenario (dryRun-Mismatch) wird als Warnung gemeldet.
-
 ## 🔵 TEST GAPS
 
 ---

@@ -12,8 +12,18 @@
 - **Fix (leichtgewichtig, UX-Friktion nicht Korruption):** (a) `backlog_add` warnt (Warning im Plan) wenn der Titel mit `<id> —` beginnt und stript den Präfix als Vorschlag; (b) Dokumentations-Hinweis im SKILL/README: Note soll die Commit-Referenz tragen, nicht das done-Wort. Kein Breaking, additive Warning.
 - **Acceptance:** RED→GRÜN: Titel mit ID-Präfix → Warning im Plan + unverändertes Verhalten ohne Warning im Normalfall; Suite grün.
 
+---
+
+### [x] L33 — archive_item: transienter dryRun-echo-Bug (Feldfund F3) — Response muss Plan-vs-Apply eindeutig erkennbar machen — 🟢
+- **Location:** Tool-Oberfläche `archive_item` (MCP/CLI-Response-Vertrag), Feldfund F3: finnland-reiseapp Phase 31 (11/2026, Protokoll docs/fieldtest-finland.md).
+- **Problem:** Der erste `archive_item`-Aufruf für N9 antwortete mit `"dryRun":true` (Plan-only-Echo) trotz `dryRun:false` in der Anfrage und schrieb nichts; der identische Retry lief korrekt, alle weiteren Aufrufe des Fieldtest unauffällig. Transient und bisher nicht reproduzierbar — aber ein Plan-only-Echo unterscheidet sich im Response nur am Echo-Feld: Ein Agent kann „Plan gelesen" als „angewandt" missdeuten und weiterarbeiten, ohne es zu merken.
+- **Fix (Design-Entscheid bei Implementierung):** (a) Echo gegen den Request validieren — Mismatch zwischen angefordertem und geantwortetem `dryRun` ist eine klare Warnung/ein Fehler im Response; (b) Plan-only-Antworten makroskopisch kennzeichnen (z. B. `applied: false` plus eindeutige Textmarkierung), damit „nur geplant" nicht überlesen werden kann; (c) Ursache des Transients suchen (Argument-Pfad MCP→core, Zod-Defaults).
+- **Acceptance:** Der Response-Vertrag macht „angewandt" vs. „nur geplant" eindeutig erkennbar; Robustheitstest für die Echo-Validierung; Feldfund-F3-Szenario (dryRun-Mismatch) wird als Warnung gemeldet.
+- **Erledigt:** fixed in 6037eeb — applied/planOnly marker, additive response contract
+
 ## ✅ Erledigt-Index
 
 > Einzeiler je abgeschlossenem Item (Details oben).
 
 - L29 — backlog_add: Titel mit ID-Präfix erzeugt doppelt präfixierte Done-Index-Zeilen — Normalisieren/Warnung (Feldfund F2) — erledigt
+- L33 — archive_item: transienter dryRun-echo-Bug (Feldfund F3) — Response muss Plan-vs-Apply eindeutig erkennbar machen — erledigt (fixed in 6037eeb — applied/planOnly marker, additive response contract)
