@@ -237,4 +237,4 @@
 | 43.3 | [H14] Verifikation + Feld-Sandbox-Repro — typecheck/test/docs_validate grün; Feldprojekt-Snapshot plant jetzt p31-Shard | ✅ |
 | 44.1 | [L29] backlog_add warnt + stript ID-Präfix im Titel („N9 — …“); Doku-Hinweis Note = Commit-Referenz; RED→GRÜN | ✅ |
 | 44.2 | [L33] Response-Vertrag: Plan-vs-Apply eindeutig (Echo gegen Request validieren, angewandt-Kennzeichnung); Design-Entscheid Vertrag-Minor dokumentiert; RED→GRÜN | ✅ |
-| 44.3 | [L29+L33] Verifikation — typecheck/test/docs_validate grün | ⬜ |
+| 44.3 | [L29+L33] Verifikation — typecheck/test/docs_validate grün | 🔄 |
