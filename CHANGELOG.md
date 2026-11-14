@@ -13,6 +13,18 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
 
 ## [Unreleased]
 
+## [0.2.4] — 2026-11-14
+
+**Packages:** `stepwell` · `stepwell-core` · `stepwell-git` — 0.2.4 (Lockstep, Decision 10)
+
+### Fixed
+
+- **Version exports derive from package.json (L31/Phase 38):** `SERVER_VERSION` (MCP handshake)
+  and `TOOL_VERSION` were hardcoded at 0.1.0 and never followed the lockstep release bumps
+  (0.2.1–0.2.3). Both now derive via `createRequire` from their workspace package.json — the
+  release bump is the package.json edit alone and the handshake version can no longer decouple
+  (works in src via type stripping and in dist). Consumer inventory line updated accordingly.
+
 ## [0.2.3] — 2026-11-14
 
 **Packages:** `stepwell` · `stepwell-core` · `stepwell-git` — 0.2.3 (Lockstep, Decision 10)
