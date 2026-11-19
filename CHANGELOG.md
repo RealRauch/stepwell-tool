@@ -15,6 +15,21 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
 
 ### Added
 
+- **`docs_status` include `"templates"` — bootstrap skeletons inline (M32/45.3, StarSearch
+  field probe 11/2026):** on a NOT initialized root the option returns the four file
+  skeletons (`projectTemplates`) inline in the response; initialized roots never carry
+  the key (default behavior unchanged). Rationale: the `stepwell://templates/*` resources
+  are not readable from every agent surface (ZCode exposes MCP tools only) and
+  `docs/QUICKSTART.md` is deliberately absent in target projects (Decision 15) — the
+  cold-start content rides on the tool itself. Additive parameter value (Decision 10:
+  minor).
+- **`progress_plan_phase` seeds the first rows into an empty progress table (M33/45.1–45.2,
+  same field probe):** a fresh template's table (header + separator, zero step rows) made
+  BOTH bootstrap paths fail (`plan_phase` and the `progress_update` row-add shared
+  `appendTableRows`, which threw `no progress table found`). The anchor now falls back to
+  the table separator, so the first phase — including its first rows — is planned by the
+  tool; existing tables keep byte-identical behavior. RED→GREEN fixture
+  `project-n-empty-table` (byte-identical to `projectTemplates`).
 - **Response contract `applied`/`planOnly` (L33/44.2, field finding F3):** every mutating
   tool response carries `applied` (`true` after a real write, `false` on plan-only runs);
   plan-only responses additionally carry the loud `planOnly` message — a plan echo can no
@@ -27,6 +42,14 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
   stripped and reported as a `TITLE_ID_PREFIX` warning (plan **and** apply result); a
   foreign prefix is content and stays untouched. Tool description + README document the
   no-prefix convention and the note-is-a-commit-reference rule.
+
+### Changed
+
+- **Server instructions bootstrap hint (M32/45.4):** the passive entry hint now names the
+  tool-reachable bootstrap path (`docs_status` include `["templates"]` → skeletons →
+  `progress_plan_phase` into the empty table) instead of the dead-end pointers
+  (`docs/QUICKSTART.md` — not distributed into target projects; resources — not agent-
+  readable everywhere). Conditional/no-auto-init clauses (M12/M13) unchanged.
 
 ### Fixed
 
