@@ -82,6 +82,12 @@ fixtures/
 │       ├── BACKLOG_ARCHIVE.p2.md     #   ascending, p2 < p10) then canonical; strict
 │       ├── PROGRESS_ARCHIVE.md       #   locality: wrong-file lines → INDEX_LOCATION.
 │       └── PROGRESS_ARCHIVE.p1.md
+├── project-n-empty-table/  # M33/45.x: the four files byte-identical to the fresh
+│   ├── BACKLOG.md          #   projectTemplates (M8) — progress table with header +
+│   ├── PROGRESS.md         #   separator but ZERO step rows (cold-start/Bootstrap:
+│   └── docs/archive/       #   plan_phase must seed the first rows itself, StarSearch
+│       ├── BACKLOG_ARCHIVE.md  #   field probe 11/2026).
+│       └── PROGRESS_ARCHIVE.md
 
 project-empty/             # empty directory (.gitkeep only; M5/9.3) — root WITHOUT a
                            #   STEPWELL project: docs_validate/docs_status → exactly

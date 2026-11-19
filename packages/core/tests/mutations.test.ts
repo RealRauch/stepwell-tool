@@ -1194,3 +1194,46 @@ describe("backlog_update position (L17/30.7)", () => {
     expect(() => planBacklogUpdate(dir, "H1", { position: 0, dryRun: true })).toThrow(/position/u);
   });
 });
+
+describe("planPhase bootstrap on an empty progress table (M33, 45.1/45.2)", () => {
+  const planned = [
+    { step: "1.1", name: "Erster Step" },
+    { step: "1.2", name: "Zweiter Step" },
+  ];
+
+  it("plans into the fresh template with zero existing rows — rows land after the table separator", () => {
+    const dir = tempCopy("project-n-empty-table");
+    const plan = planPhase(dir, "Phase 1 — Fundament", planned, { dryRun: true });
+    expect(plan.changes).toHaveLength(1);
+    const change = plan.changes[0]!;
+    const sep = change.after.indexOf("|---|");
+    const row1 = change.after.indexOf("| 1.1 | Erster Step | ⬜ |");
+    const row2 = change.after.indexOf("| 1.2 | Zweiter Step | ⬜ |");
+    expect(sep).toBeGreaterThanOrEqual(0);
+    expect(row1).toBeGreaterThan(sep);
+    expect(row2).toBeGreaterThan(row1);
+    expect(change.after).toContain("### Phase 1 — Fundament");
+    expect(change.after).toContain("- **1.1 Erster Step**");
+    expect(change.after).toContain("- **1.2 Zweiter Step**");
+  });
+
+  it("apply writes rows + skeleton; a re-plan collides with a structured error (idempotence guard)", () => {
+    const dir = tempCopy("project-n-empty-table");
+    const result = applyPhasePlan(planPhase(dir, "Phase 1 — Fundament", planned, { dryRun: false }));
+    expect(result.verification.ok).toBe(true);
+    const text = readFileSync(join(dir, "PROGRESS.md"), "utf8");
+    expect(text).toContain("| 1.1 | Erster Step | ⬜ |");
+    expect(text).toContain("| 1.2 | Zweiter Step | ⬜ |");
+    expect(text).toContain("### Phase 1 — Fundament");
+    expect(() =>
+      planPhase(dir, "Phase 1 — Fundament", [{ step: "1.1", name: "Duplikat" }]),
+    ).toThrow(/already exists/u);
+  });
+
+  it("dry-run leaves the file untouched (byte-identical)", () => {
+    const dir = tempCopy("project-n-empty-table");
+    const before = readFileSync(join(dir, "PROGRESS.md"), "utf8");
+    planPhase(dir, "Phase 1 — Fundament", planned, { dryRun: true });
+    expect(readFileSync(join(dir, "PROGRESS.md"), "utf8")).toBe(before);
+  });
+});
