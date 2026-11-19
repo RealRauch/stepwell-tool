@@ -16,15 +16,6 @@
 - **33.1 [H13] Protokoll docs/fieldtest-finland.md — Beobachtungsfelder (Rotation, gekoppelter Index, PHASE_MIDWAY-Fenster, validate-Signale), Fund-Klassen (Bug/Methoden-Drift/UX-Friktion), Abnahmekriterium; Verlinkung im Konsumer vor Umbau-Start**
 - **33.2 [H13] Begleit-Feldproben während des Umbaus — Fund-Log im Protokoll, Funde als BACKLOG-Items hier (Muster T6/M16)**
 - **33.3 [H13] Auswertung — 1.0.0-Entscheidvorlage (freigeben / weiter 0.x; npm-Publish-Frage), Feldtest-Eintrag in README/CHANGELOG**
-### Phase 45 — Bootstrap-Kaltstart (StarSearch-Feldprobe: M32 + M33)
-
-**Umfang (Steps):**
-
-- **45.1 [M33] RED: Fixture leere Progress-Tabelle + Test — heutiges Scheitern von plan_phase auf leerer Tabelle pinnen**
-- **45.2 [M33] GRÜN: Bootstrap-Fall in planPhase — leere Tabelle: Phase-Zeilen inkl. erster Zeile + Detail-Block-Skeleton anlegen; dry-run-first, idempotent, Bestands-Fixtures ergebnisgleich**
-- **45.3 [M32] docs_status Bootstrap-Hinweis auf nicht initialisiertem Root — Skeletons inline (includeTemplates, Opt-in); initialisierte Roots unverändert; RED→GRÜN**
-- **45.4 [M32] MCP instructions-Text: QUICKSTART-Zeiger → tool-erreichbarer Bootstrap-Weg; Decision-15-Vermerk im Item-Close**
-- **45.5 [M32+M33] Verifikation — typecheck/test/docs_validate grün**
 
 
 
@@ -245,4 +236,4 @@
 | 45.2 | [M33] GRÜN: Bootstrap-Fall in planPhase — leere Tabelle: Phase-Zeilen inkl. erster Zeile + Detail-Block-Skeleton anlegen; dry-run-first, idempotent, Bestands-Fixtures ergebnisgleich | ✅ |
 | 45.3 | [M32] docs_status Bootstrap-Hinweis auf nicht initialisiertem Root — Skeletons inline (includeTemplates, Opt-in); initialisierte Roots unverändert; RED→GRÜN | ✅ |
 | 45.4 | [M32] MCP instructions-Text: QUICKSTART-Zeiger → tool-erreichbarer Bootstrap-Weg; Decision-15-Vermerk im Item-Close | ✅ |
-| 45.5 | [M32+M33] Verifikation — typecheck/test/docs_validate grün | ⬜ |
+| 45.5 | [M32+M33] Verifikation — typecheck/test/docs_validate grün | ✅ |
