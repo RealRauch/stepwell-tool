@@ -506,8 +506,22 @@ function appendTableRows(lines: string[], rows: string[]): void {
   lines.forEach((l, i) => {
     if (tableLineHasStep(l)) lastRow = i;
   });
+  if (lastRow === -1) {
+    // M33/45.2: bootstrap on a fresh template — the table exists (header +
+    // separator) but has zero step rows yet; the first rows are seeded by the
+    // tool itself, anchored directly after the separator line.
+    lines.forEach((l, i) => {
+      if (tableSeparatorLine(l)) lastRow = i;
+    });
+  }
   if (lastRow === -1) throw new Error("no progress table found in PROGRESS.md");
   lines.splice(lastRow + 1, 0, ...rows);
+}
+
+function tableSeparatorLine(line: string): boolean {
+  if (!line.trim().startsWith("|")) return false;
+  const cells = line.split("|").slice(1, -1).map((c) => c.trim());
+  return cells.length > 0 && cells.every((c) => /^:?-{3,}:?$/u.test(c));
 }
 
 const FIELD_LINE = /^\*\*(.+?):\*\*/u;
