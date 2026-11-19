@@ -6,19 +6,25 @@ import { connect } from "./helper.ts";
 /**
  * Server instructions (M12/26.7): the agent-facing entry hint must be
  * conditional and passive — findability without pushiness (M12 guardrail):
- * points at docs/QUICKSTART.md, activates only when the four files exist or
- * the user explicitly asks for STEPWELL, never asks to create structure
- * unrequested (no auto-init, M13 direction).
+ * activates only when the four files exist or the user explicitly asks for
+ * STEPWELL, never asks to create structure unrequested (no auto-init, M13
+ * direction). M32/45.4: the bootstrap hint rides on the TOOL (docs_status
+ * include "templates") — the old pointers (docs/QUICKSTART.md deliberately
+ * absent in target projects, Decision 15; stepwell://templates/* resources
+ * not readable from every agent surface) were dead ends at agent runtime
+ * (StarSearch field probe 11/2026).
  */
 describe("server instructions (M12)", () => {
-  it("declares conditional, passive instructions pointing at QUICKSTART", async () => {
+  it("declares conditional, passive instructions with a tool-reachable bootstrap hint", async () => {
     const c = await connect();
     try {
       const text = c.client.getInstructions() ?? "";
-      expect(text).toContain("QUICKSTART");
+      expect(text).toContain("templates"); // M32 bootstrap hint present
+      expect(text).toContain('include ["templates"]'); // names the parameter
       expect(text).toContain("only when"); // conditional activation, not a command
       expect(text).toContain("explicitly asks"); // opt-in clause (M13 wording)
       expect(text).not.toMatch(/create the four files/iu); // no auto-init instruction
+      expect(text).not.toContain("QUICKSTART"); // dead pointer removed (M32/45.4)
     } finally {
       await c.close();
     }

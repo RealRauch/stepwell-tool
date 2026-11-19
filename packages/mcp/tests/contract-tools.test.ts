@@ -57,7 +57,7 @@ const CONTRACT: Record<string, { required: string[]; params: Record<string, unkn
   },
   docs_status: {
     required: ["root"],
-    params: { root: str, include: arrayOf(enumOf("nextStepScope")) },
+    params: { root: str, include: arrayOf(enumOf("nextStepScope", "templates")) },
   },
   docs_validate: {
     required: ["root"],

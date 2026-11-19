@@ -341,9 +341,12 @@ export function registerDocsTools(server: McpServer): void {
         "✅-ratio and all validation/parse warnings.",
       inputSchema: {
         root: ROOT_FIELD,
-        include: z.array(z.enum(["nextStepScope"])).optional()
+        include: z.array(z.enum(["nextStepScope", "templates"])).optional()
           .describe('Additional context: "nextStepScope" returns the goal/acceptance/scope bullet + ' +
-            "merged backlog item of the next step (1 call instead of 3, E2/12.3)."),
+            "merged backlog item of the next step (1 call instead of 3, E2/12.3). " +
+            '"templates" returns the four file skeletons inline when the root is NOT initialized ' +
+            "(M32/45.3 bootstrap hint — the stepwell://templates/* resources are not readable " +
+            "from every agent surface)."),
       },
     },
     ({ root, include }) =>

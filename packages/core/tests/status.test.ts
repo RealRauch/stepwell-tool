@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { applyPhasePlan, planPhase } from "../src/mutations.ts";
+import { projectTemplates } from "../src/templates.ts";
 import { docsStatus } from "../src/status.ts";
 import { docFileSet } from "../src/project-files.ts";
 
@@ -149,6 +150,34 @@ describe("docsStatus — project-empty (M5)", () => {
     // M13: neutral, non-prescriptive - guidance names QUICKSTART/templates, never commands
     expect(status.warnings[0]!.message).toContain("No action required");
     expect(status.warnings[0]!.message).not.toMatch(/Lege /u);
+  });
+});
+
+describe("docsStatus bootstrap templates on an uninitialized root (M32, 45.3)", () => {
+  it("without the option the zero state carries no templates key (default unchanged)", () => {
+    const status = docsStatus(join(fixtures, "project-empty"));
+    expect("templates" in status).toBe(false);
+  });
+
+  it("include: [\"templates\"] returns the four skeletons inline (byte-equal to projectTemplates)", () => {
+    const status = docsStatus(join(fixtures, "project-empty"), { include: ["templates"] });
+    expect(status.templates).toBeDefined();
+    expect(Object.keys(status.templates!).sort()).toEqual(
+      ["backlog", "backlog-archive", "progress", "progress-archive"].sort(),
+    );
+    expect(status.templates!.progress).toBe(projectTemplates.progress);
+    expect(status.templates!.backlog).toBe(projectTemplates.backlog);
+    expect(status.templates!["backlog-archive"]).toBe(projectTemplates["backlog-archive"]);
+    expect(status.templates!["progress-archive"]).toBe(projectTemplates["progress-archive"]);
+    // the bootstrap state itself is untouched
+    expect(status.warnings).toHaveLength(1);
+    expect(status.warnings[0]!.code).toBe("PROJECT_NOT_INITIALIZED");
+  });
+
+  it("an initialized project never returns templates (the hint exists only in the bootstrap state)", () => {
+    const status = docsStatus(join(fixtures, "project-a"), { include: ["templates"] });
+    expect("templates" in status).toBe(false);
+    expect(status.warnings).toEqual([]);
   });
 });
 

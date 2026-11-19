@@ -4,6 +4,7 @@ import { fileHashes } from "./hashes.ts";
 import { loadProject, type ProjectDocs } from "./project.ts";
 import { ProjectNotInitializedError, docFileSet } from "./project-files.ts";
 import { scopeEntryFor, scopeSteps } from "./progress.ts";
+import { projectTemplates } from "./templates.ts";
 import { docsValidate } from "./validate.ts";
 import type {
   BacklogItem,
@@ -16,7 +17,7 @@ import type {
 
 export interface DocsStatusOptions {
   /** Zusatz-Kontext: `"nextStepScope"` liefert Ziel/Abnahme/Scope + gemergtes Backlog-Item des nächsten Steps (E2/12.3). */
-  include?: ReadonlyArray<"nextStepScope">;
+  include?: ReadonlyArray<"nextStepScope" | "templates">;
 }
 
 const ITEM_REF = /\(([A-Z]+[0-9]+)\/[0-9]+\)/u;
@@ -56,6 +57,11 @@ export function docsStatus(root: string, options?: DocsStatusOptions): DocsStatu
     docs = loadProject(root);
   } catch (err) {
     if (err instanceof ProjectNotInitializedError) {
+      // M32/45.3: bootstrap hint — the four skeletons inline, opt-in per include.
+      // MCP-Resources (stepwell://templates/*) are not agent-readable in ZCode
+      // (tools-only surface), so the cold-start content rides on the tool itself.
+      const templates =
+        options?.include?.includes("templates") === true ? { ...projectTemplates } : undefined;
       return {
         openByPriority: { "🔴": 0, "🟠": 0, "🟡": 0, "🟢": 0, "🔵": 0, unknown: 0 },
         openTotal: 0,
@@ -64,6 +70,7 @@ export function docsStatus(root: string, options?: DocsStatusOptions): DocsStatu
         doneQuote: { done: 0, total: 0, percent: 0 },
         nextStep: undefined,
         nextPriority: undefined,
+        ...(templates !== undefined ? { templates } : {}),
         hashes: {},
         docFiles: [],
         warnings: [{ code: "PROJECT_NOT_INITIALIZED", file: root, message: err.message }],

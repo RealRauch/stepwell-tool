@@ -18,11 +18,17 @@ export function createDocsServer(): McpServer {
     {
       // M12: conditional, passive entry hint (findability without pushiness —
       // opt-in per project, never auto-init in a foreign repo, M13 direction).
+      // M32/45.4: the old pointers were dead ends at agent runtime in a target
+      // project (QUICKSTART is deliberately not distributed there, Decision 15;
+      // stepwell://templates/* resources are not readable from every agent
+      // surface) — the bootstrap now rides on the tool itself (docs_status
+      // include "templates", 45.3) plus the empty-table seed (plan_phase, M33).
       instructions:
         "STEPWELL structures the project via four markdown files (BACKLOG.md, PROGRESS.md, docs/archive/*). " +
         "Use these tools only when the project root contains the four STEPWELL files OR the user explicitly asks for STEPWELL. " +
-        "Never create structure unrequested in a foreign repo. New to STEPWELL? Start from docs/QUICKSTART.md; " +
-        "templates are available as resources.",
+        "Never create structure unrequested in a foreign repo. Asked to set STEPWELL up? docs_status with " +
+        'include ["templates"] returns the four file skeletons inline (M32 bootstrap hint) — adopt them unchanged; ' +
+        "progress_plan_phase then plans the first phase directly into the empty progress table (M33).",
     },
   );
 

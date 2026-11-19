@@ -1,3 +1,5 @@
+import type { TemplateKind } from "./templates.ts";
+
 export type Priority = "🔴" | "🟠" | "🟡" | "🟢" | "🔵" | "unknown";
 
 export interface Warning {
@@ -106,6 +108,8 @@ export interface DocsStatus {
   nextPriority: Priority | undefined;
   /** Nur mit `include: ["nextStepScope"]` (E2/12.3): Ziel/Abnahme/Scope + gemergtes Item des nächsten Steps. */
   nextStepScope?: NextStepScope;
+  /** Nur im nicht initialisierten Zustand mit `include: ["templates"]` (M32/45.x): die vier Skeletons inline — MCP-Resources sind in ZCode nicht agentenlesbar, der Bootstrap-Inhalt muss durch das Tool selbst. */
+  templates?: Record<TemplateKind, string>;
   /** SHA256 je Doku-Datei (E2/12.5) — Grundlage des Hash-Kurzschlusses (Fast-Pfad E3). */
   hashes: Record<string, string>;
   /** Zeilen/Bytes je Doku-Datei (L24/32.7) — Wachstum messbar statt unsichtbar. */
