@@ -13,6 +13,10 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-11-20
+
+**Packages:** `stepwell` · `stepwell-core` · `stepwell-git` — 0.3.0 (Lockstep, Decision 10)
+
 ### Added
 
 - **`docs_status` include `"templates"` — bootstrap skeletons inline (M32/45.3, StarSearch
