@@ -13,6 +13,10 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
 
 ## [Unreleased]
 
+## [0.3.1] — 2026-11-21
+
+**Packages:** `stepwell` · `stepwell-core` · `stepwell-git` — 0.3.1 (Lockstep, Decision 10)
+
 ### Fixed
 
 - **BACKLOG header stamp ate the closing paren (`(As of:/Stand: …` without `)`) — M34,
