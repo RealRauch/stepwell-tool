@@ -13,6 +13,18 @@ je Release — kein Git-Log-Dump und keine Duplikation von Erledigt-Index oder
 
 ## [Unreleased]
 
+### Fixed
+
+- **BACKLOG header stamp ate the closing paren (`(As of:/Stand: …` without `)`) — M34,
+  field finding datacraft:** the heading stamp token in the BACKLOG write path
+  (`backlog_add`/`backlog_update`/`backlog_remove`) matched `\S+`, which swallowed the
+  `)` of the `(As of:/Stand: <stamp>)` pair and the replacement dropped it — every write
+  regenerated the defective form and clobbered manual fixes. The token now matches
+  timestamp grammar only (canonical ISO + both legacy forms, Decision 6); a paren the
+  legacy bug left open is re-closed at the next natural write, parenless stamp styles
+  stay untouched (tolerance). Shard headers, PROGRESS header and the seed templates were
+  checked and are unaffected.
+
 ## [0.3.0] — 2026-11-20
 
 **Packages:** `stepwell` · `stepwell-core` · `stepwell-git` — 0.3.0 (Lockstep, Decision 10)
