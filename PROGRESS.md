@@ -16,6 +16,14 @@
 - **33.1 [H13] Protokoll docs/fieldtest-finland.md — Beobachtungsfelder (Rotation, gekoppelter Index, PHASE_MIDWAY-Fenster, validate-Signale), Fund-Klassen (Bug/Methoden-Drift/UX-Friktion), Abnahmekriterium; Verlinkung im Konsumer vor Umbau-Start**
 - **33.2 [H13] Begleit-Feldproben während des Umbaus — Fund-Log im Protokoll, Funde als BACKLOG-Items hier (Muster T6/M16)**
 - **33.3 [H13] Auswertung — 1.0.0-Entscheidvorlage (freigeben / weiter 0.x; npm-Publish-Frage), Feldtest-Eintrag in README/CHANGELOG**
+### Phase 46 — Heading stamp paren fix (field finding datacraft, M34)
+
+**Umfang (Steps):**
+
+- **46.1 RED — Tests pinnen den Defekt: Schreibpfad erhält die schließende Klammer der (As of:/Stand:) -Paare; defekte Zeilen werden beim Schreiben repariert; Legacy-Formen + parenloser Stil abgedeckt**
+- **46.2 GREEN — STAMP_TOKEN auf Zeitstempel-Grammatik (Decision 6: ISO | YYMMDD/HHMM | MM/YYYY) statt \S+; offen gebliebene Klammer am Marker beim natürlichen Schreibvorgang schließen**
+- **46.3 Verifikation — typecheck/test/docs_validate grün; CHANGELOG (Unreleased); bestehende Stamp-Tests geschärft; Build für Konsumer**
+
 
 
 
@@ -237,3 +245,6 @@
 | 45.3 | [M32] docs_status Bootstrap-Hinweis auf nicht initialisiertem Root — Skeletons inline (includeTemplates, Opt-in); initialisierte Roots unverändert; RED→GRÜN | ✅ |
 | 45.4 | [M32] MCP instructions-Text: QUICKSTART-Zeiger → tool-erreichbarer Bootstrap-Weg; Decision-15-Vermerk im Item-Close | ✅ |
 | 45.5 | [M32+M33] Verifikation — typecheck/test/docs_validate grün | ✅ |
+| 46.1 | RED — Tests pinnen den Defekt: Schreibpfad erhält die schließende Klammer der (As of:/Stand:) -Paare; defekte Zeilen werden beim Schreiben repariert; Legacy-Formen + parenloser Stil abgedeckt | ✅ |
+| 46.2 | GREEN — STAMP_TOKEN auf Zeitstempel-Grammatik (Decision 6: ISO | ✅ | MM/YYYY) statt \S+; offen gebliebene Klammer am Marker beim natürlichen Schreibvorgang schließen | ⬜ |
+| 46.3 | Verifikation — typecheck/test/docs_validate grün; CHANGELOG (Unreleased); bestehende Stamp-Tests geschärft; Build für Konsumer | ⬜ |
