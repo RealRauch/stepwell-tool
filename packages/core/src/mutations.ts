@@ -931,9 +931,12 @@ const PRIORITY_SERIES: Partial<Record<Exclude<Priority, "unknown">, string>> = {
   "🟢": "L",
 };
 const ID_PATTERN = /^[A-Z][0-9]+$/;
+/** Timestamp grammar only (Decision 6: canonical ISO + both legacy forms) — never `\S+`. */
+const STAMP_TIME = "(?:\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}|\\d{6}\\/\\d{4}|\\d{2}\\/\\d{4})";
 const STAMP_TOKEN = new RegExp(
-  `(?<=\\b(?:${allSynonyms("standMarker").map(escapeRegExp).join("|")})\\s*)\\S+`,
+  `(?<=\\b(?:${allSynonyms("standMarker").map(escapeRegExp).join("|")})\\s*)${STAMP_TIME}`,
 );
+const STAMP_MARKER = new RegExp(`(?:${allSynonyms("standMarker").map(escapeRegExp).join("|")})`);
 
 export interface BacklogAddOptions {
   dryRun?: boolean;
@@ -983,7 +986,15 @@ function refreshHeadingStamp(lines: string[]): void {
   for (const [idx, line] of lines.entries()) {
     if (!/^#\s/u.test(line)) continue;
     if (STAMP_TOKEN.test(line)) {
-      lines[idx] = line.replace(STAMP_TOKEN, stampNow());
+      // M34: the legacy `\S+` token matched into the closing paren of the
+      // "(Stand:/As of: <stamp>)" pair and the replacement dropped it — every write
+      // ate the `)` and clobbered manual fixes. The token is timestamp grammar only
+      // now; a paren the legacy bug left open is re-closed at this natural write,
+      // parenless styles stay untouched (tolerance).
+      const markerAt = STAMP_MARKER.exec(line)?.index ?? -1;
+      const openParen = markerAt >= 0 ? line.lastIndexOf("(", markerAt) : -1;
+      const unclosedParen = openParen !== -1 && !line.slice(openParen).includes(")");
+      lines[idx] = line.replace(STAMP_TOKEN, () => (unclosedParen ? `${stampNow()})` : stampNow()));
     }
     return;
   }
