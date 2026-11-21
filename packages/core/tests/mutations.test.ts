@@ -697,9 +697,109 @@ describe("backlog CRUD (T1, 6.9)", () => {
       priority: "🟡",
     });
     const heading = plan.changes[0]!.after.split("\n")[0]!;
-    expect(heading).toMatch(/Stand: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}/u);
+    expect(heading).toMatch(/\(Stand: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}\)$/u);
     expect(heading).not.toContain("260907/1200");
     expect(plan.id).toBe("M8");
+  });
+
+  // M34/46.1 — field finding datacraft (bug report 11/2026): the legacy stamp token
+  // `\S+` matched into the closing paren of the `(Stand:/As of: …)` pair and the
+  // replacement dropped it — every write regenerated the heading without `)`,
+  // clobbering manual fixes. These tests pin the paren on all write paths.
+  it("add preserves the closing paren of the (Stand: …) pair (M34)", () => {
+    const dir = tempCopy("project-a");
+    const plan = planBacklogAdd(dir, {
+      dryRun: false,
+      section: "MITTEL",
+      title: "Klammer bleibt",
+      priority: "🟡",
+    });
+    const result = applyBacklogAddPlan(plan);
+    expect(result.verification.ok).toBe(true);
+    const heading = readFileSync(join(dir, "BACKLOG.md"), "utf8").split("\n")[0]!;
+    expect(heading).toMatch(/\(Stand: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}\)$/u);
+  });
+
+  it("add repairs a paren the legacy token grammar left open (M34 — datacraft state)", () => {
+    const dir = tempCopy("project-a");
+    const backlogPath = join(dir, "BACKLOG.md");
+    writeFileSync(
+      backlogPath,
+      readFileSync(backlogPath, "utf8").replace("(Stand: 2026-09-07T12:00)", "(Stand: 2026-09-07T12:00"),
+      "utf8",
+    );
+    const plan = planBacklogAdd(dir, {
+      dryRun: false,
+      section: "MITTEL",
+      title: "Klammer kommt zurück",
+      priority: "🟡",
+    });
+    const result = applyBacklogAddPlan(plan);
+    expect(result.verification.ok).toBe(true);
+    const heading = readFileSync(backlogPath, "utf8").split("\n")[0]!;
+    expect(heading).toMatch(/\(Stand: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}\)$/u);
+  });
+
+  it("add refreshes the English As-of marker the same way (M34)", () => {
+    const dir = tempCopy("project-a");
+    const backlogPath = join(dir, "BACKLOG.md");
+    writeFileSync(
+      backlogPath,
+      readFileSync(backlogPath, "utf8").replace("(Stand: 2026-09-07T12:00)", "(As of: 2026-09-07T12:00)"),
+      "utf8",
+    );
+    const plan = planBacklogAdd(dir, {
+      dryRun: false,
+      section: "MITTEL",
+      title: "EN-Marker",
+      priority: "🟡",
+    });
+    const result = applyBacklogAddPlan(plan);
+    expect(result.verification.ok).toBe(true);
+    const heading = readFileSync(backlogPath, "utf8").split("\n")[0]!;
+    expect(heading).toMatch(/\(As of: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}\)$/u);
+  });
+
+  it("add refreshes legacy stamp forms to ISO and keeps the paren (M34 — Decision 6 migration)", () => {
+    const dir = tempCopy("project-a");
+    const backlogPath = join(dir, "BACKLOG.md");
+    writeFileSync(
+      backlogPath,
+      readFileSync(backlogPath, "utf8").replace("(Stand: 2026-09-07T12:00)", "(Stand: 260907/1200)"),
+      "utf8",
+    );
+    const plan = planBacklogAdd(dir, {
+      dryRun: false,
+      section: "MITTEL",
+      title: "Legacy-Form",
+      priority: "🟡",
+    });
+    const result = applyBacklogAddPlan(plan);
+    expect(result.verification.ok).toBe(true);
+    const heading = readFileSync(backlogPath, "utf8").split("\n")[0]!;
+    expect(heading).toMatch(/\(Stand: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}\)$/u);
+    expect(heading).not.toContain("260907/1200");
+  });
+
+  it("add leaves a parenless stamp style untouched (M34 — tolerance)", () => {
+    const dir = tempCopy("project-a");
+    const backlogPath = join(dir, "BACKLOG.md");
+    writeFileSync(
+      backlogPath,
+      readFileSync(backlogPath, "utf8").replace("(Stand: 2026-09-07T12:00)", "Stand: 2026-09-07T12:00"),
+      "utf8",
+    );
+    const plan = planBacklogAdd(dir, {
+      dryRun: false,
+      section: "MITTEL",
+      title: "Ohne Klammer",
+      priority: "🟡",
+    });
+    const result = applyBacklogAddPlan(plan);
+    expect(result.verification.ok).toBe(true);
+    const heading = readFileSync(backlogPath, "utf8").split("\n")[0]!;
+    expect(heading).toMatch(/^# .*Stand: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/u);
+    expect(heading).not.toContain("(");
   });
 
   it("add rejects non-conforming, duplicate ids and unknown sections", () => {
