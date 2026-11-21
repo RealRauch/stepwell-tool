@@ -1,4 +1,4 @@
-# BACKLOG.md — Open items (As of: 2026-11-19T23:17
+# BACKLOG.md — Open items (As of: 2026-11-21T23:09
 
 > **This file contains only OPEN items.** Completed items are moved to `docs/archive/BACKLOG_ARCHIVE.md` unchanged after completion; this file keeps only a one-liner per item in the Done Index (below). Findings/fix-ideas/decisions are not deleted — moved to the archive.
 > Legend: 🔴 critical · 🟠 high · 🟡 medium · 🟢 low · 🔵 test gap
@@ -27,6 +27,7 @@
 ## 🟡 MEDIUM
 
 > No open items.
+
 
 
 
